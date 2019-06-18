@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="?attr/listPreferredItemHeight"
+    android:orientation="vertical"
+    android:paddingBottom="8dp"
+    android:paddingTop="8dp"
+    android:id="@+id/listaPapa">
+
+    <CheckBox
+        android:id="@+id/checkBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="14dp"
+        android:layout_marginRight="14dp"
+        android:visibility="invisible" />
+
+
+
+    <ImageView
+        android:id="@+id/iv_avatar"
+        android:layout_width="79dp"
+        android:layout_height="80dp"
+        android:layout_marginLeft="23dp" />
+
+    <ImageButton
+        android:id="@+id/borrar_uno"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="centerInside"
+        android:padding="8dp"
+        android:layout_marginStart="20dp"
+        android:background="@drawable/roundcornertwitter"
+        android:src="@drawable/ic_trash_white" />
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignTop="@+id/iv_avatar"
+        android:layout_marginStart="130dp"
+        android:text="Nombre"
+        android:textAppearance="?attr/textAppearanceListItem"
+        tools:text="Alexander Pierrot" />
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tv_name"
+        android:layout_below="@+id/tv_name"
+        android:text="Cargo"
+        tools:text="CEO" />
+    <TextView
+        android:id="@+id/edit_url"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        tools:ignore="InvalidId" />
+</RelativeLayout>

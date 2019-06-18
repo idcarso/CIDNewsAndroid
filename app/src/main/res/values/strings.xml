@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">CIDnews</string>
+    <string name="title_activity_menu">menu</string>
+    <string name="title_activity_home">home</string>
+    <string name="announce">GO \u0026 SAVE YOUR FAVORITES</string>
+    <string name="no_internet">WEAK SIGNAL</string>
+    <string name="select_one">Select One</string>
+    <string name="ok">O K</string>
+
+    <string name="warning_recover">Each news item deleted shows the days remaining for permanent elimination</string>
+
+    <string name="settings_title">WHAT KIND OF NEWS WOULD YOU LIKE TO SEE?</string>
+    <string name="health">HEALTH</string>
+    <string name="retail">RETAIL</string>
+    <string name="construction">CONSTRUCTION</string>
+    <string name="entertainment">ENTERTAINMENT</string>
+    <string name="environment">ENVIRONMENT</string>
+    <string name="education">EDUCATION</string>
+    <string name="energy">ENERGY</string>
+    <string name="finance">FINANCE</string>
+    <string name="telecom">TELECOM</string>
+    <string name="filter_title_fav">FILTER</string>
+    <string name="recover_title_rec">REMOVED</string>
+    <string name="favorites_title_fav">FAVORITES</string>
+    <string name="remove_title_fav">REMOVE</string>
+    <string name="facebook_app_id">2228226590782564</string>
+    <string name="facebook_login_protocol_scheme">fb2228226590782564</string>
+    <string name="title_activity_slide_navigation">slideNavigationActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+
+</resources>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="?attr/listPreferredItemHeight"
+    android:orientation="vertical"
+    android:paddingBottom="8dp"
+    android:paddingTop="8dp"
+    android:id="@+id/listFatherRecover">
+
+    <CheckBox
+        android:id="@+id/checkBoxRecover"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="14dp"
+        android:layout_marginRight="14dp"
+        android:visibility="invisible" />
+
+
+
+    <ImageView
+        android:id="@+id/iv_avatarRecover"
+        android:layout_width="79dp"
+        android:layout_height="80dp"
+        android:layout_marginStart="23dp" />
+
+    <ImageButton
+        android:id="@+id/delete_oneRecover"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="20dp"
+        android:src="@drawable/ic_recover_avatar"
+        android:scaleType="fitXY"
+
+        android:background="@null"
+        />
+        <!--android:background="@null"-->
+
+    <TextView
+        android:id="@+id/tv_nameRecover"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignTop="@+id/iv_avatarRecover"
+        android:layout_marginStart="130dp"
+        android:text="Nombre"
+        android:textAppearance="?attr/textAppearanceListItem"
+        tools:text="Alexander Pierrot" />
+
+    <TextView
+        android:id="@+id/tv_titleRecover"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/tv_nameRecover"
+        android:layout_below="@+id/tv_nameRecover"
+        tools:text="CEO" />
+    <TextView
+        android:id="@+id/edit_urlRecover"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        tools:ignore="InvalidId" />
+
+
+    <TextView
+        android:id="@+id/time_end"
+        android:layout_width="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:text="DateTime"
+        android:layout_alignTop="@+id/tv_titleRecover"
+        />
+</RelativeLayout>

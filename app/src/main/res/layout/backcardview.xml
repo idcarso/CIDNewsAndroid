@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.percentlayout.widget.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <androidx.cardview.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/cardviewbackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_gravity="center_horizontal"
+        android:background="@null"
+        android:backgroundTint="@color/mainBlue"
+        card_view:cardUseCompatPadding="false"
+        card_view:cardPreventCornerOverlap="true"
+        card_view:cardCornerRadius="12dp"
+        card_view:contentPaddingTop="10dp"
+        card_view:contentPaddingBottom="10dp"
+        card_view:cardElevation="0dp"
+        >
+
+
+
+            <FrameLayout
+                android:id="@+id/mainspView_helper"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/white"
+                >
+
+
+                <ImageView
+                    android:id="@+id/img_noticia_helper"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/vacio" />
+                <ImageView
+                    android:id="@+id/fonazul"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="bottom"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    card_view:srcCompat="@drawable/ic_degradado_redondeado4"
+                     />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:layout_gravity="bottom"
+                    android:background="@color/mainBlue"
+                    >
+                    <TextView
+                        android:id="@+id/titulo_noticia_helper"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_gravity="bottom"
+                        android:layout_marginBottom="20dp"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp"
+                        android:ellipsize="none"
+                        android:fontFamily="@font/montserratmedium"
+                        android:requiresFadingEdge="vertical"
+                        android:text="Hola"
+                        android:textAlignment="center"
+                        android:textColor="#ffffffff"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/autor_helper"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:layout_gravity="bottom"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginBottom="0dp"
+                        android:fontFamily="@font/montserratmedium"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="40dp"
+                        android:text="Hola"
+                        android:textAlignment="textStart"
+                        android:textColor="#ffffffff"
+
+
+
+
+
+
+
+
+
+                        android:textSize="16sp" />
+                </FrameLayout>
+                <!--android:background="#010054"-->
+            </FrameLayout>
+
+
+        <androidx.percentlayout.widget.PercentRelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/icono_cidnews"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/icono_cidnews2"
+                android:visibility="invisible"
+                android:scaleType="fitXY"
+                app:layout_heightPercent="12.51%"
+                app:layout_widthPercent="21.19%"     />
+
+        </androidx.percentlayout.widget.PercentRelativeLayout>
+    </androidx.cardview.widget.CardView>
+</androidx.percentlayout.widget.PercentRelativeLayout>

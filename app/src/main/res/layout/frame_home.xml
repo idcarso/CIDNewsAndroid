@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".Activities.MainActivity">
+
+
+    <androidx.percentlayout.widget.PercentRelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true">
+
+
+        <FrameLayout
+            android:id="@+id/contendor_home"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true">
+
+            <androidx.percentlayout.widget.PercentRelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+
+                <RelativeLayout
+                    android:id="@+id/loader_gif"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:layout_marginBottomPercent="38.5%"
+                    app:layout_marginTopPercent="34%"
+                    app:layout_marginStartPercent="20%"
+                    app:layout_marginEndPercent="20%"
+
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    >
+
+                    <ImageView
+                        android:id="@+id/img_loader_gif"
+                        android:scaleType="fitXY"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_centerHorizontal="true"
+                        />
+
+
+                </RelativeLayout>
+
+                <!--  START CONFIG OPTION 1 -->
+                <androidx.cardview.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                    android:id="@+id/cardviewtest"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:clipChildren="true"
+                    app:cardPreventCornerOverlap="false"
+                    app:layout_marginBottomPercent="18.5%"
+                    app:layout_marginTopPercent="14%"
+                    card_view:cardCornerRadius="12dp"
+                    card_view:contentPaddingLeft="0dp"
+                    card_view:contentPaddingRight="0dp"
+                    card_view:cardElevation="4dp"
+                    card_view:contentPaddingBottom="10dp"
+                    card_view:contentPaddingTop="10dp"
+                    android:backgroundTint="@color/mainBlue"
+                    >
+<!--
+-->
+                    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+                        android:id="@+id/scrollext2"
+                        style="@style/scrollbar_shape_style"
+                        android:layout_width="4dp"
+                        android:layout_height="100dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_gravity="end"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="@null"
+                        android:scrollbarSize="4dp"
+                        android:scrollbarStyle="insideOverlay">
+
+                        <androidx.percentlayout.widget.PercentRelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <ImageView
+                                android:id="@+id/heightscroll"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:layout_alignParentTop="true"
+                                app:layout_heightPercent="1600%"></ImageView>
+
+                        </androidx.percentlayout.widget.PercentRelativeLayout>
+                    </ScrollView>
+
+
+                    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+                        android:id="@+id/scrollext1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clipChildren="true">
+
+                        <androidx.percentlayout.widget.PercentRelativeLayout
+                            android:id="@+id/percentlay"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:clipChildren="true"
+                            app:cardUseCompatPadding="true"
+
+                            >
+
+
+                            <androidx.cardview.widget.CardView
+                                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                                android:id="@+id/cardviewext21"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+
+                                android:layout_gravity="center_horizontal"
+                                android:clipChildren="false"
+                                app:cardPreventCornerOverlap="true"
+                                app:cardCornerRadius="12dp"
+
+                                app:layout_heightPercent="800%"
+                                >
+
+                                <link.fls.swipestack.SwipeStack xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                                    android:id="@+id/swipStack"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:clipChildren="true"
+                                    android:gravity="top"
+                                    android:background="@color/white"
+                                    app:animation_duration="0"
+                                    app:elevation="0dp"
+                                    app:stack_rotation="-1"
+                                    app:stack_size="2"
+                                    app:stack_spacing="0dp">
+
+                                </link.fls.swipestack.SwipeStack>
+
+
+
+                                <!--    <android.support.percent.PercentRelativeLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        >
+                                        <ImageView
+                                            android:id="@+id/icono_cidnews"
+                                            android:layout_alignParentTop="true"
+                                            android:layout_centerHorizontal="true"
+                                            android:src="@drawable/icono_cidnews2"
+                                            android:scaleType="fitXY"
+                                            android:visibility="invisible"
+                                            app:layout_heightPercent="1.56375%"
+                                            app:layout_widthPercent="21.19%"     />
+
+                                    </android.support.percent.PercentRelativeLayout>  -->
+                            </androidx.cardview.widget.CardView>
+                            <!--
+                               <android.support.design.widget.FloatingActionButton
+                                   android:id="@+id/fav_end_fab"
+                                   android:layout_width="60dp"
+                                   android:layout_height="60dp"
+                                   android:layout_below="@+id/cardviewext21"
+                                   android:layout_alignParentStart="true"
+                                   android:layout_marginStart="55dp"
+                                   android:layout_marginTop="40dp"
+                                   android:layout_marginBottom="20dp"
+                                   android:clickable="true"
+                                   android:clipToPadding="true"
+                                   android:focusable="true"
+                                   android:gravity="end"
+                                   android:padding="2dp"
+                                   android:src="@drawable/ic_fav_star_white2"
+                                   app:backgroundTint="@color/fabNews">
+                               </android.support.design.widget.FloatingActionButton>
+
+                               <android.support.design.widget.FloatingActionButton
+                                   android:id="@+id/share_end_fab"
+                                   android:layout_below="@+id/cardviewext21"
+                                   android:layout_width="60dp"
+                                   android:layout_height="60dp"
+                                   android:layout_centerHorizontal="true"
+
+                                   android:layout_marginTop="20dp"
+                                   android:layout_marginBottom="50dp"
+                                   android:clickable="true"
+                                   android:clipToPadding="true"
+                                   android:focusable="true"
+                                   android:padding="2dp"
+                                   android:src="@drawable/sharemainfab2"
+                                   app:backgroundTint="@color/fabNews">
+
+                               </android.support.design.widget.FloatingActionButton>
+
+                               <android.support.design.widget.FloatingActionButton
+                                   android:id="@+id/trash_end_fab"
+                                   android:layout_below="@+id/cardviewext21"
+                                   android:layout_width="60dp"
+                                   android:layout_height="60dp"
+
+                                   android:layout_alignParentEnd="true"
+                                   android:layout_marginTop="40dp"
+                                   android:layout_marginBottom="20dp"
+                                   android:layout_marginEnd="55dp"
+                                   android:clickable="true"
+                                   android:clipToPadding="true"
+                                   android:focusable="true"
+                                   android:gravity="end"
+                                   android:padding="2dp"
+                                   android:src="@drawable/ic_trash_white"
+                                   app:backgroundTint="@color/fabNews">
+
+                               </android.support.design.widget.FloatingActionButton>
+                            -->
+
+                        </androidx.percentlayout.widget.PercentRelativeLayout>
+                    </ScrollView>
+
+
+                </androidx.cardview.widget.CardView>
+                <!--  END CONFIG OPTION 1 -->
+
+                <androidx.cardview.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                    android:id="@+id/swipStackaux"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:clipChildren="true"
+                    android:gravity="center"
+                    android:background="@null"
+                    card_view:cardCornerRadius="12dp"
+                    android:backgroundTint="@null"
+                    app:layout_marginBottomPercent="18.5%"
+                    app:layout_marginTopPercent="14%">
+                </androidx.cardview.widget.CardView>
+
+
+                <androidx.cardview.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                    android:id="@+id/swipNoNews"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:clipChildren="true"
+                    android:gravity="center"
+                    android:background="@null"
+                    card_view:cardCornerRadius="12dp"
+                    android:backgroundTint="@null"
+                    android:visibility="invisible"
+                    app:layout_marginBottomPercent="18.5%"
+                    app:layout_marginTopPercent="14%">
+                </androidx.cardview.widget.CardView>
+
+
+
+
+                <ImageView
+                    android:id="@+id/icono_mano"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/logocidnews"
+                    app:layout_marginBottomPercent="89%"
+                    app:layout_marginTopPercent="2%" />
+
+                <ImageButton
+                    android:id="@+id/boton_superior_home"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:adjustViewBounds="true"
+                    android:background="#00FFFFFF"
+                    android:padding="5dp"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/hambur_gris"
+                    app:layout_marginEndPercent="3%"
+                    app:layout_marginStartPercent="76%"
+                    app:layout_marginTopPercent="3.247%" />
+
+
+                <!--  START CONFIG OPTION 2 -->
+            </androidx.percentlayout.widget.PercentRelativeLayout>
+
+
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/content_bottomfabs"
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            app:layout_heightPercent="6.5%"
+            app:layout_marginBottomPercent="9.25%"
+
+            android:layout_alignParentBottom="true"
+
+            android:layout_marginBottom="48dp"
+            android:clipChildren="true"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:weightSum="3"
+            android:visibility="invisible"
+
+            >
+            <!--android:layout_height="48dp"-->
+
+
+
+
+            <ImageView
+                android:id="@+id/bottombutton_fb"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/roundcorner"
+                android:paddingTop="10dp"
+                android:paddingBottom="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_facebook_white" />
+
+            <ImageView
+                android:id="@+id/bottombutton_twitter"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/roundcornertwitter"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_twitter"
+
+                />
+
+            <ImageView
+                android:id="@+id/bottombutton_whats"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="20dp"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:background="@drawable/roundcornerwhats"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_whatsapp" />
+
+        </LinearLayout>
+
+
+        <ImageView
+            android:id="@+id/basuraimg"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_trash_pink1"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            app:layout_heightPercent="15%"
+
+            app:layout_marginTopPercent="30%"
+            app:layout_widthPercent="25%" />
+
+        <ImageView
+            android:id="@+id/palomaimg"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_fav_pink1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_heightPercent="15%"
+            app:layout_marginStartPercent="75%"
+            app:layout_marginTopPercent="30%"
+            app:layout_widthPercent="25%" />
+
+
+
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/shareMainFab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:clickable="true"
+            android:clipToPadding="true"
+            android:elevation="0dp"
+            android:focusable="true"
+            android:src="@drawable/sharemainfab2"
+            app:backgroundTint="@color/fabNews"
+
+            app:borderWidth="0dp"
+            app:fabCustomSize="60dp"
+
+            app:layout_marginEndPercent="11%"
+            app:layout_marginStartPercent="71%"
+            app:layout_marginTopPercent="74%" />
+
+
+        <LinearLayout
+            android:id="@+id/no_internet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:gravity="bottom"
+            app:layout_marginTopPercent="80%">
+
+            <LinearLayout
+                android:id="@+id/aviso_no_internet"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:background="@color/red"
+                android:gravity="center_horizontal">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_nowifi_red" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginEnd="15dp"
+                    android:fontFamily="@font/montserratmedium"
+                    android:text="@string/no_internet"
+                    android:textColor="#FFFFFF" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.percentlayout.widget.PercentRelativeLayout>
+</RelativeLayout>

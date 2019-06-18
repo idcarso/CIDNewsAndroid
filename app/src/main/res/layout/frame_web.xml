@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <FrameLayout
+        android:id="@+id/toolbar_fav"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/toolbar_fav">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/logocidnews"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"/>
+
+        <ImageButton
+            android:id="@+id/btn_atras_webView"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="15dp"
+            android:layout_gravity="center_vertical"
+            android:scaleType="fitCenter"
+            android:layout_marginStart="17dp"
+            android:background="@null"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_izq_fav" />
+
+
+
+        <ImageButton
+            android:id="@+id/btn_more_info"
+            android:layout_width="44dp"
+            android:layout_height="46dp"
+            android:layout_gravity="end"
+            android:layout_marginTop="3dp"
+            android:background="@color/toolbar_fav"
+            android:clickable="true"
+            android:elevation="0dp"
+            android:focusable="true"
+            android:padding="10dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_more_white" />
+    </FrameLayout>
+    <androidx.percentlayout.widget.PercentRelativeLayout
+        android:layout_below="@+id/toolbar_fav"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <WebView
+            android:id="@+id/webView1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_marginBottomPercent="6.55%"
+            >
+        </WebView>
+
+
+        <ProgressBar
+            android:id="@+id/progressBarLoader"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:layout_alignParentTop="true"
+            android:background="@android:color/transparent"
+            android:indeterminate="false"
+            android:max="100"
+            android:progress="1"
+            android:progressDrawable="@drawable/progressbar"
+
+            />
+
+    </androidx.percentlayout.widget.PercentRelativeLayout>
+
+
+    <!--
+    <FrameLayout
+        android:id="@+id/fabs_frame"
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="48dp"
+        android:visibility="invisible"
+    >
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fav_frame_end_fab"
+            android:layout_height="60dp"
+            android:layout_width="60dp"
+            android:focusable="true"
+            android:clickable="true"
+            android:clipToPadding="true"
+            app:backgroundTint="@color/fabNews"
+            android:src="@drawable/ic_fav_star_white"
+            android:layout_gravity="center_vertical|start"
+            android:layout_marginStart="55dp"
+            android:layout_marginTop="15dp"
+
+            >
+        </android.support.design.widget.FloatingActionButton>
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/trash_frame_end_fab"
+            android:layout_height="60dp"
+            android:layout_width="60dp"
+            android:focusable="true"
+            android:clickable="true"
+            android:clipToPadding="true"
+            app:backgroundTint="@color/fabNews"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginEnd="55dp"
+            android:src="@drawable/ic_trash_white"
+            android:layout_marginTop="15dp"
+            >
+        </android.support.design.widget.FloatingActionButton>
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/share_frame_end_fab"
+            android:layout_gravity="center"
+            android:layout_height="60dp"
+            android:layout_width="60dp"
+            android:focusable="true"
+            android:clickable="true"
+            android:clipToPadding="true"
+            app:backgroundTint="@color/fabNews"
+            android:src="@drawable/sharemainfab2"
+            android:layout_marginBottom="15dp"
+            >
+        </android.support.design.widget.FloatingActionButton>
+    </FrameLayout>
+    -->
+
+
+
+
+</RelativeLayout>

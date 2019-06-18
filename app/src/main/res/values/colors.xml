@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="red">#eb1237</color>
+    <color name="activo">#4CA3FF</color>
+    <color name="inactivofab">#696969</color>
+    <color name="inactivo">#8C8C8C</color>
+    <color name="toolbar_fav">#1b79db</color>
+    <color name="toolbar_edit">#FF2C33</color>
+    <color name="transparente">#00000000</color>
+    <color name="negro">#000000</color>
+    <color name="salud">#00376f</color>
+    <color name="white">#ffffff</color>
+    <color name="blanco">#ffffff</color>
+    <color name="verde">#019328</color>
+    <color name="azulmenu">#1596C1</color>
+    <color name="mainBlue">#0F2D63</color>
+    <color name="transmainBlue">#000F2D63</color>
+    <color name="fabNews">#44C9E0</color>
+    <color name="undoSnackbar">#69CADB</color>
+    <color name="mainPink">#D2375F</color>
+    <color name="mainTwitter">#1da1f2</color>
+    <color name="mainFacebook">#3b5998</color>
+    <color name="mainWhatsapp">#25d366</color>
+    <color name="mainBlueTransparent">#000F2D63</color>
+
+</resources>

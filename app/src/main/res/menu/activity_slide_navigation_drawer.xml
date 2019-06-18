@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_health"
+            android:icon="@drawable/ic_health_menu"
+            android:title="@string/health"
+            >
+            @android:color/fab_news
+        </item>
+        <item
+            android:id="@+id/nav_construction"
+            android:icon="@drawable/ic_construction_menu"
+            android:title="@string/construction" />
+        <item
+            android:id="@+id/nac_retail"
+            android:icon="@drawable/ic_retail_menu"
+            android:title="@string/retail" />
+        <item
+            android:id="@+id/nav_education"
+            android:icon="@drawable/ic_education_menu"
+            android:title="@string/education" />
+        <item
+            android:id="@+id/nav_entertainment"
+            android:icon="@drawable/ic_entertainment_menu"
+            android:title="@string/entertainment" />
+        <item
+            android:id="@+id/nav_finance"
+            android:icon="@drawable/ic_finance_menu"
+            android:title="@string/finance" />
+        <item
+            android:id="@+id/nav_energy"
+            android:icon="@drawable/ic_energy_menu"
+            android:title="@string/energy" />
+        <item
+            android:id="@+id/nac_telecom"
+            android:icon="@drawable/ic_telecom_menu"
+            android:title="@string/telecom" />
+    </group>
+</menu>

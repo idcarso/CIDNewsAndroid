@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+
+    <FrameLayout
+        android:id="@+id/toolbar_fav"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:elevation="6dp"
+        android:background="@color/toolbar_fav">
+        <TextView
+            android:id="@+id/title_menu_fav"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="65dp"
+            android:layout_marginEnd="65dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:fontFamily="@font/montserratmedium"
+            android:gravity="center"
+            android:text="@string/favorites_title_fav"
+            android:textSize="15sp"
+            android:textColor="#fff"
+            android:fitsSystemWindows="true"/>
+
+        <ImageButton
+            android:id="@+id/boton_superior_fav"
+            android:layout_width="44dp"
+            android:layout_height="46dp"
+            android:layout_gravity="end"
+            android:layout_marginTop="3dp"
+            android:layout_marginEnd="18dp"
+            android:background="@color/toolbar_fav"
+            android:clickable="true"
+
+            android:elevation="0dp"
+            android:focusable="true"
+            android:padding="10dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_filter_white" />
+
+       <!-- <ImageButton
+            android:id="@+id/boton_superior_fav"
+            android:layout_width="25dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:background="@color/toolbar_fav"
+            android:src="@drawable/ic_abajo_fav"
+            android:layout_marginLeft="45dp"
+            android:layout_marginTop="0dp"
+            android:padding="10dp"
+            android:clickable="true"
+            android:focusable="true"
+
+            />   -->
+
+        <ImageButton
+            android:id="@+id/btn_atras_fav"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="15dp"
+            android:layout_gravity="center_vertical"
+            android:scaleType="fitCenter"
+            android:background="#00FFFFFF"
+            android:src="@drawable/ic_izq_fav"
+            android:layout_marginStart="17dp"
+            android:clickable="true"
+            android:focusable="true"
+            />
+
+
+      <!--  <ImageButton
+            android:id="@+id/btn_atras_fav"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="15dp"
+            android:background="@color/red"
+            android:elevation="0dp"
+
+            android:layout_gravity="end"
+            android:src="@drawable/ic_izq_fav"
+            android:layout_marginEnd="35dp"
+            android:clickable="true"
+            android:focusable="true"
+            />
+            -->
+
+        <!--
+
+        <ImageButton
+            android:id="@+id/btn_editar"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_gravity="end"
+            android:padding="0dp"
+            android:background="@color/toolbar_fav"
+            android:layout_marginEnd="25dp"
+            android:layout_marginTop="3dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_icono_trashfav"
+
+            />
+-->
+
+    </FrameLayout>
+
+    <Button
+        android:id="@+id/aviso_noticia"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:clickable="true"
+        android:background="#9FFF5C"
+        android:layout_gravity="center"
+        android:fontFamily="@font/montserratmedium"
+        android:text="@string/announce"
+        android:textSize="15sp"
+        android:textColor="#1E37AF"
+        >
+
+
+
+    </Button>
+
+    <androidx.percentlayout.widget.PercentRelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/toolbar_fav">
+        >
+        <ListView
+            android:id="@+id/contenedor_favs"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_marginBottomPercent="6.55%"
+            android:layout_alignParentStart="true"
+            >
+
+        </ListView>
+    </androidx.percentlayout.widget.PercentRelativeLayout>
+
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/botonfab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="68dp"
+        android:layout_marginBottom="105dp"
+        android:clickable="true"
+        android:clipToPadding="false"
+        android:elevation="12dp"
+        android:focusable="true"
+        android:src="@drawable/ic_trash_white"
+        app:backgroundTint="@color/red"
+        app:borderWidth="0dp" />
+
+
+
+   </RelativeLayout>
