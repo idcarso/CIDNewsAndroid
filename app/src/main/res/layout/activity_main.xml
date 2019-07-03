@@ -42,6 +42,7 @@
         app:itemIconTint="@drawable/icon_botton_nav"
         app:itemTextColor="@drawable/icon_botton_nav"
         app:menu="@menu/menu_navegation"
+        app:labelVisibilityMode="unlabeled"
         />
 
 

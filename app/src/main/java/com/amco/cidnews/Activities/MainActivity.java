@@ -246,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         Log.d(TAG, "onCreate: YES");
         menuNavigation = findViewById(R.id.menu_navegation);
         menuNavigation.setOnNavigationItemSelectedListener(this);
-        BottomNavigationViewHelper.disableShiftMode(menuNavigation);
+        //BottomNavigationViewHelper.disableShiftMode(menuNavigation);
 
         imgBtnCross = findViewById(R.id.config_back);
         imgBtnCross.setVisibility(View.INVISIBLE);
@@ -628,23 +628,32 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         Log.d(TAG, "firstGetRequestAPI -- onFailure: statusCode:" + statusCode);
 
 
-                        if (responseBody.length != 0) {
-                            try {
-                                JSONObject mResponse = new JSONObject(new String(responseBody));
+                        if(responseBody != null) {
+                            if (responseBody.length != 0) {
+                                try {
+                                    JSONObject mResponse = new JSONObject(new String(responseBody));
 
-                                Log.d(TAG, "firstGetRequestAPI -- onFailure: names:" + mResponse.names());
-                                Log.d(TAG, "firstGetRequestAPI -- onFailure: toString:" + mResponse.toString());
+                                    Log.d(TAG, "firstGetRequestAPI -- onFailure: names:" + mResponse.names());
+                                    Log.d(TAG, "firstGetRequestAPI -- onFailure: toString:" + mResponse.toString());
 
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                                Log.d(TAG, "firstGetRequestAPI -- onFailure Failure:" + e.toString());
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                    Log.d(TAG, "firstGetRequestAPI -- onFailure Failure:" + e.toString());
+                                }
                             }
+
                         }
                     }
                 });
 
-            }else
-                firstGetRequestAPI(typeUrl,mNewsIndex+1); //???
+            }else {
+
+                if (mNewsIndex + 1 < 9) {
+                    firstGetRequestAPI(typeUrl, mNewsIndex + 1); //???
+                }else
+                    Toast.makeText(getApplicationContext(),
+                            "All news requested?",Toast.LENGTH_SHORT).show();
+            }
 
         //}
     }

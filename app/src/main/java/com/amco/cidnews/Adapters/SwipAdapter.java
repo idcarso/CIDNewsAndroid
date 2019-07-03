@@ -27,6 +27,7 @@ import com.amco.cidnews.Utilities.ImagePassingAdapter;
 import com.amco.cidnews.Utilities.Noticia;
 import com.amco.cidnews.Utilities.VistaWeb;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.Priority;
 import com.bumptech.glide.request.Request;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookSdk;
@@ -73,7 +74,8 @@ public class SwipAdapter extends ArrayAdapter<Noticia>  {
 
 
     public interface RequestImage{
-        Bitmap onRequestImage(String currentUrl);
+        void onRequestImage(String currentUrl);
+        void onReloadNextImage();
     }
 
     private RequestImage mRequest;
@@ -184,43 +186,62 @@ public class SwipAdapter extends ArrayAdapter<Noticia>  {
         String textForNews = "- "+noticia.getAutor();
         autor.setText(textForNews);
 
-        if(mRequest.onRequestImage(noticia.getImagen()) != null){  //Hace la petición si se tiene la imagen ya descargada
-            Log.d("SwipAdapter", "getView: != null");
-            img.setImageBitmap(mRequest.onRequestImage(noticia.getImagen()));
+
+        /*if(mBitmap != null){  //Hace la petición si se tiene la imagen ya descargada
+            Log.d("SwipAdapter", "onRequestImage getView: != null");
+            img.setImageBitmap(mBitmap);
+            mRequest.onReloadNextImage();
             Toast.makeText(getContext(),"Uso de BACKGROUND",Toast.LENGTH_SHORT).show();
-        }else{
+        }else {*/
             Log.d("SwipAdapter", "getView: == null");
-        }
+            final int drawableResourceId = activity.getResources().getIdentifier("vacio", "drawable", activity.getPackageName());
+            if (noticia.getImagen() == "null" || !noticia.getImagen().startsWith("https"))
+                Glide.with(activity).load(drawableResourceId).into(img);
+            else {
+                requestImg = (Glide.with(activity)
+                        .load(noticia.getImagen()).priority(Priority.HIGH)
+                        .thumbnail(Glide.with(getContext())
+                                .load(R.drawable.loadingblocks))
+                        .into(img)).getRequest();
 
 
-
-        final  int drawableResourceId = activity.getResources().getIdentifier("vacio", "drawable", activity.getPackageName());
-        if(noticia.getImagen() == "null"  || !noticia.getImagen().startsWith("https"))
-            Glide.with(activity).load(drawableResourceId).into(img);
-        else {
-            requestImg = (Glide.with(activity).load(noticia.getImagen()).thumbnail(Glide.with(getContext()).load(R.drawable.loadingblocks)).into(img)).getRequest();
-            //requestImg = (Glide.with(activity).load(noticia.getImagen()).thumbnail(Glide.with(getContext()).load(R.drawable.loading)).into(img)).getRequest();
+                //requestImg = (Glide.with(activity).load(noticia.getImagen()).thumbnail(Glide.with(getContext()).load(R.drawable.loading)).into(img)).getRequest();
 
 
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                   if ( requestImg.isComplete()){
-                        Log.e("SwipAdapter","requestImg Complete!");
+                /*
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (requestImg.isComplete()) {
+                            Log.e("SwipAdapter", "requestImg Complete!");
+                        }
+
+                        if (requestImg.isRunning()) {
+                            //requestImg.clear();
+                            Log.d("SwipAdapter", "requestImg Running");
+                            // Glide.with(activity).load(drawableResourceId).into(img);
+                            if(!requestImg.isCleared()) {
+                                requestImg.clear();
+                                Glide.with(activity).load(drawableResourceId).into(img);
+                            }
+
+                        }
                     }
+                }, 8000);*/
+            }
+        //}
 
-                    if ( requestImg.isRunning()){
-                        //requestImg.clear();
-                        Log.d("SwipAdapter","requestImg Running");
-                       // Glide.with(activity).load(drawableResourceId).into(img);ç
 
-                        requestImg.clear();
-                        Glide.with(activity).load(drawableResourceId).into(img);
+        /*
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mRequest.onRequestImage(noticia.getImagen());
 
-                    }
-                }
-            }, 8000);
-        }
+            }
+        }, 250);*/
+
+
         return  convertView;
     }
 

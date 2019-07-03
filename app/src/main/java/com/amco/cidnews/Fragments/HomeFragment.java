@@ -18,11 +18,15 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.nfc.Tag;
+import android.opengl.GLES20;
+import android.opengl.GLES32;
+import android.opengl.GLUtils;
 import android.os.Bundle;
 import android.os.Handler;
 
@@ -110,25 +114,15 @@ import androidx.fragment.app.Fragment;
 import androidx.percentlayout.widget.PercentFrameLayout;
 import androidx.percentlayout.widget.PercentRelativeLayout;
 
+import javax.microedition.khronos.opengles.GL;
+
 import static com.amco.cidnews.Activities.MainActivity.getRunningTime;
 import static com.amco.cidnews.Activities.MainActivity.isNetworkStatusAvailable;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
 
 
-/*
-*
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.percent.PercentRelativeLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.widget.CardView;
-* */
+
 
 public class HomeFragment extends Fragment implements ListenFromActivity,ImagePassingAdapter, SwipAdapter.RequestImage {
 
@@ -183,7 +177,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     RequestHandle requestTopHeadlines;
     //////////////////////////////// STRINGS
     String cateNews[] = {"HEALTH", "CONSTRUCTION", "RETAIL", "EDUCATION", "ENTERTAINMENT", "ENVIRONMENT", "FINANCE", "ENERGY", "TELECOM"};
-    final String labelsNews[] = {"salud", "construcción", "retail", "educación", "entretenimiento", "ambiente", "banca", "energía", "telecom"};
+    final String labelsNews[] = {"salud", "construcción", "ImgTestretail", "educación", "entretenimiento", "ambiente", "banca", "energía", "telecom"};
     String categoriesNews[] = {"SALUD", "CONSTRUCCIÓN", "RETAIL", "EDUCACIÓN", "ENTRETENIMIENTO", "AMBIENTE", "BANCA", "ENERGÍA", "TELECOM"};
     String urlHeadlines[] = {
             "https://newsapi.org/v2/top-headlines?q=health&apiKey=99237f17c0b540fdac4d8367e206f5b2",                 //Headline Health API
@@ -257,45 +251,72 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     RelativeLayout.LayoutParams layoutParamsNews;
 
 
-
+    //TEST
     Bitmap mNextBitmapLoaded = null;
+    ImageView mImg;
+
+
+
     private ImagePassingAdapter mPassingData = new ImagePassingAdapter() {
         @Override
         public void sendingImage(Bitmap bitmap, String url) {
+          //  Log.d(TAG,"sendingImage -- url: "+url);
+           // Log.d(TAG,"sendingImage -- getUrl: "+allNewsDefault.get(sp.getCurrentPosition() + 1).getImagen());
 
 
 
-            Log.d(TAG,"sendingImage -- url: "+url);
-
-
-            if (allNewsDefault.get(sp.getCurrentPosition() + 1).getUrl().contentEquals(url)){
+            /*
+            if (allNewsDefault.get(sp.getCurrentPosition() + 1).getImagen().contentEquals(url)){
                 mNextBitmapLoaded = bitmap;
+                Log.d(TAG,"sendingImage -- mNextBitmapLoaded = bitmap");
 
-                Log.d("HomeFrag","imageLoaded -- mNextBitmapLoaded = bitmap");
 
+                if(bitmap == null)
+                    Log.d(TAG,"sendingImage -- mNextBitmapLoaded,bitmap:null");
+                else
+                    Log.d(TAG,"sendingImage -- mNextBitmapLoaded,bitmap != null");
             }else{
                 mNextBitmapLoaded =  null;
-                Log.d("HomeFrag","imageLoaded -- mNextBitmapLoaded = null");
+                Log.d(TAG,"sendingImage -- mNextBitmapLoaded = null");
             }
+
+            mImg.setImageBitmap(mNextBitmapLoaded);*/
 
         }
     };
 
 
     @Override
-    public Bitmap onRequestImage(String urlRequest) {
-            if(mNextBitmapLoaded != null)
-                return mNextBitmapLoaded;
-            else
-                return mNextBitmapLoaded;
+    public void onRequestImage(String urlRequest) {
+
+
+
+        Log.d(TAG,"sendingImage -- urlRequest:"+urlRequest);
+
+            if(mNextBitmapLoaded != null) {
+
+                if(sp.getTopView() == null){
+                    Log.d(TAG, "sendingImage -- sp.getTopView == null");
+                }else {
+                    Log.d(TAG, "sendingImage -- sp.getTopView != null");
+                    sp.getRootView().setBackground(mImg.getDrawable());
+                }
+            }
+            else{
+
+            }
     }
 
 
-    public void puttingBackground(){
 
-
-
+    @Override
+    public void onReloadNextImage() {
+        mNextBitmapLoaded = null;
+        mImg.setImageBitmap(null);
     }
+
+
+
 
 
 
@@ -367,7 +388,9 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     /// MARK:
     @Override
     public void sendingImage(Bitmap bitmap,String url) {
-        Log.d(TAG,"sendingImage");
+        Log.d(TAG,"sendingImage?");
+
+
     }
 
 
@@ -578,6 +601,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     ///////////////////////////////////
     /// MARK: initial params
     public void setupCreateView(View view,LayoutInflater inflater,ViewGroup container){
+        mImg = view.findViewById(R.id.ImgTest);
         /////////////////////////////////////
         sp = view.findViewById(R.id.swipStack);
         frnointernet = view.findViewById(R.id.aviso_no_internet);
@@ -1280,17 +1304,26 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                             }
 
                             @Override
-                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            public boolean onResourceReady(final Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                                 Log.e(TAG, "backgroundSwipeStack -- Swipadptador.getItem: onResourceReady");
 
-                                mPassingData.sendingImage(imgBgrnd.getDrawingCache()
-                                        ,Swipadaptador.getItem(position + nextPosition).getImagen());
+
+
+
+
+                                mPassingData.sendingImage(drawableToBitmap(resource),
+                                        Swipadaptador.getItem(position + nextPosition).getImagen());
+
+
+                                //mPassingData.sendingImage(imgBgrnd.getDrawingCache()
+                                  //      ,Swipadaptador.getItem(position + nextPosition).getImagen());
                                 return false;
                             }
                         })
                         .thumbnail(Glide.with(getContext())
                         .load(R.drawable.vacio))
                         .into(imgBgrnd))
+
                         .getRequest();
 
                 //imgBgrnd.setOn
@@ -1326,6 +1359,29 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         }
     }
     ///////////////////////////////////
+
+
+    public static Bitmap drawableToBitmap (Drawable drawable) {
+        Bitmap bitmap = null;
+
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            if(bitmapDrawable.getBitmap() != null) {
+                return bitmapDrawable.getBitmap();
+            }
+        }
+
+        if(drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
+        } else {
+            bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        }
+
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
+    }
 
 
 
@@ -1519,6 +1575,9 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         WebSettings webSettings = web.getSettings();
         webSettings.setJavaScriptEnabled(true);
         web.getSettings().setJavaScriptEnabled(true);
+        web.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
+        web.getSettings().setAllowFileAccess(true);
+        web.getSettings().setLoadWithOverviewMode(true);
         web.getSettings().setSupportZoom(true);
 
         web.setWebViewClient(new WebViewClient());
@@ -1553,6 +1612,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                     case MotionEvent.ACTION_MOVE:
                         Log.d(TAG,"web: -- ACTION: MOVE ");
                         eventsActionMove(event, v);
+
+
+                        //GLES32.glDisableVertexAttribArray(0);
+                        //web.requestFocus();
                         return false;
                 }
                 return true;
