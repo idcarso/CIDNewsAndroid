@@ -177,7 +177,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     RequestHandle requestTopHeadlines;
     //////////////////////////////// STRINGS
     String cateNews[] = {"HEALTH", "CONSTRUCTION", "RETAIL", "EDUCATION", "ENTERTAINMENT", "ENVIRONMENT", "FINANCE", "ENERGY", "TELECOM"};
-    final String labelsNews[] = {"salud", "construcción", "ImgTestretail", "educación", "entretenimiento", "ambiente", "banca", "energía", "telecom"};
+    final String labelsNews[] = {"salud", "construcción", "retail", "educación", "entretenimiento", "ambiente", "banca", "energía", "telecom"};
     String categoriesNews[] = {"SALUD", "CONSTRUCCIÓN", "RETAIL", "EDUCACIÓN", "ENTRETENIMIENTO", "AMBIENTE", "BANCA", "ENERGÍA", "TELECOM"};
     String urlHeadlines[] = {
             "https://newsapi.org/v2/top-headlines?q=health&apiKey=99237f17c0b540fdac4d8367e206f5b2",                 //Headline Health API

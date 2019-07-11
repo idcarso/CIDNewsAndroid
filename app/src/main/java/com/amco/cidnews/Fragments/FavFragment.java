@@ -484,7 +484,15 @@ public class FavFragment extends Fragment {
             ((MainActivity)getActivity()).imgBtnCross.setVisibility(View.INVISIBLE);
             ((MainActivity)getActivity()).imgBtnCross.setEnabled(false);
             frnonoticia.setVisibility(View.INVISIBLE);
-            while (cursor.moveToNext()) {
+
+
+
+            if (cursor.moveToLast()){
+                noticia = new Noticia(cursor.getString(0),cursor.getString(1),cursor.getString(2),"",cursor.getString(3),cursor.getString(4),cursor.getLong(5));
+                ListaNoticias.add(noticia);
+            }
+
+            while (cursor.moveToPrevious()) {
                 noticia = new Noticia(cursor.getString(0),cursor.getString(1),cursor.getString(2),"",cursor.getString(3),cursor.getString(4),cursor.getLong(5));
                 ListaNoticias.add(noticia);
             }

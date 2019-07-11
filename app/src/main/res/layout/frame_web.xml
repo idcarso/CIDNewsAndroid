@@ -32,8 +32,6 @@
             android:focusable="true"
             android:src="@drawable/ic_izq_fav" />
 
-
-
         <ImageButton
             android:id="@+id/btn_more_info"
             android:layout_width="44dp"
