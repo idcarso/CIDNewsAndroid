@@ -32,6 +32,8 @@
             android:focusable="true"
             android:src="@drawable/ic_izq_fav" />
 
+
+
         <ImageButton
             android:id="@+id/btn_more_info"
             android:layout_width="44dp"
@@ -47,7 +49,6 @@
             android:src="@drawable/ic_more_white" />
     </FrameLayout>
     <androidx.percentlayout.widget.PercentRelativeLayout
-        android:layout_below="@+id/toolbar_fav"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -56,6 +57,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_marginBottomPercent="6.55%"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="50dp"
             >
         </WebView>
 
@@ -66,6 +69,8 @@
             android:layout_width="match_parent"
             android:layout_height="5dp"
             android:layout_alignParentTop="true"
+            android:layout_marginTop="50dp"
+
             android:background="@android:color/transparent"
             android:indeterminate="false"
             android:max="100"

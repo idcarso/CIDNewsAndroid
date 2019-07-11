@@ -49,14 +49,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 
-/*
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-* */
-
 public class FavFragment extends Fragment {
 
     static private String TAG = "FavFragment";
@@ -80,11 +72,11 @@ public class FavFragment extends Fragment {
     //Lists
     ArrayList<Noticia> ListaNoticias;
     LinkedList<String> ListaAux;
-    static FloatingActionButton botoneliminar;
+    FloatingActionButton btnFABeliminar;
 
 
     //Animation
-    Animation fadeIn;
+   // Animation fadeIn;
 
     //Vars
     String popUpContents[],urlNoticia,categorySelected,categorySelectedForSave;
@@ -154,7 +146,7 @@ public class FavFragment extends Fragment {
         btn_atras = mView.findViewById(R.id.btn_atras_fav);
         frnonoticia = mView.findViewById(R.id.aviso_noticia);
         tx = mView.findViewById(R.id.title_menu_fav);
-        botoneliminar = mView.findViewById(R.id.botonfab);
+        btnFABeliminar = mView.findViewById(R.id.botonfab);
         btn_menu = mView.findViewById(R.id.boton_superior_fav);
         setupUI();
     }
@@ -169,13 +161,13 @@ public class FavFragment extends Fragment {
         pxY = size.y;
         scale =  getResources().getDisplayMetrics().density;
 
-        botoneliminar.hide();
+        btnFABeliminar.hide();
         frnonoticia.setVisibility(View.INVISIBLE);
         frnonoticia.setEnabled(true);
-        fadeIn = new AlphaAnimation(0, 1);
-        fadeIn.setInterpolator(new DecelerateInterpolator());
-        fadeIn.setDuration(1000);
-        botoneliminar.setTag(botoneliminar.getVisibility());
+        //fadeIn = new AlphaAnimation(0, 1);
+        //fadeIn.setInterpolator(new DecelerateInterpolator());
+        //fadeIn.setDuration(1000);
+        //botoneliminar.setTag(botoneliminar.getVisibility());
     }
 
     ///////////////////////////////////
@@ -184,7 +176,7 @@ public class FavFragment extends Fragment {
         btn_atras.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (botoneliminar.isShown()){
+                if (btnFABeliminar.isShown()){
                     showFilterBar();
                     consultarNoticiasFavoritas("%", 0, 1);
                 }else{
@@ -212,7 +204,7 @@ public class FavFragment extends Fragment {
         });
 
 
-        botoneliminar.setOnClickListener(new View.OnClickListener() {
+        btnFABeliminar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -223,8 +215,6 @@ public class FavFragment extends Fragment {
                     Log.d("FAB",aux);
                 }
                 removeNews();
-
-
             }
         });
     }
@@ -232,7 +222,7 @@ public class FavFragment extends Fragment {
     ///////////////////////////////////
     /// MARK:
     public void showFilterBar(){
-        botoneliminar.hide();
+        btnFABeliminar.hide();
         btn_menu.setVisibility(View.VISIBLE);
         btn_menu.setEnabled(true);
         fr.setBackgroundColor(getResources().getColor(R.color.toolbar_fav));
@@ -272,9 +262,6 @@ public class FavFragment extends Fragment {
     public void showRemoveBar(){
         Log.e(TAG, "showRemoveBar: " );
         tx.setText(R.string.remove_title_fav);
-        botoneliminar.setImageResource(R.drawable.ic_trash_white);
-        botoneliminar.setBackgroundColor(getResources().getColor(R.color.red));
-        botoneliminar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.red)));
         fr.setBackgroundColor(getContext().getResources().getColor(R.color.red));
 
 
@@ -288,7 +275,7 @@ public class FavFragment extends Fragment {
         Log.e(TAG, "DATETIME: "+String.valueOf(DateFormat.getInstance().format(startTime)));
         //long halfAnHourLater = startTime + 1800000;
         Log.e(TAG, "WAIT UNTIL: "+String.valueOf(DateFormat.getInstance().format(startTime + 1800000)));
-        return startTime + 3600000*24*2; //30Min  1 Min: 60'000
+        return startTime + 3600000*24*3; //30Min  1 Min: 60'000 //1 Hr*24Hrs*Dias
     }
 
     ///////////////////////////////////
@@ -340,46 +327,18 @@ public class FavFragment extends Fragment {
 
         animationFABDeleting();
 
-
-
     }
 
 
     public void animationFABDeleting(){
 
 
-        botoneliminar.setImageResource(R.drawable.ic_check_white);
-        botoneliminar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.verde)));
-        botoneliminar.setAnimation(fadeIn);
-        fadeIn.start();
-        fadeIn.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
 
-                btn_atras.performClick();
+        //botoneliminar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.verde)));
+        //btnFABeliminar.setAnimation(fadeIn);
+       // fadeIn.start();
+        btn_atras.performClick();
 
-                        /*
-                        try {
-                            ListaAux=  nA.getSelectedCountry();
-                        }catch (Exception e){
-                            String aux= String.valueOf(e);
-                            Log.d("FAB",aux);
-                        }
-                        removeNews();
-
-                        */
-                //if(ListaAux.size()==0)
-                // botoneliminar.setAlpha(0.f);
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-            }
-        });
     }
 
     ///////////////////////////////////
@@ -514,10 +473,10 @@ public class FavFragment extends Fragment {
             public void onChanged() {
                 super.onChanged();
 
-                Log.e(TAG , "nA onChanged: 123");
+                Log.e(TAG , "nA onChanged");
 
-                if(!botoneliminar.isShown()){
-                    botoneliminar.show();
+                if(!btnFABeliminar.isShown()){
+                    btnFABeliminar.show();
 
 
                     if (!tx.getText().toString().equalsIgnoreCase("FAVORITES")) {
@@ -610,8 +569,7 @@ public class FavFragment extends Fragment {
         dogsList.toArray(popUpContents);
         popupWindowDogs = popupWindowDogs();
 
-         btn_menu = (ImageButton) view.findViewById(R.id.boton_superior_fav);
-
+        btn_menu = (ImageButton) view.findViewById(R.id.boton_superior_fav);
 
         btn_menu.setOnClickListener(new View.OnClickListener() {
             @Override

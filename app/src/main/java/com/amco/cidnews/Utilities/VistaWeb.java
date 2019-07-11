@@ -2,6 +2,10 @@ package com.amco.cidnews.Utilities;
 
 
 
+import android.animation.ValueAnimator;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -17,6 +21,8 @@ import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.Transformation;
+import android.view.animation.TranslateAnimation;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -30,8 +36,10 @@ import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
 
 import com.amco.cidnews.Activities.MainActivity;
@@ -54,6 +62,9 @@ import android.support.v4.app.Fragment;
 
 public class VistaWeb extends Fragment {
 
+    public static final String TAG = "VistaWeb";
+
+    FrameLayout mFrameToolbar;
      static  WebView webView;
     ImageButton btnMoreInfo;
     ImageButton btnBack;
@@ -63,20 +74,28 @@ public class VistaWeb extends Fragment {
 
 
     String  url="";
-    boolean flagWebView = false;
-    boolean flagSave = false;
-    boolean flagDeleted = false;
+
     float scale=0;
     int pxX,pxY;
 
+    //top Margin Value ( Webview)
+    int topMarginWebview = 0;
 
     //Menu
     PopupWindow popupWindowDogs;
     String popUpContents[];
 
 
+    //Int
     int bottomMargin = 0;
     int X=0;
+
+    //Boolean
+    boolean flagWebView = false;
+    boolean flagSave = false;
+    boolean flagDeleted = false;
+    boolean toolbarIsInAnimation = false;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -89,6 +108,7 @@ public class VistaWeb extends Fragment {
     }
 
     public void configUI(View view){
+        mFrameToolbar = view.findViewById(R.id.toolbar_fav);
         webView = view.findViewById(R.id.webView1);
         progressBar = view.findViewById(R.id.progressBarLoader);
         btnBack = view.findViewById(R.id.btn_atras_webView);
@@ -101,36 +121,20 @@ public class VistaWeb extends Fragment {
         webView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
             @Override
             public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                if (webView.getProgress() == 100){
-                    Log.d("THEWEBVIEW", "X:"+String.valueOf(X)+"Bottom:"+String.valueOf(webView.getBottom())+"Height: "+String.valueOf(webView.getHeight())+"ContentHeight:"+String.valueOf(webView.getContentHeight())+"ScrollBarSize:"+String.valueOf(webView.getScrollBarSize())+"ScrollY:"+String.valueOf(scrollY));
-                    if((scrollY > X*(0.95)&&(X != 0))){
-                        if(!flagWebView) {
-                            final RelativeLayout.MarginLayoutParams lpt = (RelativeLayout.MarginLayoutParams) webView.getLayoutParams();
-                            Log.d("THEWEBVIEW", "ParamsTopMargin: "+String.valueOf( lpt.topMargin));
+                Log.d(TAG, "configUIListeners -- webView.setOnScrollChangeListener -- X:"
+                        +"oldScrollY:"+oldScrollY
+                        +",ScrollY:"+scrollY);
 
-
-                            Log.d("THEWEBVIEW", "Height: "+String.valueOf(webView.getHeight())+"ContentHeight:"+String.valueOf(webView.getContentHeight()));
-                            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-                                    RelativeLayout.LayoutParams.MATCH_PARENT,
-                                    RelativeLayout.LayoutParams.MATCH_PARENT);
-                            params.setMargins(lpt.leftMargin, lpt.topMargin, lpt.rightMargin, bottomMargin);
-                            //webView.setLayoutParams(params);
-                            //mframeLayout.setVisibility(View.VISIBLE);
-                            flagWebView = true;
-                        }
-                    }else {
-                        if(flagWebView) {
-                            final RelativeLayout.MarginLayoutParams lpt = (RelativeLayout.MarginLayoutParams) webView.getLayoutParams();
-                            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-                                    RelativeLayout.LayoutParams.MATCH_PARENT,
-                                    RelativeLayout.LayoutParams.MATCH_PARENT);
-                            params.setMargins(lpt.leftMargin, lpt.topMargin, lpt.rightMargin, 0);
-                            //webView.setLayoutParams(params);
-                            //mframeLayout.setVisibility(View.INVISIBLE);
-                            flagWebView = false;
-                        }
-                    }
+                if (scrollY - oldScrollY > 10  && !toolbarIsInAnimation && mFrameToolbar.getVisibility() == View.VISIBLE){ //HIDE BAR
+                    toolbarIsInAnimation = true;
+                    slideUp(mFrameToolbar);
                 }
+
+                if(scrollY - oldScrollY < -10  && !toolbarIsInAnimation && mFrameToolbar.getVisibility() == View.GONE){
+                    toolbarIsInAnimation = true;
+                    slideDown(mFrameToolbar);
+                }
+
             }
         });
 
@@ -162,14 +166,20 @@ public class VistaWeb extends Fragment {
         progressBar.setMax(100);
         progressBar.setProgress(1);
 
+
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) webView.getLayoutParams();
+        topMarginWebview = params.topMargin;
+
         url= getArguments().getString("url");
         webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient());
         webView.clearCache(true);
-        Log.d( "LA URL ES: ", url);
+        Log.d( TAG,"setupUI --  URL:"+ url);
         webView.loadUrl(url);
+
+
 
 
         webView.setWebChromeClient(new WebChromeClient() {
@@ -181,8 +191,9 @@ public class VistaWeb extends Fragment {
         webView.setWebViewClient(new WebViewClient(){
             @Override
             public void onPageFinished(WebView view, String url) {
-                Log.v("VistaWeb","setupUI -- webView.setWebViewClient, onPageFinished");
+                Log.v(TAG,"setupUI -- webView.setWebViewClient, onPageFinished");
                 progressBar.setVisibility(View.GONE);
+                progressBar.setAlpha(0f);
                 X = view.getContentHeight();
             }
         });
@@ -212,7 +223,6 @@ public class VistaWeb extends Fragment {
         dogsList.add("REFRESH");
         dogsList.add("SHARE");
         dogsList.add("COPY LINK");
-        dogsList.add("OPEN WITH");
 
         popUpContents = new String[dogsList.size()];
         dogsList.toArray(popUpContents);
@@ -232,8 +242,6 @@ public class VistaWeb extends Fragment {
         popupWindow.setContentView(listView);
         listView.setClickable(true);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-
 
             @Override
             public void onItemClick(AdapterView<?> arg0, View view, int position, long arg3) {
@@ -260,10 +268,17 @@ public class VistaWeb extends Fragment {
                 switch (position)
                 {
                     case 0 :
+                        progressBar.setAlpha(1f);
                         webView.reload();
                         break;
                     case 1:
                         sendNewsByIntent();
+                        break;
+                    case 2:
+                        ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText("Url News", url);
+                        clipboard.setPrimaryClip(clip);
+                        Toast.makeText(getContext(),"Url Copied!",Toast.LENGTH_SHORT).show();
                         break;
                     default:
                         break;
@@ -306,11 +321,6 @@ public class VistaWeb extends Fragment {
                         color = "#235784";
                         break;
 
-                    case "OPEN WITH":
-                        id = "menu_sup_edu";
-                        size = porcentaje;
-                        color = "#235784";
-                        break;
                 }
                 listItem.setText(item);
                 listItem.setTag(id);
@@ -324,53 +334,111 @@ public class VistaWeb extends Fragment {
         return adapter;
     }
 
-}
-//
-//   Loading = view.findViewById(R.id.cargando1);
-//final FrameLayout mframeLayout = view.findViewById(R.id.fabs_frame);
-        /*fav = view.findViewById(R.id.fav_frame_end_fab);
-        share = view.findViewById(R.id.share_frame_end_fab);
-        trash = view.findViewById(R.id.trash_frame_end_fab);*/
-//  webSettings.setSupportMultipleWindows(true); * * *  * * *
-        /*fav.setOnClickListener(new View.OnClickListener() {
+    /**
+     * Animación para remover la barra
+     * @param view       Vista a animar.
+     */
+    ///////////////////////////////////
+    /// MARK:Animación para ocultar la barra
+    public void slideUp(final View view){
+        TranslateAnimation animate = new TranslateAnimation(
+                0,                 // fromXDelta
+                0,                 // toXDelta
+                0,  // fromYDelta
+                -view.getHeight());                // toYDelta
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        animate.setAnimationListener(new Animation.AnimationListener() {
             @Override
-            public void onClick(View v) {
-                Log.d("THEWEBVIEW", "FAVORITES CLICKED");
-                fav.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.mainBlue)));
-                flagSave = true;
-                flagDeleted = false;
+            public void onAnimationStart(Animation animation) {
             }
-        });
-        trash.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d("THEWEBVIEW", "DELETE CLICKED");
-                if (flagSave) {
-                    flagSave = false;
-                    fav.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.fabNews)));
-                }
-                trash.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.mainBlue)));
-                flagDeleted = true;
-                onBackPressed();
-            }
-        });
-        share.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d("THEWEBVIEW", "SHARE CLICKED");
-                sendNewsByIntent();
-            }
-        });*/
-       /* if(webView.getProgress() < 30) {
-          //  Glide.with(this).load(webView.getProgress()).thumbnail(Glide.with(getContext()).load(R.drawable.loading)).into(Loading);
-            Glide.with(VistaWeb.this).load(R.drawable.loading).into(Loading);
 
-        }*/
-        /*mframeLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
-            public void onGlobalLayout() {
-                mframeLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                bottomMargin = mframeLayout.getHeight() + ((MainActivity)getActivity()).botones.getHeight();
-                Log.d("THEWEBVIEW", "MarginB:"+String.valueOf(bottomMargin));
+            public void onAnimationEnd(Animation animation) {
+                mFrameToolbar.setVisibility(View.GONE);
+                btnBack.setEnabled(false);
+                btnMoreInfo.setEnabled(false);
+                toolbarIsInAnimation = false;
+                progressBar.setAlpha(0f);
             }
-        });*/
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+        });
+        progressBar.startAnimation(animate);
+        view.startAnimation(animate);
+
+        //Animation Webview
+        final int topMarginEnd = 0;//
+        final int topMarginStart = topMarginWebview; //
+        Animation mAnimation = new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) webView.getLayoutParams();
+                params.topMargin = topMarginStart + (int) ((topMarginEnd - topMarginStart) * interpolatedTime);
+                webView.setLayoutParams(params);
+            }
+        };
+
+        mAnimation.setDuration(450); // in ms
+        webView.startAnimation(mAnimation);
+    }
+
+    /**
+     * Animación para mostrar la barrar
+     * @param view       Vista a animar.
+     */
+    //
+    public void slideDown(View view){
+
+        //Animation Toolbar
+        mFrameToolbar.setVisibility(View.VISIBLE);
+        TranslateAnimation animate = new TranslateAnimation(
+                0,                 // fromXDelta
+                0,                 // toXDelta
+                -view.getHeight(),                 // fromYDelta
+                0); // toYDelta
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        animate.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                toolbarIsInAnimation = false;
+                progressBar.setAlpha(1f);
+                btnBack.setEnabled(true);
+                btnMoreInfo.setEnabled(true);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        progressBar.startAnimation(animate);
+        view.startAnimation(animate);
+
+
+
+
+
+        //Animation WebView
+        final int topMarginStart = 0;// your start value
+        final int topMarginEnd = topMarginWebview; // where to animate to
+        Animation mAnimation = new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) webView.getLayoutParams();
+                params.topMargin = topMarginStart + (int) ((topMarginEnd - topMarginStart) * interpolatedTime);
+                webView.setLayoutParams(params);
+            }
+        };
+        mAnimation.setDuration(500); // in ms
+        webView.startAnimation(mAnimation);
+    }
+}

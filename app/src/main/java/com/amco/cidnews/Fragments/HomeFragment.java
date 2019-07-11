@@ -785,7 +785,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         swipNoNews.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                Log.d(TAG, "Setup UI -- cardviewtest1 onTouch: ");
+                Log.d(TAG, "configUIListeners -- swipNoNews --  onTouch: ");
                 isSwiping = true;
                 v.getParent().requestDisallowInterceptTouchEvent(true);
                 switch (event.getAction()) {
@@ -2101,7 +2101,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     ///////////////////////////////////
     /// MARK: Todo:Checar aqui para hacer un requestSpecific y showMenu despues
     public void eventsActionUpCardNoNews(MotionEvent ev,final CardView targetCard) {
-        Log.e(TAG, "eventsActionUp  -- ACTION UP! ");
+        Log.e(TAG, "eventsActionUpCardNoNews  -- ACTION UP! ");
 
         diffPosY = 0;
         diffPosX = 0;
@@ -2113,7 +2113,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         ObjectAnimator moveX = ObjectAnimator.ofFloat(swipNoNews,"translationX",x_cord);
 
         if (Likes == 0) {
-            Log.e(TAG, "eventsActionUp  -- Nothing");
+            Log.e(TAG, "eventsActionUpCardNoNews  -- Nothing");
             targetCard.setX(setAxisXCardView);
             targetCard.setY(setAxisYCardView);
             targetCard.setRotation(0);
@@ -2121,7 +2121,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
 
         } else if (Likes == 1) {
-            Log.e(TAG, "eventsActionUp  -- UNLIKE");
+            Log.e(TAG, "eventsActionUpCardNoNews  -- UNLIKE");
             moveX = ObjectAnimator.ofFloat(swipNoNews, "translationX", x_cord - 1000);
             moveX.setDuration(300);
             moveX.start();
@@ -2135,10 +2135,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             if((MainActivity) getActivity() != null)
                 ((MainActivity) getActivity()).specificRecursive(menuSelectedIndex);
             //showNewsMenuSlide(menuSelectedIndex);
-            Log.e(TAG, "eventsActionUp  -- UNLIKE FINISH");
+            Log.e(TAG, "eventsActionUpCardNoNews  -- UNLIKE FINISH");
 
         } else if (Likes == 2) {
-            Log.e(TAG, "eventsActionUp  -- LIKED");
+            Log.e(TAG, "eventsActionUpCardNoNews  -- LIKED");
             moveX = ObjectAnimator.ofFloat(swipNoNews, "translationX", x_cord + 1000);
             moveX.setDuration(300);
             moveX.start();
@@ -2153,7 +2153,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             if((MainActivity) getActivity() != null)
                 ((MainActivity) getActivity()).specificRecursive(menuSelectedIndex);
             //showNewsMenuSlide(menuSelectedIndex);
-            Log.e(TAG, "eventsActionUp  -- LIKED FINISH");
+            Log.e(TAG, "eventsActionUpCardNoNews  -- LIKED FINISH");
 
         }
         if (Likes != 0) {
