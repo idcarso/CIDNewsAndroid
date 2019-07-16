@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 28
@@ -20,6 +19,8 @@ android {
         }
     }
 }
+
+apply plugin: 'com.google.gms.google-services'  // Google Play services Gradle plugin
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -52,7 +53,7 @@ dependencies {
     implementation 'com.facebook.android:facebook-share:4.40.0'
 
 
-    implementation 'com.google.firebase:firebase-core:17.0.0'
-    implementation 'com.google.firebase:firebase-messaging:19.0.0'
+    implementation 'com.google.firebase:firebase-core:17.0.1'
+    implementation 'com.google.firebase:firebase-messaging:19.0.1'
 
 }

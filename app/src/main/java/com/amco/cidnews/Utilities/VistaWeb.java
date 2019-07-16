@@ -95,6 +95,7 @@ public class VistaWeb extends Fragment {
     boolean flagSave = false;
     boolean flagDeleted = false;
     boolean toolbarIsInAnimation = false;
+    boolean urlLoaded = false;
 
     @Nullable
     @Override
@@ -194,6 +195,7 @@ public class VistaWeb extends Fragment {
                 Log.v(TAG,"setupUI -- webView.setWebViewClient, onPageFinished");
                 progressBar.setVisibility(View.GONE);
                 progressBar.setAlpha(0f);
+                urlLoaded = true;
                 X = view.getContentHeight();
             }
         });
@@ -269,6 +271,7 @@ public class VistaWeb extends Fragment {
                 {
                     case 0 :
                         progressBar.setAlpha(1f);
+                        urlLoaded = false;
                         webView.reload();
                         break;
                     case 1:
@@ -360,6 +363,7 @@ public class VistaWeb extends Fragment {
                 btnMoreInfo.setEnabled(false);
                 toolbarIsInAnimation = false;
                 progressBar.setAlpha(0f);
+
             }
 
             @Override
@@ -410,9 +414,14 @@ public class VistaWeb extends Fragment {
             @Override
             public void onAnimationEnd(Animation animation) {
                 toolbarIsInAnimation = false;
-                progressBar.setAlpha(1f);
                 btnBack.setEnabled(true);
                 btnMoreInfo.setEnabled(true);
+                if(!urlLoaded)
+                    progressBar.setAlpha(1f);
+                else
+                    progressBar.setAlpha(0f);
+
+
             }
 
             @Override
@@ -422,8 +431,6 @@ public class VistaWeb extends Fragment {
         });
         progressBar.startAnimation(animate);
         view.startAnimation(animate);
-
-
 
 
 

@@ -9,7 +9,10 @@ import android.database.DataSetObserver;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -177,17 +180,20 @@ public class FavFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (btnFABeliminar.isShown()){
-                    showFilterBar();
-                    consultarNoticiasFavoritas("%", 0, 1);
-                }else{
-                    if (!tx.getText().toString().equalsIgnoreCase("FAVORITES")){
-                        consultarNoticiasFavoritas("%", 0, 1);
-                        flagMenuSaved = false;
+
+                    if (flagMenuSaved!= null) {
+                        if (flagMenuSaved) {
+                            Log.e(TAG, "onCreateView: " + String.valueOf(categorySelectedForSave));
+                            showFilterBar();
+                            consultarNoticiasFavoritas(categorySelectedForSave, 0, 1);  /// bandera2=1 puede ver la noticia
+                        }
                     }else {
-                        if((MainActivity) getActivity() != null)
-                            ((MainActivity) getActivity()).imgBtnCross.performClick();
-                            //((MainActivity) getActivity()).botones.getMenu().findItem(R.id.home_nav).setChecked(true);
+                        showFilterBar();
+                        consultarNoticiasFavoritas("%", 0, 1);
                     }
+                }else{
+                    if((MainActivity) getActivity() != null)
+                        ((MainActivity) getActivity()).imgBtnCross.performClick();
                 }
             }
         });
@@ -199,7 +205,6 @@ public class FavFragment extends Fragment {
                 if((MainActivity) getActivity() != null)
                     ((MainActivity) getActivity()).imgBtnCross.performClick();
                     //((MainActivity) getActivity()).botones.getMenu().findItem(R.id.home_nav).setChecked(true);
-
             }
         });
 
@@ -323,22 +328,15 @@ public class FavFragment extends Fragment {
                // eliminarTodos("all");
             }
         }
-
-
         animationFABDeleting();
-
     }
 
 
     public void animationFABDeleting(){
-
-
-
         //botoneliminar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.verde)));
         //btnFABeliminar.setAnimation(fadeIn);
        // fadeIn.start();
         btn_atras.performClick();
-
     }
 
     ///////////////////////////////////
@@ -505,8 +503,6 @@ public class FavFragment extends Fragment {
         });
 
 
-
-
         cursor.close();
         db.close();
         conn.close();
@@ -564,6 +560,7 @@ public class FavFragment extends Fragment {
         dogsList.add("FINANCE");
         dogsList.add("ENERGY");
         dogsList.add("TELECOM");
+        dogsList.add("RESET ALL");
 
         popUpContents = new String[dogsList.size()];
         dogsList.toArray(popUpContents);
@@ -604,20 +601,15 @@ public class FavFragment extends Fragment {
                 animation1.setAnimationListener(new Animation.AnimationListener() {
                     @Override
                     public void onAnimationStart(Animation animation) {
-
                     }
 
                     @Override
                     public void onAnimationEnd(Animation animation) {
-
                         popupWindowDogs.dismiss();
-
-
                     }
 
                     @Override
                     public void onAnimationRepeat(Animation animation) {
-
                     }
                 });
                 view.setAnimation(animation1);
@@ -633,7 +625,12 @@ public class FavFragment extends Fragment {
                     case 6 : option="banca";   consultarNoticiasFavoritas(option,0,1); break;
                     case 7 : option="energía";   consultarNoticiasFavoritas(option,0,1); break;
                     case 8 : option="telecom";   consultarNoticiasFavoritas(option,0,1); break;
-
+                    case 9 :
+                        if (!tx.getText().toString().equalsIgnoreCase("FAVORITES")){
+                            consultarNoticiasFavoritas("%", 0, 1);
+                            flagMenuSaved = false;
+                        }
+                        break;
                 }
 
                 categorySelectedForSave = option;
@@ -720,15 +717,26 @@ public class FavFragment extends Fragment {
                         color = "#235784";
                         break;
 
+                    case "RESET ALL":
+                        id = "menu_sup_resetall";
+                        size = porcentaje;
+                        color = "#235784";
+                        break;
+
                 }
 
-                listItem.setText(item);
+                if (id.contentEquals("menu_sup_resetall")){
+                    SpannableString spannablecontent = new SpannableString(getResources().getString(R.string.menu_reset_all));
+                    spannablecontent.setSpan(new StyleSpan(Typeface.BOLD), 0,spannablecontent.length(), 0);
+                    listItem.setText(spannablecontent);
+                }else
+                    listItem.setText(item);
+
                 listItem.setTag(id);
                 listItem.setTextSize(size);
                 listItem.setPadding(Math.round(15*scale), Math.round(15*scale), Math.round(15*scale), Math.round(15*scale));
                 listItem.setTextColor(Color.WHITE);
                 listItem.setBackgroundColor(Color.parseColor(color));
-
 
                 return listItem;
             }

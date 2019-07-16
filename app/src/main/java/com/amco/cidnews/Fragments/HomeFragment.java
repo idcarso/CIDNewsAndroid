@@ -89,6 +89,7 @@ import com.facebook.share.model.ShareLinkContent;
 import com.facebook.share.widget.ShareDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestHandle;
@@ -128,6 +129,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
     static private String TAG = "HomeFragment";
     static private String TAGTIME = "TIMEHomeFragment";
+
+    // [START declare_analytics]
+    private FirebaseAnalytics mFirebaseAnalytics;
+    // [END declare_analytics]
 
     //////////////////////////////// MAIN VAR
     static public SwipeStack sp;
@@ -177,6 +182,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     RequestHandle requestTopHeadlines;
     //////////////////////////////// STRINGS
     String cateNews[] = {"HEALTH", "CONSTRUCTION", "RETAIL", "EDUCATION", "ENTERTAINMENT", "ENVIRONMENT", "FINANCE", "ENERGY", "TELECOM"};
+    //
     final String labelsNews[] = {"salud", "construcción", "retail", "educación", "entretenimiento", "ambiente", "banca", "energía", "telecom"};
     String categoriesNews[] = {"SALUD", "CONSTRUCCIÓN", "RETAIL", "EDUCACIÓN", "ENTRETENIMIENTO", "AMBIENTE", "BANCA", "ENERGÍA", "TELECOM"};
     String urlHeadlines[] = {
@@ -420,6 +426,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         super.onCreate(savedInstanceState);
         Log.e(TAGTIME, "onCreate:" + String.valueOf(getRunningTime()));
         ((MainActivity) getActivity()).setActivityListener(HomeFragment.this);
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
 
 
 
@@ -761,6 +768,18 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                     }, 300);
                 }
 
+
+
+                String typeNews = cateNews[position];
+                Log.d(TAG,"setupMenu -- drawerList.setOnItemClickListener -- cateNews["+position
+                        +"]: "+typeNews);
+
+                // [START event]
+                Bundle bundle = new Bundle();
+                bundle.putString(FirebaseAnalytics.Param.ITEM_CATEGORY, typeNews);
+                mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST, bundle);
+                // [END event]
+
                 drawerLayout.closeDrawers();
             }
         });
@@ -1039,8 +1058,9 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 setAxisYCardView = yaux;
                 Log.d(TAG, "Setup UI -- cardviewContainer.TreeObserver -- setAxisXCardView" + String.valueOf(setAxisXCardView) + ", Y:" + String.valueOf(setAxisYCardView) + ", TopOffset:" + String.valueOf(topOffset));
                 layoutParamsNews = new RelativeLayout.LayoutParams(cardviewContainer.getWidth(), cardviewContainer.getHeight() * 8);
-                ((MainActivity)getActivity()).layoutParamsNewsBackUp = layoutParamsNews;
-                // cardviewtest1.setLayoutParams(layoutParamsNews);
+                if(((MainActivity)getActivity()) != null)
+                    ((MainActivity)getActivity()).layoutParamsNewsBackUp = layoutParamsNews;
+                    // cardviewtest1.setLayoutParams(layoutParamsNews);
 
                 if(web!=null) {
                     RelativeLayout.LayoutParams layoutParams3 = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, web.getHeight());
