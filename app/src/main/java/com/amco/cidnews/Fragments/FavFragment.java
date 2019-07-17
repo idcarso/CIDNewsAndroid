@@ -9,7 +9,10 @@ import android.database.DataSetObserver;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -49,14 +52,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 
-/*
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-* */
-
 public class FavFragment extends Fragment {
 
     static private String TAG = "FavFragment";
@@ -64,7 +59,7 @@ public class FavFragment extends Fragment {
 
     //Views
     TextView tx;
-    PopupWindow popupWindowDogs;
+    PopupWindow popupWindowDogs,popupWindowDogsHelper;
     ImageButton btn_atras,btn_editar,btn_menu;
     FrameLayout fr;
     Button frnonoticia;
@@ -80,15 +75,15 @@ public class FavFragment extends Fragment {
     //Lists
     ArrayList<Noticia> ListaNoticias;
     LinkedList<String> ListaAux;
-    static FloatingActionButton botoneliminar;
+    FloatingActionButton btnFABeliminar;
 
 
     //Animation
-    Animation fadeIn;
+   // Animation fadeIn;
 
     //Vars
     String popUpContents[],urlNoticia,categorySelected,categorySelectedForSave;
-    Boolean flagMenuSaved;
+    Boolean flagMenuSaved = false;
     int indexForRemove,dps,pxX,pxY;
     float scale=0;
 
@@ -104,7 +99,7 @@ public class FavFragment extends Fragment {
         if (categorySelected != null) {
             outState.putString("categorySelectedForSaveKey", categorySelectedForSave);
         }
-        if (flagMenuSaved != null) {
+        if (flagMenuSaved) {
             outState.putBoolean("flagMenuSavedKey", flagMenuSaved);
         }
     }
@@ -134,11 +129,10 @@ public class FavFragment extends Fragment {
         configUI(view);
         configUIListeners();
 
-        if (flagMenuSaved!= null) {
-            if (flagMenuSaved) {
+        if (flagMenuSaved) {
                 Log.e(TAG, "onCreateView: " + String.valueOf(categorySelectedForSave));
                 consultarNoticiasFavoritas(categorySelectedForSave, 0, 1);  /// bandera2=1 puede ver la noticia
-            }
+
         }else{
             consultarNoticiasFavoritas("%", 0, 1);  /// bandera2=1 puede ver la noticia
         }
@@ -154,7 +148,7 @@ public class FavFragment extends Fragment {
         btn_atras = mView.findViewById(R.id.btn_atras_fav);
         frnonoticia = mView.findViewById(R.id.aviso_noticia);
         tx = mView.findViewById(R.id.title_menu_fav);
-        botoneliminar = mView.findViewById(R.id.botonfab);
+        btnFABeliminar = mView.findViewById(R.id.botonfab);
         btn_menu = mView.findViewById(R.id.boton_superior_fav);
         setupUI();
     }
@@ -169,13 +163,13 @@ public class FavFragment extends Fragment {
         pxY = size.y;
         scale =  getResources().getDisplayMetrics().density;
 
-        botoneliminar.hide();
+        btnFABeliminar.hide();
         frnonoticia.setVisibility(View.INVISIBLE);
         frnonoticia.setEnabled(true);
-        fadeIn = new AlphaAnimation(0, 1);
-        fadeIn.setInterpolator(new DecelerateInterpolator());
-        fadeIn.setDuration(1000);
-        botoneliminar.setTag(botoneliminar.getVisibility());
+        //fadeIn = new AlphaAnimation(0, 1);
+        //fadeIn.setInterpolator(new DecelerateInterpolator());
+        //fadeIn.setDuration(1000);
+        //botoneliminar.setTag(botoneliminar.getVisibility());
     }
 
     ///////////////////////////////////
@@ -184,18 +178,20 @@ public class FavFragment extends Fragment {
         btn_atras.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (botoneliminar.isShown()){
-                    showFilterBar();
-                    consultarNoticiasFavoritas("%", 0, 1);
-                }else{
-                    if (!tx.getText().toString().equalsIgnoreCase("FAVORITES")){
-                        consultarNoticiasFavoritas("%", 0, 1);
-                        flagMenuSaved = false;
+                if (btnFABeliminar.isShown()){
+
+                    if (flagMenuSaved) {
+                        Log.e(TAG, "onCreateView: " + String.valueOf(categorySelectedForSave));
+                        showFilterBar();
+                        consultarNoticiasFavoritas(categorySelectedForSave, 0, 1);  /// bandera2=1 puede ver la noticia
+
                     }else {
-                        if((MainActivity) getActivity() != null)
-                            ((MainActivity) getActivity()).imgBtnCross.performClick();
-                            //((MainActivity) getActivity()).botones.getMenu().findItem(R.id.home_nav).setChecked(true);
+                        showFilterBar();
+                        consultarNoticiasFavoritas("%", 0, 1);
                     }
+                }else{
+                    if((MainActivity) getActivity() != null)
+                        ((MainActivity) getActivity()).imgBtnCross.performClick();
                 }
             }
         });
@@ -207,12 +203,11 @@ public class FavFragment extends Fragment {
                 if((MainActivity) getActivity() != null)
                     ((MainActivity) getActivity()).imgBtnCross.performClick();
                     //((MainActivity) getActivity()).botones.getMenu().findItem(R.id.home_nav).setChecked(true);
-
             }
         });
 
 
-        botoneliminar.setOnClickListener(new View.OnClickListener() {
+        btnFABeliminar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -223,8 +218,6 @@ public class FavFragment extends Fragment {
                     Log.d("FAB",aux);
                 }
                 removeNews();
-
-
             }
         });
     }
@@ -232,7 +225,7 @@ public class FavFragment extends Fragment {
     ///////////////////////////////////
     /// MARK:
     public void showFilterBar(){
-        botoneliminar.hide();
+        btnFABeliminar.hide();
         btn_menu.setVisibility(View.VISIBLE);
         btn_menu.setEnabled(true);
         fr.setBackgroundColor(getResources().getColor(R.color.toolbar_fav));
@@ -272,9 +265,6 @@ public class FavFragment extends Fragment {
     public void showRemoveBar(){
         Log.e(TAG, "showRemoveBar: " );
         tx.setText(R.string.remove_title_fav);
-        botoneliminar.setImageResource(R.drawable.ic_trash_white);
-        botoneliminar.setBackgroundColor(getResources().getColor(R.color.red));
-        botoneliminar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.red)));
         fr.setBackgroundColor(getContext().getResources().getColor(R.color.red));
 
 
@@ -288,7 +278,7 @@ public class FavFragment extends Fragment {
         Log.e(TAG, "DATETIME: "+String.valueOf(DateFormat.getInstance().format(startTime)));
         //long halfAnHourLater = startTime + 1800000;
         Log.e(TAG, "WAIT UNTIL: "+String.valueOf(DateFormat.getInstance().format(startTime + 1800000)));
-        return startTime + 3600000*24*2; //30Min  1 Min: 60'000
+        return startTime + 3600000*24*3; //30Min  1 Min: 60'000 //1 Hr*24Hrs*Dias
     }
 
     ///////////////////////////////////
@@ -336,50 +326,15 @@ public class FavFragment extends Fragment {
                // eliminarTodos("all");
             }
         }
-
-
         animationFABDeleting();
-
-
-
     }
 
 
     public void animationFABDeleting(){
-
-
-        botoneliminar.setImageResource(R.drawable.ic_check_white);
-        botoneliminar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.verde)));
-        botoneliminar.setAnimation(fadeIn);
-        fadeIn.start();
-        fadeIn.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-                btn_atras.performClick();
-
-                        /*
-                        try {
-                            ListaAux=  nA.getSelectedCountry();
-                        }catch (Exception e){
-                            String aux= String.valueOf(e);
-                            Log.d("FAB",aux);
-                        }
-                        removeNews();
-
-                        */
-                //if(ListaAux.size()==0)
-                // botoneliminar.setAlpha(0.f);
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-            }
-        });
+        //botoneliminar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.verde)));
+        //btnFABeliminar.setAnimation(fadeIn);
+       // fadeIn.start();
+        btn_atras.performClick();
     }
 
     ///////////////////////////////////
@@ -484,7 +439,15 @@ public class FavFragment extends Fragment {
             ((MainActivity)getActivity()).imgBtnCross.setVisibility(View.INVISIBLE);
             ((MainActivity)getActivity()).imgBtnCross.setEnabled(false);
             frnonoticia.setVisibility(View.INVISIBLE);
-            while (cursor.moveToNext()) {
+
+
+
+            if (cursor.moveToLast()){
+                noticia = new Noticia(cursor.getString(0),cursor.getString(1),cursor.getString(2),"",cursor.getString(3),cursor.getString(4),cursor.getLong(5));
+                ListaNoticias.add(noticia);
+            }
+
+            while (cursor.moveToPrevious()) {
                 noticia = new Noticia(cursor.getString(0),cursor.getString(1),cursor.getString(2),"",cursor.getString(3),cursor.getString(4),cursor.getLong(5));
                 ListaNoticias.add(noticia);
             }
@@ -506,10 +469,10 @@ public class FavFragment extends Fragment {
             public void onChanged() {
                 super.onChanged();
 
-                Log.e(TAG , "nA onChanged: 123");
+                Log.e(TAG , "nA onChanged");
 
-                if(!botoneliminar.isShown()){
-                    botoneliminar.show();
+                if(!btnFABeliminar.isShown()){
+                    btnFABeliminar.show();
 
 
                     if (!tx.getText().toString().equalsIgnoreCase("FAVORITES")) {
@@ -536,8 +499,6 @@ public class FavFragment extends Fragment {
                 Log.e(TAG , "listaView -- onItemSelected: NONE" );
             }
         });
-
-
 
 
         cursor.close();
@@ -597,18 +558,28 @@ public class FavFragment extends Fragment {
         dogsList.add("FINANCE");
         dogsList.add("ENERGY");
         dogsList.add("TELECOM");
+        dogsList.add("RESET ALL");
 
         popUpContents = new String[dogsList.size()];
         dogsList.toArray(popUpContents);
         popupWindowDogs = popupWindowDogs();
 
-         btn_menu = (ImageButton) view.findViewById(R.id.boton_superior_fav);
+        dogsList.remove(dogsList.size()-1);
+        popUpContents = new String[dogsList.size()];
+        dogsList.toArray(popUpContents);
+        popupWindowDogsHelper = popupWindowDogs();
 
+
+        btn_menu = (ImageButton) view.findViewById(R.id.boton_superior_fav);
 
         btn_menu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                popupWindowDogs.showAsDropDown(view, -5, Math.round(0), 1);
+                if(flagMenuSaved) {
+                    popupWindowDogs.showAsDropDown(view, -5, Math.round(0), 1);
+                }else{
+                    popupWindowDogsHelper.showAsDropDown(view, -5, Math.round(0), 1);
+                }
             }
         });
     }
@@ -633,25 +604,22 @@ public class FavFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> arg0, View view, int position, long arg3) {
                 String option="";
+                flagMenuSaved = true;
+
                 Animation animation1 = new AlphaAnimation(0.3f,1);
                 animation1.setDuration(600);
                 animation1.setAnimationListener(new Animation.AnimationListener() {
                     @Override
                     public void onAnimationStart(Animation animation) {
-
                     }
 
                     @Override
                     public void onAnimationEnd(Animation animation) {
-
                         popupWindowDogs.dismiss();
-
-
                     }
 
                     @Override
                     public void onAnimationRepeat(Animation animation) {
-
                     }
                 });
                 view.setAnimation(animation1);
@@ -667,11 +635,15 @@ public class FavFragment extends Fragment {
                     case 6 : option="banca";   consultarNoticiasFavoritas(option,0,1); break;
                     case 7 : option="energía";   consultarNoticiasFavoritas(option,0,1); break;
                     case 8 : option="telecom";   consultarNoticiasFavoritas(option,0,1); break;
-
+                    case 9 :
+                        if (!tx.getText().toString().equalsIgnoreCase("FAVORITES")){
+                            consultarNoticiasFavoritas("%", 0, 1);
+                            flagMenuSaved = false;
+                        }
+                        break;
                 }
 
                 categorySelectedForSave = option;
-                flagMenuSaved = true;
 
                 popupWindow.dismiss();
             }
@@ -754,15 +726,26 @@ public class FavFragment extends Fragment {
                         color = "#235784";
                         break;
 
+                    case "RESET ALL":
+                        id = "menu_sup_resetall";
+                        size = porcentaje;
+                        color = "#235784";
+                        break;
+
                 }
 
-                listItem.setText(item);
+                if (id.contentEquals("menu_sup_resetall")){
+                    SpannableString spannablecontent = new SpannableString(getResources().getString(R.string.menu_reset_all));
+                    spannablecontent.setSpan(new StyleSpan(Typeface.BOLD), 0,spannablecontent.length(), 0);
+                    listItem.setText(spannablecontent);
+                }else
+                    listItem.setText(item);
+
                 listItem.setTag(id);
                 listItem.setTextSize(size);
                 listItem.setPadding(Math.round(15*scale), Math.round(15*scale), Math.round(15*scale), Math.round(15*scale));
                 listItem.setTextColor(Color.WHITE);
                 listItem.setBackgroundColor(Color.parseColor(color));
-
 
                 return listItem;
             }

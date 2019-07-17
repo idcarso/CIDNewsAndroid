@@ -7,7 +7,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Typeface;
+import android.nfc.Tag;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -34,6 +38,7 @@ import com.amco.cidnews.Activities.MainActivity;
 import com.amco.cidnews.Adapters.NoticiasAdapterRecover;
 import com.amco.cidnews.R;
 import com.amco.cidnews.Utilities.ConexionSQLiteHelper;
+import com.amco.cidnews.Utilities.ListenRecoverFAB;
 import com.amco.cidnews.Utilities.Noticia;
 import com.amco.cidnews.Utilities.Utilidades;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -52,8 +57,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 * */
 
-public class RecoverFragment extends Fragment {
-
+public class RecoverFragment extends Fragment implements ListenRecoverFAB {
+    public static final String TAG = "RecoverFragment";
 
     //Views
     ImageButton btnGoingHome, btnFilter;
@@ -62,7 +67,7 @@ public class RecoverFragment extends Fragment {
     FrameLayout frameToolbar;
     private ListView listRecoverView;
     FloatingActionButton bottonRecover;
-    PopupWindow popupWindowDogs;
+    PopupWindow popupWindowDogs,popupWindowDogsHelper;
 
     //Adapter
     NoticiasAdapterRecover nA;
@@ -81,14 +86,10 @@ public class RecoverFragment extends Fragment {
     float scale=0;
     int dps,pxX,pxY;
 
-
     //Animation
     Animation fadeIn;
 
-
-
     ConexionSQLiteHelper conn;
-
 
 
 
@@ -99,9 +100,6 @@ public class RecoverFragment extends Fragment {
         View view = inflater.inflate(R.layout.frame_recover, container, false);
         configUI(view);
         configUIListeners();
-
-
-
         consultarNoticiasFavoritas("%",0);  /// bandera2=1 puede ver la noticia
         crearMenu(view);
         return view;
@@ -130,6 +128,7 @@ public class RecoverFragment extends Fragment {
         fadeIn = new AlphaAnimation(0, 1);
         fadeIn.setInterpolator(new DecelerateInterpolator());
         fadeIn.setDuration(1000);
+        bottonRecover.hide();
 
     }
 
@@ -171,7 +170,7 @@ public class RecoverFragment extends Fragment {
                     public void onAnimationEnd(Animation animation) {
                         bottonRecover.setImageResource(R.drawable.ic_recover_white);
                         bottonRecover.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.undoSnackbar)));
-                        bottonRecover.show();
+                        //bottonRecover.show();
                         tx.setText("REMOVED");
                     }
                     @Override
@@ -185,21 +184,14 @@ public class RecoverFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Log.d("RecoverFragment", "onClick: btnFilter");
-                //   ((MainActivity)getActivity()).botones.setSelectedItemId(R.id.fav_nav);
             }
         });
 
         btnGoingHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!tx.getText().toString().equalsIgnoreCase("REMOVED")){
-                    consultarNoticiasFavoritas("%", 0);
-                    tx.setText("REMOVED");
-                }else {
                     if((MainActivity) getActivity() != null)
                         ((MainActivity) getActivity()).imgBtnCross.performClick();
-                        //((MainActivity) getActivity()).menuNavigation.getMenu().findItem(R.id.home_nav).setChecked(true);
-                }
             }
         });
 
@@ -263,17 +255,29 @@ public class RecoverFragment extends Fragment {
         dogsList.add("FINANCE");
         dogsList.add("ENERGY");
         dogsList.add("TELECOM");
+        dogsList.add("RESET ALL");
+
+
 
         popUpContents = new String[dogsList.size()];
         dogsList.toArray(popUpContents);
         popupWindowDogs = popupWindowDogs();
+
+
+        dogsList.remove(dogsList.size()-1);
+        popUpContents = new String[dogsList.size()];
+        dogsList.toArray(popUpContents);
+        popupWindowDogsHelper = popupWindowDogs();
 
         btn_menu = (ImageButton) view.findViewById(R.id.btn_filter);
         btn_menu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // popupWindowDogs.setAnimationStyle(R.style.popupAnim);   //*********************************// IMPORTNTE
-                popupWindowDogs.showAsDropDown(view, -5, Math.round(0), 1);
+                if (tx.getText().toString().equalsIgnoreCase("REMOVED"))
+                    popupWindowDogsHelper.showAsDropDown(view, -5, Math.round(0), 1);
+                else
+                    popupWindowDogs.showAsDropDown(view, -5, Math.round(0), 1);
             }
         });
     }
@@ -329,7 +333,12 @@ public class RecoverFragment extends Fragment {
                     case 6 : option="banca";   consultarNoticiasFavoritas(option,0); break;
                     case 7 : option="energía";   consultarNoticiasFavoritas(option,0); break;
                     case 8 : option="telecom";   consultarNoticiasFavoritas(option,0); break;
-
+                    case 9 :
+                        if (!tx.getText().toString().equalsIgnoreCase("REMOVED")){
+                            consultarNoticiasFavoritas("%", 0);
+                            tx.setText("REMOVED");
+                        }
+                        break;
                 }
                 popupWindow.dismiss();
 
@@ -362,8 +371,6 @@ public class RecoverFragment extends Fragment {
 
                 int espacio1=(int) Math.round(((pxY - 72*scale)/12));
                 int porcentaje = (int) Math.round(((espacio1)/3)/getResources().getDisplayMetrics().scaledDensity);
-
-
 
                 switch (item){
                     case "HEALTH":
@@ -416,9 +423,20 @@ public class RecoverFragment extends Fragment {
                         color = "#235784";
                         break;
 
+                    case "RESET ALL":
+                        id = "menu_sup_resetall";
+                        size = porcentaje;
+                        color = "#235784";
+                        break;
                 }
 
-                listItem.setText(item);
+                if (id.contentEquals("menu_sup_resetall")){
+                    SpannableString spannablecontent = new SpannableString(getResources().getString(R.string.menu_reset_all));
+                    spannablecontent.setSpan(new StyleSpan(Typeface.BOLD), 0,spannablecontent.length(), 0);
+                    listItem.setText(spannablecontent);
+                }else
+                    listItem.setText(item);
+
                 listItem.setTag(id);
                 listItem.setTextSize(size);
                 listItem.setPadding(Math.round(15*scale), Math.round(15*scale), Math.round(15*scale), Math.round(15*scale));
@@ -509,14 +527,65 @@ public class RecoverFragment extends Fragment {
             ListaNoticias.clear();
             ListaNoticias.addAll(linkedHashSet);
         }
-        nA = new NoticiasAdapterRecover(getActivity(),ListaNoticias,bandera);
+        nA = new NoticiasAdapterRecover(this,getActivity(),ListaNoticias,bandera);
         listRecoverView.setAdapter(nA);
         cursor.close();
         db.close(); /////***********DATABASE NEW CLOSE 13SEP
         conn.close();   ////////*****
     }
 
-    public void registrarNoticiasRecuperarTodo(ArrayList<Noticia> mListNews) {
+
+    public String getOptionaltitle(String cat){
+        String category;
+        switch(cat){
+            case "salud":
+                category = "HEALTH";
+                break;
+            case "construcción":
+                category = "CONSTRUCTION";
+                break;
+            case "retail":
+                category = "RETAIL";
+                break;
+            case "educación":
+                category = "EDUCATION";
+                break;
+            case "entretenimiento":
+                category = "ENTERTAINMENT";
+                break;
+            case "ambiente":
+                category = "ENVIRONMENT";
+                break;
+            case "banca":
+                category = "FINANCE";
+                break;
+            case "energía":
+                category = "ENERGY";
+                break;
+            case "telecom":
+                category = "TELECOM";
+                break;
+            default:
+                category = "REMOVED";
+                break;
+        }
+        return category;
+    }
+
+    @Override
+    public void showingRecoverFAB(boolean shouldShow) {
+        Log.d(TAG,"showingRecoverFAB -- shouldShow:"+shouldShow);
+        if(shouldShow)
+            bottonRecover.show();
+        else
+            bottonRecover.hide();
+     }
+}
+
+
+//*********************************** TRASH *******************************************************/
+/*
+*   public void registrarNoticiasRecuperarTodo(ArrayList<Noticia> mListNews) {
         ConexionSQLiteHelper conn = new ConexionSQLiteHelper(getActivity(), "db_noticias", null, 1);
         SQLiteDatabase db = conn.getWritableDatabase();
         Cursor cursor;
@@ -587,41 +656,4 @@ public class RecoverFragment extends Fragment {
         }
         return cat;
     }
-    public String getOptionaltitle(String cat){
-        String category;
-        switch(cat){
-            case "salud":
-                category = "HEALTH";
-                break;
-            case "construcción":
-                category = "CONSTRUCTION";
-                break;
-            case "retail":
-                category = "RETAIL";
-                break;
-            case "educación":
-                category = "EDUCATION";
-                break;
-            case "entretenimiento":
-                category = "ENTERTAINMENT";
-                break;
-            case "ambiente":
-                category = "ENVIRONMENT";
-                break;
-            case "banca":
-                category = "FINANCE";
-                break;
-            case "energía":
-                category = "ENERGY";
-                break;
-            case "telecom":
-                category = "TELECOM";
-                break;
-            default:
-                category = "FAVORITES";
-                break;
-        }
-        return category;
-    }
-
-}
+* */

@@ -30,6 +30,8 @@
 
 
 
+
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/menu_navegation"
         android:layout_width="match_parent"
@@ -38,14 +40,29 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
         android:layout_gravity="top"
-        android:background="#00376f"
+        android:background="@color/menuprincipalbottom"
         app:itemIconTint="@drawable/icon_botton_nav"
         app:itemTextColor="@drawable/icon_botton_nav"
         app:menu="@menu/menu_navegation"
+        app:labelVisibilityMode="unlabeled"
+        />
+
+    <ImageView
+        android:id="@+id/scroll_menu_inferior"
+        android:layout_width="wrap_content"
+        android:layout_height="5dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:src="@android:color/white"
+        app:layout_widthPercent="25%"
+        android:elevation="10dp"
+        android:layout_alignTop="@+id/menu_navegation"
+        android:layout_marginStart="0dp"
+        android:layout_alignParentStart="true"
         />
 
 
-</androidx.percentlayout.widget.PercentRelativeLayout>
+    </androidx.percentlayout.widget.PercentRelativeLayout>
 
 
     <ImageButton

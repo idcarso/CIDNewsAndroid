@@ -23,8 +23,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
 import com.amco.cidnews.Fragments.FavFragment;
+import com.amco.cidnews.Fragments.RecoverFragment;
 import com.amco.cidnews.R;
 import com.amco.cidnews.Utilities.ConexionSQLiteHelper;
+import com.amco.cidnews.Utilities.ListenRecoverFAB;
 import com.amco.cidnews.Utilities.Noticia;
 import com.amco.cidnews.Utilities.Utilidades;
 import com.amco.cidnews.Utilities.VistaWeb;
@@ -50,35 +52,25 @@ import android.support.v4.app.FragmentActivity;
 * */
 
 public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
+    private ListenRecoverFAB mRecoverFAB;
     private ArrayList<Noticia> noticias;
-
+    private static final String TAG = "NoticiasAdapterRecover";
     //
     Context mContext;
     List<Noticia> linkedList;
     //
-    static  WebView webViewMain;
-    public boolean[] checkBoxStateRecover = null;
+    public boolean[] checkBoxStateRecover;
     private HashMap<Noticia, Boolean> checkedForCountry = new HashMap<>();
     private Activity activity;
     private Noticia noticia;
     private int bandera;
-    private int bandera2;
-    View ViewBoton;
-    RelativeLayout lista;
-    private ConexionSQLiteHelper conn;
-    Fragment fragment = new FavFragment();
-    String urlNoticia;
-    static WebView webView;
-    Fragment vistaWeb = new VistaWeb();
-    Bundle args = new Bundle();
-    ArrayList<Noticia> ListaNoticias;
-    ArrayList<Noticia> ListaNoticiasRespaldo;
-    ViewGroup inclusion;
+    private boolean flagShowFAB = false;
 
 
 
-    public NoticiasAdapterRecover(@NonNull Activity activity, ArrayList<Noticia> noticias, int bandera) {
+    public NoticiasAdapterRecover(ListenRecoverFAB mFAB,@NonNull Activity activity, ArrayList<Noticia> noticias, int bandera) {
         super(activity, 0, noticias);
+        this.mRecoverFAB = mFAB;
         this.activity = activity;
         this.noticias = noticias;
         this.linkedList = noticias;
@@ -101,7 +93,6 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
 
         final ViewHolder holder;
         final Noticia country = linkedList.get(position);
-
 
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(activity.LAYOUT_INFLATER_SERVICE);
         if (null == convertView) {
@@ -136,11 +127,6 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
             holder.btn.setVisibility(convertView.VISIBLE);
 
 
-
-
-
-
-
         final Noticia noticia = getItem(position);
         int drawableResourceId = activity.getResources().getIdentifier("ic_cidnews_avatar", "drawable", activity.getPackageName());
         if (noticia.getImagen().equalsIgnoreCase("null")   || !(noticia.getImagen().startsWith("https"))  ) {
@@ -168,9 +154,7 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
         holder.box.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
-                Log.d("NoticiasAdapterRecover", "onClick: holder.box: TRUE");
+                Log.d(TAG, "onClick: holder.box: TRUE");
                 if (((CheckBox) v).isChecked()) {
                     checkBoxStateRecover[position] = true;
                     ischecked(position, true);
@@ -180,6 +164,8 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
                     ischecked(position, false);
                     holder.btn.setVisibility(View.VISIBLE);
                 }
+
+
             }
         });
 
@@ -191,12 +177,12 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
             holder.btn.setVisibility(View.VISIBLE);
         }else{
             holder.btn.setVisibility(View.GONE);
-
         }
 
         holder.Lista.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
+                Log.d(TAG, "holder.Lista.onClick: TRUE");
                 if (!holder.box.isChecked()) {
                     holder.btn.setVisibility(View.VISIBLE);
                     holder.btn.setEnabled(true);
@@ -212,6 +198,27 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
                     holder.box.setChecked(false);
                     ischecked(position, false
                     );
+
+                }
+
+
+                //Verifica que no este seleccionado una noticia de la lista
+
+                flagShowFAB = false;
+                for (Map.Entry<Noticia, Boolean> pair : checkedForCountry.entrySet()) {
+                    if(pair.getValue()) {
+                        flagShowFAB = true;
+                        Log.d(TAG,"holder.Lista -- ListView has Value TRUE");
+                    }
+                }
+
+                if(flagShowFAB){
+                    //Show FAB
+                    mRecoverFAB.showingRecoverFAB(true);
+                }
+                else{
+                    //Hide FAB
+                    mRecoverFAB.showingRecoverFAB(false);
 
                 }
             }
@@ -257,8 +264,8 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
 
 
         holder.box.setTag(country);
-        Log.e("NoticiasAdapterRecover", "TIME LEFT(MILLIS):  ------>  "+String.valueOf(noticia.getTiempo() - System.currentTimeMillis()));
-        Log.e("NoticiasAdapterRecover", "getView:  ------>  "+DateFormat.getInstance().format(noticia.getTiempo()));
+        Log.e(TAG, "TIME LEFT(MILLIS):  ------>  "+String.valueOf(noticia.getTiempo() - System.currentTimeMillis()));
+        Log.e(TAG, "getView:  ------>  "+DateFormat.getInstance().format(noticia.getTiempo()));
         /////////////////////////////
         return convertView;
 
@@ -277,26 +284,7 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
     {
         checkedForCountry.put(this.linkedList.get(position), flag);
     }
-    public void eliminarTodos(String who)
-    {
-        String tipo = who;
-        conn = new ConexionSQLiteHelper(activity,"db_noticias",null,1);
-        SQLiteDatabase db = conn.getReadableDatabase();
-        if(tipo != "all")
-        {
-            String [] parametros = {who.toString()};
-            db.delete(Utilidades.TABLA_NOTICIA,Utilidades.URL+"=?",parametros);
-        }
-        else
-        {
-            db.delete(Utilidades.TABLA_NOTICIA,null,null);
-        }
-        ((FragmentActivity)activity).getSupportFragmentManager().beginTransaction().replace(R.id.contendor,fragment,null).addToBackStack(null).commit();
-        db.close();
 
-
-
-    }
     @Override
     public int getCount() {
         return noticias.size();
@@ -330,3 +318,27 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
 
 
 }
+
+
+//************************************* TRASH ****************************************************//
+
+
+/*
+    public void eliminarTodos(String who)
+    {
+        String tipo = who;
+        conn = new ConexionSQLiteHelper(activity,"db_noticias",null,1);
+        SQLiteDatabase db = conn.getReadableDatabase();
+        if(tipo != "all")
+        {
+            String [] parametros = {who.toString()};
+            db.delete(Utilidades.TABLA_NOTICIA,Utilidades.URL+"=?",parametros);
+        }
+        else
+        {
+            db.delete(Utilidades.TABLA_NOTICIA,null,null);
+        }
+        ((FragmentActivity)activity).getSupportFragmentManager().beginTransaction().replace(R.id.contendor,fragment,null).addToBackStack(null).commit();
+        db.close();
+    }
+* */

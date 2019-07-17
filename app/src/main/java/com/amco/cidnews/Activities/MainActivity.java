@@ -4,13 +4,13 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
@@ -19,8 +19,10 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.*;
 import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,13 +39,13 @@ import com.amco.cidnews.Fragments.HomeFragment;
 import com.amco.cidnews.Fragments.RecoverFragment;
 import com.amco.cidnews.Utilities.ListenFromActivity;
 import com.amco.cidnews.R;
-import com.amco.cidnews.Utilities.BottomNavigationViewHelper;
 import com.amco.cidnews.Utilities.ConexionSQLiteHelper;
 import com.amco.cidnews.Utilities.MyDialogFragment;
 import com.amco.cidnews.Utilities.Noticia;
 import com.amco.cidnews.Utilities.Utilidades;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestHandle;
@@ -61,14 +63,12 @@ import java.util.Date;
 
 import cz.msebera.android.httpclient.Header;
 
-/*
-* import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
-import android.support.v7.app.AppCompatActivity;
-* */
-
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+
+    // [START declare_analytics]
+    private FirebaseAnalytics mFirebaseAnalytics;
+    // [END declare_analytics]
 
     SharedPreferences prefs = null;
     static private String TAG = "MainActivity";
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public BottomNavigationView menuNavigation;
     public ImageButton imgBtnCross;
     public RelativeLayout.LayoutParams layoutParamsNewsBackUp;
-
+    public ImageView scrollMenuPosition;
 
     String [] typeUrl;
     //int mFirstNewsIndex = 0;
@@ -177,8 +177,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     };
 
 
-
-
     String urlTopNewsSettings[] = {
             "https://newsapi.org/v2/top-headlines?q=health&apiKey=99237f17c0b540fdac4d8367e206f5b2&language=en",                 //Headline Health API
             "https://newsapi.org/v2/top-headlines?q=retail&apiKey=b23937d4bc7a475299e110d007318d28&language=en",                 //Headline Retail API
@@ -208,6 +206,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     final String labelsForNewsSettings[] = {"salud", "retail", "construcción", "entretenimiento","ambiente","educación", "energía",  "banca",  "telecom"};
 
 
+    int marginScrollMenuBottom = 0;
+    int sizeWidth = 0;
+    int sizeHeight = 0;
+
+
     public MainActivity(){
 
     }
@@ -218,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate: Create!");
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
 
         hideSoftKeyboard();
@@ -240,13 +244,20 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             Log.d(TAG,"onCreate -- urlTopNewsSettings["+i+"]:"+urlTopNewsSettings[i]);
             urlDefaultNewsSettings = urlTopNewsSettings;
             urlDefaultNewsMenu = urlTopNewsMenu;
-
         }
 
-        Log.d(TAG, "onCreate: YES");
+        //Scroll BottomNavigationView
+        scrollMenuPosition = findViewById(R.id.scroll_menu_inferior);
+        Point size = new Point();
+        getWindowManager().getDefaultDisplay().getSize(size);
+        sizeWidth = size.x;
+        sizeHeight = size.y;
+
+
+        Log.d(TAG, "onCreate: YES -- sizeWidth:"+sizeWidth+"sizeHeight:"+sizeHeight);
         menuNavigation = findViewById(R.id.menu_navegation);
         menuNavigation.setOnNavigationItemSelectedListener(this);
-        BottomNavigationViewHelper.disableShiftMode(menuNavigation);
+        //BottomNavigationViewHelper.disableShiftMode(menuNavigation);
 
         imgBtnCross = findViewById(R.id.config_back);
         imgBtnCross.setVisibility(View.INVISIBLE);
@@ -256,8 +267,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 if (databaseCountHelper() == 0) {
                     mensaje();
                 }else{
-                    imgBtnCross.setVisibility(View.INVISIBLE);
                     menuNavigation.setSelectedItemId(R.id.home_nav);
+                    imgBtnCross.setVisibility(View.INVISIBLE);
 
                     mFlagHome=false;
                     mFlagFavorites=true;
@@ -415,6 +426,18 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     if (mFlagHome){
                         Log.d(TAG, "onNavigationItemSelected: HomeFragment");
 
+                        // [START Menu_selected_event]
+                        Bundle bundle = new Bundle();
+                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Home");
+                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
+                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+                        // [END Menu_selected_event]
+
+                        //
+                        animationScrollMenuBottom(marginScrollMenuBottom,0);
+                        marginScrollMenuBottom = 0;
+                        //
+
                         mFlagHome=false;
                         mFlagFavorites=true;
                         mFlagRecover=true;
@@ -438,6 +461,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                 case R.id.fav_nav:   //Favoritos
                     if(mFlagFavorites){
+                        // [START Menu_selected_event]
+                        Bundle bundle = new Bundle();
+                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Favorites");
+                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
+                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+                        // [END Menu_selected_event]
+
+                        //
+                        animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/4);
+                        marginScrollMenuBottom = sizeWidth/4;
+                        //
                         mFlagHome = true;
                         mFlagFavorites=false;
                         mFlagRecover=true;
@@ -454,6 +488,16 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                 case R.id.recover_nav:
                     if(mFlagRecover){
+                        // [START Menu_selected_event]
+                        Bundle bundle = new Bundle();
+                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Recover");
+                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
+                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+                        // [END Menu_selected_event]
+                        //
+                        animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/2);
+                        marginScrollMenuBottom = sizeWidth/2;
+                        //
 
                         mFlagHome = true;
                         mFlagFavorites=true;
@@ -469,7 +513,16 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                 case R.id.config_nav:  //Preferencias
                     if(mFlagSettings) {
-
+                        // [START Menu_selected_event]
+                        Bundle bundle = new Bundle();
+                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Settings");
+                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
+                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+                        // [END Menu_selected_event]
+                        //
+                        animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/2 + sizeWidth/4);
+                        marginScrollMenuBottom = sizeWidth/2 + sizeWidth/4;
+                        //
                         mFlagHome = true;
                         mFlagFavorites = true;
                         mFlagRecover=true;
@@ -603,7 +656,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                                                 "All news have been seen",Toast.LENGTH_SHORT).show();
 
                                 }else {
-                                    if (null != activityListener) {
+                                    if (activityListener != null) {
                                         activityListener.setGeneralNews();
                                     }
 
@@ -628,23 +681,32 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         Log.d(TAG, "firstGetRequestAPI -- onFailure: statusCode:" + statusCode);
 
 
-                        if (responseBody.length != 0) {
-                            try {
-                                JSONObject mResponse = new JSONObject(new String(responseBody));
+                        if(responseBody != null) {
+                            if (responseBody.length != 0) {
+                                try {
+                                    JSONObject mResponse = new JSONObject(new String(responseBody));
 
-                                Log.d(TAG, "firstGetRequestAPI -- onFailure: names:" + mResponse.names());
-                                Log.d(TAG, "firstGetRequestAPI -- onFailure: toString:" + mResponse.toString());
+                                    Log.d(TAG, "firstGetRequestAPI -- onFailure: names:" + mResponse.names());
+                                    Log.d(TAG, "firstGetRequestAPI -- onFailure: toString:" + mResponse.toString());
 
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                                Log.d(TAG, "firstGetRequestAPI -- onFailure Failure:" + e.toString());
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                    Log.d(TAG, "firstGetRequestAPI -- onFailure Failure:" + e.toString());
+                                }
                             }
+
                         }
                     }
                 });
 
-            }else
-                firstGetRequestAPI(typeUrl,mNewsIndex+1); //???
+            }else {
+
+                if (mNewsIndex + 1 < 9) {
+                    firstGetRequestAPI(typeUrl, mNewsIndex + 1); //???
+                }else
+                    Toast.makeText(getApplicationContext(),
+                            "All news requested?",Toast.LENGTH_SHORT).show();
+            }
 
         //}
     }
@@ -980,6 +1042,33 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         db.close();///////////*******************   CLOSE 13SEP
 
         return cursor.getInt(0);
+    }
+
+    public void animationScrollMenuBottom(int marginOrigin, int marginDestiny){
+        //Animation WebView
+        final int marginStart = marginOrigin;// your start value
+        final int marginEnd = marginDestiny; // where to animate to
+        Log.d(TAG,"animationScrollMenuBottom --  marginEnd:"+marginEnd);
+        Log.d(TAG,"animationScrollMenuBottom --  marginStart:"+marginStart);
+
+
+        Animation mAnimation = new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+
+                /*ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) scrollMenuPosition.getLayoutParams();
+                params.setMarginStart(marginEnd);
+                scrollMenuPosition.setLayoutParams(params);*/
+
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) scrollMenuPosition.getLayoutParams();
+                params.setMarginStart(marginStart + (int) ((marginEnd - marginStart) * interpolatedTime));
+
+                //params.leftMargin = marginStart + (int) ((marginEnd - marginStart) * interpolatedTime);
+                scrollMenuPosition.setLayoutParams(params);
+            }
+        };
+        mAnimation.setDuration(600); // in ms
+        scrollMenuPosition.startAnimation(mAnimation);
     }
 
 }

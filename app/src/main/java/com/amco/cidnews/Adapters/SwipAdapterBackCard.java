@@ -24,6 +24,7 @@ import com.amco.cidnews.Utilities.ImagePassingAdapter;
 import com.amco.cidnews.Utilities.Noticia;
 import com.amco.cidnews.Utilities.VistaWeb;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.Priority;
 import com.bumptech.glide.request.Request;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookSdk;
@@ -146,10 +147,14 @@ public class SwipAdapterBackCard extends ArrayAdapter<Noticia> {
             Glide.with(activity).load(drawableResourceId).into(img);
         }
         else {
-            requestImg = (Glide.with(activity).load(noticia.getImagen()).thumbnail(Glide.with(getContext()).load(R.drawable.loadingblocks)).into(img)).getRequest();
+            requestImg = (Glide.with(activity).load(noticia.getImagen()).priority(Priority.LOW)
+                    .thumbnail(Glide.with(getContext()).load(R.drawable.loadingblocks)).into(img)).getRequest();
             //            requestImg = (Glide.with(activity).load(noticia.getImagen()).thumbnail(Glide.with(getContext()).load(R.drawable.loading)).into(img)).getRequest();
 
             Log.d("SwipAdapterBackCard", "requestImg");
+
+
+            /*
 
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -161,16 +166,16 @@ public class SwipAdapterBackCard extends ArrayAdapter<Noticia> {
                         Log.d("SwipAdapterBackCard", "requestImg Complete!");
 
 
-                        /*
-                        if(mPassingData != null){
-                            Log.d("SwipAdapterBackCard","mPassingData.sendingImage");
-                            mPassingData.sendingImage(img.getDrawingCache(),noticia.getImagen());
-                        }else
-                        {
-                            Log.d("SwipAdapterBackCard","mPassingData == null");
-                        }
+
+                       // if(mPassingData != null){
+                       //     Log.d("SwipAdapterBackCard","mPassingData.sendingImage");
+                       //     mPassingData.sendingImage(img.getDrawingCache(),noticia.getImagen());
+                       // }else
+                       // {
+                       //     Log.d("SwipAdapterBackCard","mPassingData == null");
+                       // }
                         //mAdapterCallback.imageLoaded(img.getDrawingCache(),noticia.getImagen());
-                        */
+
 
                     }
 
@@ -182,7 +187,7 @@ public class SwipAdapterBackCard extends ArrayAdapter<Noticia> {
 
                     }
                 }
-            }, 4000);
+            }, 3000);*/
         }
         return convertView;
     }

@@ -4,7 +4,7 @@
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/ic_splash_hq"
+            android:src="@drawable/ic_splash_hquality"
             />
     </item>
 </selector>

@@ -25,5 +25,6 @@
     <color name="mainFacebook">#3b5998</color>
     <color name="mainWhatsapp">#25d366</color>
     <color name="mainBlueTransparent">#000F2D63</color>
-
+    <color name="menuprincipalbottom">#00376f</color>
+    <color name="scroll_menu_bottom">#41609e</color>
 </resources>
