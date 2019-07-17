@@ -59,7 +59,7 @@ public class FavFragment extends Fragment {
 
     //Views
     TextView tx;
-    PopupWindow popupWindowDogs;
+    PopupWindow popupWindowDogs,popupWindowDogsHelper;
     ImageButton btn_atras,btn_editar,btn_menu;
     FrameLayout fr;
     Button frnonoticia;
@@ -83,7 +83,7 @@ public class FavFragment extends Fragment {
 
     //Vars
     String popUpContents[],urlNoticia,categorySelected,categorySelectedForSave;
-    Boolean flagMenuSaved;
+    Boolean flagMenuSaved = false;
     int indexForRemove,dps,pxX,pxY;
     float scale=0;
 
@@ -99,7 +99,7 @@ public class FavFragment extends Fragment {
         if (categorySelected != null) {
             outState.putString("categorySelectedForSaveKey", categorySelectedForSave);
         }
-        if (flagMenuSaved != null) {
+        if (flagMenuSaved) {
             outState.putBoolean("flagMenuSavedKey", flagMenuSaved);
         }
     }
@@ -129,11 +129,10 @@ public class FavFragment extends Fragment {
         configUI(view);
         configUIListeners();
 
-        if (flagMenuSaved!= null) {
-            if (flagMenuSaved) {
+        if (flagMenuSaved) {
                 Log.e(TAG, "onCreateView: " + String.valueOf(categorySelectedForSave));
                 consultarNoticiasFavoritas(categorySelectedForSave, 0, 1);  /// bandera2=1 puede ver la noticia
-            }
+
         }else{
             consultarNoticiasFavoritas("%", 0, 1);  /// bandera2=1 puede ver la noticia
         }
@@ -181,12 +180,11 @@ public class FavFragment extends Fragment {
             public void onClick(View v) {
                 if (btnFABeliminar.isShown()){
 
-                    if (flagMenuSaved!= null) {
-                        if (flagMenuSaved) {
-                            Log.e(TAG, "onCreateView: " + String.valueOf(categorySelectedForSave));
-                            showFilterBar();
-                            consultarNoticiasFavoritas(categorySelectedForSave, 0, 1);  /// bandera2=1 puede ver la noticia
-                        }
+                    if (flagMenuSaved) {
+                        Log.e(TAG, "onCreateView: " + String.valueOf(categorySelectedForSave));
+                        showFilterBar();
+                        consultarNoticiasFavoritas(categorySelectedForSave, 0, 1);  /// bandera2=1 puede ver la noticia
+
                     }else {
                         showFilterBar();
                         consultarNoticiasFavoritas("%", 0, 1);
@@ -566,12 +564,22 @@ public class FavFragment extends Fragment {
         dogsList.toArray(popUpContents);
         popupWindowDogs = popupWindowDogs();
 
+        dogsList.remove(dogsList.size()-1);
+        popUpContents = new String[dogsList.size()];
+        dogsList.toArray(popUpContents);
+        popupWindowDogsHelper = popupWindowDogs();
+
+
         btn_menu = (ImageButton) view.findViewById(R.id.boton_superior_fav);
 
         btn_menu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                popupWindowDogs.showAsDropDown(view, -5, Math.round(0), 1);
+                if(flagMenuSaved) {
+                    popupWindowDogs.showAsDropDown(view, -5, Math.round(0), 1);
+                }else{
+                    popupWindowDogsHelper.showAsDropDown(view, -5, Math.round(0), 1);
+                }
             }
         });
     }
@@ -596,6 +604,8 @@ public class FavFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> arg0, View view, int position, long arg3) {
                 String option="";
+                flagMenuSaved = true;
+
                 Animation animation1 = new AlphaAnimation(0.3f,1);
                 animation1.setDuration(600);
                 animation1.setAnimationListener(new Animation.AnimationListener() {
@@ -634,7 +644,6 @@ public class FavFragment extends Fragment {
                 }
 
                 categorySelectedForSave = option;
-                flagMenuSaved = true;
 
                 popupWindow.dismiss();
             }

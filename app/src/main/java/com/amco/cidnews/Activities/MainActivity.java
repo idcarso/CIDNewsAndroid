@@ -4,7 +4,6 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -40,7 +39,6 @@ import com.amco.cidnews.Fragments.HomeFragment;
 import com.amco.cidnews.Fragments.RecoverFragment;
 import com.amco.cidnews.Utilities.ListenFromActivity;
 import com.amco.cidnews.R;
-import com.amco.cidnews.Utilities.BottomNavigationViewHelper;
 import com.amco.cidnews.Utilities.ConexionSQLiteHelper;
 import com.amco.cidnews.Utilities.MyDialogFragment;
 import com.amco.cidnews.Utilities.Noticia;
@@ -64,12 +62,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import cz.msebera.android.httpclient.Header;
-
-/*
-* import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
-import android.support.v7.app.AppCompatActivity;
-* */
 
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
@@ -275,8 +267,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 if (databaseCountHelper() == 0) {
                     mensaje();
                 }else{
-                    imgBtnCross.setVisibility(View.INVISIBLE);
                     menuNavigation.setSelectedItemId(R.id.home_nav);
+                    imgBtnCross.setVisibility(View.INVISIBLE);
 
                     mFlagHome=false;
                     mFlagFavorites=true;

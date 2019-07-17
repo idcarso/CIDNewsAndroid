@@ -53,7 +53,7 @@
         android:layout_height="5dp"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
-        android:src="@color/scroll_menu_bottom"
+        android:src="@android:color/white"
         app:layout_widthPercent="25%"
         android:elevation="10dp"
         android:layout_alignTop="@+id/menu_navegation"

@@ -7,8 +7,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -64,7 +67,7 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
     FrameLayout frameToolbar;
     private ListView listRecoverView;
     FloatingActionButton bottonRecover;
-    PopupWindow popupWindowDogs;
+    PopupWindow popupWindowDogs,popupWindowDogsHelper;
 
     //Adapter
     NoticiasAdapterRecover nA;
@@ -187,13 +190,8 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
         btnGoingHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!tx.getText().toString().equalsIgnoreCase("REMOVED")){
-                    consultarNoticiasFavoritas("%", 0);
-                    tx.setText("REMOVED");
-                }else {
                     if((MainActivity) getActivity() != null)
                         ((MainActivity) getActivity()).imgBtnCross.performClick();
-                }
             }
         });
 
@@ -257,18 +255,29 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
         dogsList.add("FINANCE");
         dogsList.add("ENERGY");
         dogsList.add("TELECOM");
+        dogsList.add("RESET ALL");
+
+
 
         popUpContents = new String[dogsList.size()];
         dogsList.toArray(popUpContents);
         popupWindowDogs = popupWindowDogs();
+
+
+        dogsList.remove(dogsList.size()-1);
+        popUpContents = new String[dogsList.size()];
+        dogsList.toArray(popUpContents);
+        popupWindowDogsHelper = popupWindowDogs();
 
         btn_menu = (ImageButton) view.findViewById(R.id.btn_filter);
         btn_menu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // popupWindowDogs.setAnimationStyle(R.style.popupAnim);   //*********************************// IMPORTNTE
-                popupWindowDogs.showAsDropDown(view, -5, Math.round(0), 1);
-                bottonRecover.hide();
+                if (tx.getText().toString().equalsIgnoreCase("REMOVED"))
+                    popupWindowDogsHelper.showAsDropDown(view, -5, Math.round(0), 1);
+                else
+                    popupWindowDogs.showAsDropDown(view, -5, Math.round(0), 1);
             }
         });
     }
@@ -324,7 +333,12 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
                     case 6 : option="banca";   consultarNoticiasFavoritas(option,0); break;
                     case 7 : option="energía";   consultarNoticiasFavoritas(option,0); break;
                     case 8 : option="telecom";   consultarNoticiasFavoritas(option,0); break;
-
+                    case 9 :
+                        if (!tx.getText().toString().equalsIgnoreCase("REMOVED")){
+                            consultarNoticiasFavoritas("%", 0);
+                            tx.setText("REMOVED");
+                        }
+                        break;
                 }
                 popupWindow.dismiss();
 
@@ -357,8 +371,6 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
 
                 int espacio1=(int) Math.round(((pxY - 72*scale)/12));
                 int porcentaje = (int) Math.round(((espacio1)/3)/getResources().getDisplayMetrics().scaledDensity);
-
-
 
                 switch (item){
                     case "HEALTH":
@@ -411,9 +423,20 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
                         color = "#235784";
                         break;
 
+                    case "RESET ALL":
+                        id = "menu_sup_resetall";
+                        size = porcentaje;
+                        color = "#235784";
+                        break;
                 }
 
-                listItem.setText(item);
+                if (id.contentEquals("menu_sup_resetall")){
+                    SpannableString spannablecontent = new SpannableString(getResources().getString(R.string.menu_reset_all));
+                    spannablecontent.setSpan(new StyleSpan(Typeface.BOLD), 0,spannablecontent.length(), 0);
+                    listItem.setText(spannablecontent);
+                }else
+                    listItem.setText(item);
+
                 listItem.setTag(id);
                 listItem.setTextSize(size);
                 listItem.setPadding(Math.round(15*scale), Math.round(15*scale), Math.round(15*scale), Math.round(15*scale));
@@ -543,7 +566,7 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
                 category = "TELECOM";
                 break;
             default:
-                category = "FAVORITES";
+                category = "REMOVED";
                 break;
         }
         return category;
