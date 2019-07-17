@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "819373372580",
+    "firebase_url": "https://cidnews-app.firebaseio.com",
+    "project_id": "cidnews-app",
+    "storage_bucket": "cidnews-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:819373372580:android:88a1ee77c1f8d2c1",
+        "android_client_info": {
+          "package_name": "com.amco.cidnews"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "819373372580-3jdi6j4863cq4ev9dtecs8417517n8d9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqpvOSU9WI3ubk-9hO3OeKlsSabMexGBI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "819373372580-3jdi6j4863cq4ev9dtecs8417517n8d9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
