@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: link.fls:swipestack:0.3.0@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/5f85734850117a98dd7a7bed82238105/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/5f85734850117a98dd7a7bed82238105/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/link.fls/swipestack/0.3.0/f6fdb148af9ed43018857fec268d17b6efad9787/swipestack-0.3.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

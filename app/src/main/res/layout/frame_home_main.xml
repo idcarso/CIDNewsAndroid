@@ -9,7 +9,7 @@
     tools:context=".Fragments.HomeFragment">
 
     <!-- Layout real de la actividad -->
-    <include layout="@layout/frame_home" />
+    <include layout="@layout/frame_home_without_scroll" />
 
 
     <com.google.android.material.navigation.NavigationView

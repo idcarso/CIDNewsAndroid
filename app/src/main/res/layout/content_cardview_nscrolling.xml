@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/tools"
+    app:cardCornerRadius="12dp"
+    android:background="@color/mainBlue"
+
+    >
+
+
+
+    <androidx.percentlayout.widget.PercentRelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+
+    <ImageView
+        android:id="@+id/img_noticia"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop"
+        android:src="@drawable/vacio"
+        />
+
+        <ImageView
+            android:id="@+id/fonazul"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_degradado_redondeado4"
+            />
+
+        <TextView
+            android:id="@+id/titulo_noticia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_heightPercent="16%"
+            android:fontFamily="@font/montserratmedium"
+            android:paddingStart="10dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="10dp"
+            android:requiresFadingEdge="vertical"
+            android:text="Hola"
+            android:textAlignment="center"
+            android:maxLines = "3"
+            android:minLines = "1"
+            android:textColor="#ffffffff"
+            android:textSize="16sp"
+            android:layout_above="@+id/autor"
+            android:background="@color/mainBlue"/>
+
+        <TextView
+            android:id="@+id/autor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_heightPercent="8%"
+
+            android:layout_alignParentBottom="true"
+            android:paddingBottom="10dp"
+            android:maxLines = "1"
+
+            android:paddingStart="18dp"
+            android:paddingEnd="40dp"
+            android:text="Hola"
+            android:textAlignment="textStart"
+            android:textColor="#ffffffff"
+            android:fontFamily="@font/montserratmedium"
+            android:background="@color/mainBlue"
+            android:textSize="16sp" />
+
+                <!--android:background="#010054"-->
+
+    </androidx.percentlayout.widget.PercentRelativeLayout>
+
+</androidx.cardview.widget.CardView>

@@ -71,7 +71,7 @@ public class ConfigFragment extends Fragment {
 
     private void recargar() {
         Fragment fragment = new ConfigFragment();
-        ((FragmentActivity)getActivity()).getSupportFragmentManager().beginTransaction().replace(R.id.contendor,fragment,null).commit();
+        ((FragmentActivity)getActivity()).getSupportFragmentManager().beginTransaction().replace(R.id.contendor,fragment).addToBackStack("Settings").commit();
     }
 
     private void actualizar(String categoria, int estado) {

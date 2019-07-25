@@ -61,6 +61,7 @@ import android.widget.TextView;
 
 import com.amco.cidnews.Activities.MainActivity;
 import com.amco.cidnews.Adapters.DrawerAdapter;
+import com.amco.cidnews.Adapters.SwipAdapterNScrolling;
 import com.amco.cidnews.Utilities.DrawerItemNavBar;
 import com.amco.cidnews.Utilities.ImagePassingAdapter;
 import com.amco.cidnews.Utilities.ListenFromActivity;
@@ -110,6 +111,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.percentlayout.widget.PercentFrameLayout;
@@ -127,6 +129,7 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 
 public class HomeFragment extends Fragment implements ListenFromActivity,ImagePassingAdapter, SwipAdapter.RequestImage {
 
+    public static Boolean SWIPESTACK_SCROLLING = false;  //Change R.layout.frame_home -- R.layout.frame_home_withoutscroll
     static private String TAG = "HomeFragment";
     static private String TAGTIME = "TIMEHomeFragment";
 
@@ -136,6 +139,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
     //////////////////////////////// MAIN VAR
     static public SwipeStack sp;
+    static public SwipAdapterNScrolling SwipadaptadorNScroll;
+
     static public SwipAdapter Swipadaptador;
     static public SwipAdapterBackCard Swipadaptadoraux;
     static public CardView cardviewContainer,cardviewtest1, spaux, swipNoNews;
@@ -251,6 +256,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     boolean cardSwipeRight = false;
     boolean firstInitialCard = false;
     boolean showNewsInCardView = true;
+    ///
+    boolean mCardSwiping = false;
     /////////////////////////////////// HELPERS
     Animation fabOpen, fabClose, rotateFoward, rotateBackward;
     ArrayList<String> MemoryCard = new ArrayList<String>();
@@ -260,6 +267,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     //TEST
     Bitmap mNextBitmapLoaded = null;
     ImageView mImg;
+
 
 
 
@@ -294,11 +302,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
     @Override
     public void onRequestImage(String urlRequest) {
-
-
-
         Log.d(TAG,"sendingImage -- urlRequest:"+urlRequest);
-
             if(mNextBitmapLoaded != null) {
 
                 if(sp.getTopView() == null){
@@ -308,10 +312,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                     sp.getRootView().setBackground(mImg.getDrawable());
                 }
             }
-            else{
-
-            }
     }
+
 
 
 
@@ -362,30 +364,64 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     @Override
     public void setGeneralNews(){
         Log.d(TAG,"setGeneralNews");
-        if( (MainActivity)getActivity() != null) {
-            allNewsFromAct = ((MainActivity) getActivity()).allNews;
-            allNewsDefault = allNewsFromAct;
-            if(allNewsDefault.size() != 0)
-                showNews(allNewsDefault, false, 0);
+        if (SWIPESTACK_SCROLLING) {
+            if ( getActivity() != null) {
+                allNewsFromAct = ((MainActivity) getActivity()).allNews;
+                allNewsDefault = allNewsFromAct;
+                if (allNewsDefault.size() != 0)
+                    showNews(allNewsDefault, false, 0);
 
-            Log.d(TAG,"setGeneralNews allNews(MainActivity).size: "+
-                    allNewsFromAct );
+                Log.d(TAG, "setGeneralNews allNews(MainActivity).size: " +
+                        allNewsFromAct);
 
+            }
+        }
+        else {
+                if (getActivity() != null) {
+                    allNewsFromAct = ((MainActivity) getActivity()).allNews;
+                    allNewsDefault = allNewsFromAct;
+                    if (allNewsDefault.size() != 0)
+                        showNewsNScrolling(allNewsDefault, false, 0);
+
+                }
         }
     }
+
+
+    ///////////////////////////////////
+    /// MARK:
+    @Override
+    public void msjWeakSignal(){
+        if(frnointernet != null)
+            frnointernet.setVisibility(View.VISIBLE);   //Muestra el letrero de Weak Signal
+    }
+
 
     ///////////////////////////////////
     /// MARK:
     @Override
     public void setSpeficicNewsFromMenu(int mIndex) {
-        Log.d(TAG,"setSpeficicNewsFromMenu");
-        if( (MainActivity)getActivity() != null) {
-            specificNewsFromAct = ((MainActivity) getActivity()).allNewsMenu;
-            allNewsDefault = new ArrayList<>();
-            allNewsDefault = specificNewsFromAct;
-            setupForChangedNews();
-            showNews(allNewsDefault, true, mIndex);
+        Log.d(TAG, "setSpeficicNewsFromMenu");
+        if (SWIPESTACK_SCROLLING){
+            if ((MainActivity) getActivity() != null) {
+                specificNewsFromAct = ((MainActivity) getActivity()).allNewsMenu;
+                allNewsDefault = new ArrayList<>();
+                allNewsDefault = specificNewsFromAct;
+                setupForChangedNews();
+                showNews(allNewsDefault, true, mIndex);
+            }
         }
+
+        else {
+            if ((MainActivity) getActivity() != null) {
+                specificNewsFromAct = ((MainActivity) getActivity()).allNewsMenu;
+                allNewsDefault = new ArrayList<>();
+                allNewsDefault = specificNewsFromAct;
+                setupForChangedNewsNScrolling();
+                showNewsNScrolling(allNewsDefault, true, mIndex);
+            }
+        }
+
     }
 
 
@@ -395,8 +431,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     @Override
     public void sendingImage(Bitmap bitmap,String url) {
         Log.d(TAG,"sendingImage?");
-
-
     }
 
 
@@ -412,7 +446,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         outState.putString("watchingNewsKey", watchingNews);
      //   outState.putParcelableArrayList("myArrayList", newsApiSaved);
         super.onSaveInstanceState(outState);
-
     }
 
 
@@ -427,133 +460,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         Log.e(TAGTIME, "onCreate:" + String.valueOf(getRunningTime()));
         ((MainActivity) getActivity()).setActivityListener(HomeFragment.this);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
-
-
-
-
-
-
-        /*
-        mImageCallback = new ImageLoadedAdapter() {
-            @Override
-            public void imageLoaded(Bitmap mBitmap, String url) {
-
-                Log.d("HomeFrag","imageLoaded");
-
-                if (allNewsDefault.get(sp.getCurrentPosition() + 1).getUrl().contentEquals(url)){
-                    mNextBitmapLoaded = mBitmap;
-
-                    Log.d("HomeFrag","imageLoaded -- mNextBitmapLoaded = bitmap");
-
-                }else{
-                    mNextBitmapLoaded =  null;
-                    Log.d("HomeFrag","imageLoaded -- mNextBitmapLoaded = null");
-                }
-            }
-
-            @Override
-            public void requestImage() {
-
-                Log.d("HomeFrag","requestImage");
-                if (mNextBitmapLoaded != null){
-                    Log.d("HomeFrag","requestImage -- mNextBitmapLoaded != null");
-                    // mPassingData.sendingImage();
-                }
-
-            }
-        };
-        */
-
-        /*consultNoNewsShow("%");
-        consultPreferences();
-
-        if (savedInstanceState == null   || !savedInstanceState.containsKey("key")) {
-                //Hacer la peticion por primera vez AsyncHTTP
-        }else {
-           Log.d("HomeFragment", "OnCreate, SavingInstance != null") ;
-           currentIndex = savedInstanceState.getInt("PositionKey");
-            MemoryCard = savedInstanceState.getStringArrayList("MemoryCardKey");
-            MemoryLoadIndex = savedInstanceState.getInt("MenuSelectedKey");
-            watchingNews = savedInstanceState.getString("watchingNewsKey");
-            newsApiSaved = savedInstanceState.getParcelableArrayList("key");
-            String title, imgUrl, url, autor, cat;
-            for (int i = 0; i < newsApiSaved.size(); i++) {
-                title = newsApiSaved.get(i).getTitulo();
-                imgUrl = newsApiSaved.get(i).getImagen();
-                url = newsApiSaved.get(i).getUrl();
-                autor = newsApiSaved.get(i).getAutor();
-                cat = newsApiSaved.get(i).getCategoria();
-                Noticia noticia = new Noticia(title, imgUrl, url, "", autor, cat, 0L);
-                allNewsDefault.add(noticia);
-            }
-           Log.d("HomeFragment", "onCreate: After showNewsWithBackupList, newsApiSaved.size: " + String.valueOf(newsApiSaved.size()));
-           showNewsWithBackupList(allNewsDefault);
-           Log.d("HomeFragment", "onCreate: Before showNewsWithBackupList, newsApiSaved.size: " + String.valueOf(newsApiSaved.size()));
-
-       }
-        Log.e("TIMEHomeFragment", "Home Fragment ,onCreate: Finish" + String.valueOf(getRunningTime()));
-
-        mConnectionClassManager = ConnectionClassManager.getInstance();
-        mDeviceBandwidthSampler = DeviceBandwidthSampler.getInstance();*/
     }
-
-
-    ///////////////////////////////////
-    /// MARK:
-    @Override
-    public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.e(TAGTIME, "onCreateView, Before  stateArray:" + String.valueOf(getRunningTime()));
-//        Log.d("HomeFragment", "onCreateView, allNewsDeafult.size:" + String.valueOf(allNewsDefault.size()));
-        Log.d(TAG, "onCreateView, allNewsFromAct.size:" + String.valueOf(allNewsFromAct.size()));
-        Log.d(TAG, "onCreateView, newsApiSaved.size:" + String.valueOf(newsApiSaved.size()));
-
-
-        Log.e(TAGTIME, "onCreateView,  After Start Inflating.." + String.valueOf(getRunningTime()));
-        final View view = inflater.inflate(R.layout.frame_home_main, container, false);
-        Log.e(TAGTIME, "onCreateView, Before End Inflating.." + String.valueOf(getRunningTime()));
-        /////////////////////////////////////  Prioridad en cargar
-        setupCreateView(view, inflater, container);
-        setupMenu(view);
-
-
-
-        Log.e(TAGTIME, "onCreateView,  End Setting" + String.valueOf(getRunningTime()));
-        /*
-        if (newsApiSaved.size() != 0 ) {  //OR allnewsDefault != 0
-            showNewsWithBackupList(allNewsDefault);
-        }else {
-            loadDefaultNews(Start);
-        }
-        */
-
-
-        if(allNewsFromAct == null) {
-            Log.e(TAGTIME, "onCreate: allNewsFromAct ==  NULL");
-
-        }else
-            Log.e(TAGTIME, "onCreate: allNewsFromAct != NULL");
-
-
-        if(allNewsDefault.size() != 0){
-            showNews(allNewsDefault,false,0);
-            Log.e(TAGTIME, "onCreate: allNewsFromAct" + allNewsFromAct.size());
-
-        }else{
-                if((MainActivity) getActivity() != null) {
-                    allNewsDefault = ((MainActivity) getActivity()).allNews;
-                    Log.e(TAGTIME, "onCreate: allNewsDefault = AllNews:" +
-                            ((MainActivity) getActivity()).allNews.size());
-                    Log.e(TAGTIME, "onCreate: allNewsDefault = AllNewsMenu :" +
-                            ((MainActivity) getActivity()).allNewsMenu.size());
-
-                    showNews(allNewsDefault, false, 0);
-                }
-            Log.e(TAGTIME, "onCreate: allNewsFromAct" + allNewsFromAct.size());
-        }
-
-        return view;
-    }
-
 
     ///////////////////////////////////
     /// MARK:
@@ -562,18 +469,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         super.onDestroyView();
         Log.d(TAG, "onDestroyView True" );
 
-        /*
-        if (masterClient != null){
-            masterClient.cancelAllRequests(true);
-            masterClient.getThreadPool().shutdown();
-            masterClient.removeAllHeaders();
-        }
-        //web.onPause();
-        if (web != null) {
-            web.destroy();
-            web.destroyDrawingCache();
-            web.clearCache(true);
-        }*/
 
     }
     ///////////////////////////////////
@@ -583,14 +478,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         super.onDestroy();
         Log.e(TAGTIME, "onDestroy:" + String.valueOf(getRunningTime()));
         if  (masterClient != null) {
-            // masterClient is an instance of AsyncHttpClient(SyncHttpClient)
             masterClient.getThreadPool().shutdown();
-//            masterClient.getHttpClient().getConnectionManager().shutdown();
         }
         //REQUEST NEW ARRAYLIST! FROM ACT
         ((MainActivity)getActivity()).refreshDeletedNews();
-
-        //SAVE POSITION OF ARRAY
     }
 
 
@@ -600,6 +491,451 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         Log.e(TAGTIME, "onResume:" + String.valueOf(getRunningTime()));
 
     }
+
+
+
+    ///////////////////////////////////
+    /// MARK:
+    @Override
+    public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView True" );
+        Log.e(TAGTIME, "onCreateView,  Start Inflating.." + getRunningTime());
+        final View view = inflater.inflate(R.layout.frame_home_main, container, false);
+        Log.e(TAGTIME, "onCreateView, After Inflating.." + getRunningTime());
+
+        setupMenu(view);
+
+        if (SWIPESTACK_SCROLLING) {
+
+            /////////////////////////////////////  Prioridad en cargar
+            setupCreateView(view, inflater, container);
+            Log.e(TAGTIME, "onCreateView,  End Setting" + String.valueOf(getRunningTime()));
+            if (allNewsDefault.size() != 0) {
+                showNews(allNewsDefault, false, 0);
+                Log.e(TAGTIME, "onCreate: allNewsFromAct" + allNewsFromAct.size());
+
+            } else {
+                if ((MainActivity) getActivity() != null) {
+                    allNewsDefault = ((MainActivity) getActivity()).allNews;
+                    Log.e(TAGTIME, "onCreate: allNewsDefault = AllNews:" +
+                            ((MainActivity) getActivity()).allNews.size());
+                    Log.e(TAGTIME, "onCreate: allNewsDefault = AllNewsMenu :" +
+                            ((MainActivity) getActivity()).allNewsMenu.size());
+
+                    showNews(allNewsDefault, false, 0);
+                }
+                Log.e(TAGTIME, "onCreate: allNewsFromAct" + allNewsFromAct.size());
+            }
+
+        }else {
+
+            /////////////////////////////////////
+            setupCreateViewNoScroll(view);
+            Log.e(TAGTIME, "onCreateView,  End Setting" + String.valueOf(getRunningTime()));
+            if (allNewsDefault.size() != 0) {
+                showNewsNScrolling(allNewsDefault, false, 0);
+                Log.e(TAGTIME, "onCreate: allNewsFromAct" + allNewsFromAct.size());
+
+            } else {
+                if (getActivity() != null &&  ((MainActivity) getActivity()).allNews.size() != 0){
+                    allNewsDefault = ((MainActivity) getActivity()).allNews;
+                    Log.e(TAGTIME, "onCreate: allNewsDefault = AllNews:" + ((MainActivity) getActivity()).allNews.size());
+                    Log.e(TAGTIME, "onCreate: allNewsDefault = AllNewsMenu :" + ((MainActivity) getActivity()).allNewsMenu.size());
+                    showNewsNScrolling(allNewsDefault, false, 0);
+                }
+            }
+
+
+        }
+
+        return view;
+    }
+
+
+
+
+
+
+    /********************************************************************** SwipeStack NOT SCROLLING *********************************************/
+
+    public void setupCreateViewNoScroll(View view){
+        /////////////////////////////////////
+        sp = view.findViewById(R.id.swipStack);
+        frnointernet = view.findViewById(R.id.aviso_no_internet);
+        frnointernet.setVisibility(View.INVISIBLE);
+        containerLoaderGif = view.findViewById(R.id.loader_gif);
+        imgLoaderGif = view.findViewById(R.id.img_loader_gif);
+
+        ////////////
+        btnSupDer = view.findViewById(R.id.boton_superior_home);
+        basura = view.findViewById(R.id.basuraimg);
+        paloma =  view.findViewById(R.id.palomaimg);
+        mano1 =  view.findViewById(R.id.icono_mano);
+        shareFabMain = view.findViewById(R.id.shareMainFab);
+
+        setupUINScrolling(view);
+        configUIListenersNScroll(view);
+    }
+
+    /******** LISTENERS NScrolling *****/
+
+    ///////////////////////////////////
+    /// MARK: config Listeners UI
+    public void configUIListenersNScroll(final View view){
+
+        btnSupDer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(TAG,"configUIListenersNScroll -- btnSupDer -- onClick.TRUE");
+                drawerLayout.openDrawer(GravityCompat.END);
+            }
+        });
+
+        ///////////////////////////////////   BOTTOM FABS
+        shareFabMain.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendNewsByIntent();
+            }
+        });
+
+
+        sp.setSwipeProgressListener(new SwipeStack.SwipeProgressListener() {
+            @Override
+            public void onSwipeStart(int position) {
+
+                int[] location = new int[2];
+                sp.getTopView().getLocationOnScreen(location);
+
+                oldX = (int) location[0];
+                oldY = (int) location[1];
+                startPointX = oldX;
+                startPointY = oldY;
+                x = startPointX;
+                y = startPointY;
+
+                Log.d(TAG, "sp.setSwipeProgressListener -- onSwipeStart -- startPointX:"+startPointX);
+                Log.d(TAG, "sp.setSwipeProgressListener -- onSwipeStart -- startPointY:"+startPointY);
+            }
+
+            @Override
+            public void onSwipeProgress(int position, float progress) {
+                if (Math.abs(progress*100) > 10){
+                    mCardSwiping = true;
+                }
+                Log.d(TAG,"configUIListenersNScroll -- onSwipeProgress -- progress:"+progress);
+                animationSwipeProgress((float) (progress*(0.75)));
+                shareFabMain.hide();
+
+            }
+
+            @Override
+            public void onSwipeEnd(int position) {
+                animationFinish(basura, paloma);
+
+                diffPosY = 0;
+                diffPosX = 0;
+
+
+                int[] location = new int[2];
+                sp.getTopView().getLocationOnScreen(location);
+
+                x_cord = (int) location[0];
+                y_cord = (int) location[1];
+
+                Log.d(TAG, "sp.setSwipeProgressListener -- onSwipeStart -- x_cord:"+x_cord);
+                Log.d(TAG, "sp.setSwipeProgressListener -- onSwipeStart -- y_cord:"+y_cord);
+
+                if ((Math.abs(startPointX  - x_cord) < 8) && (Math.abs(startPointY - y_cord) < 8) && !mCardSwiping) {
+                    Log.d(TAG, "eventsActionUp  -- CARD CLICKED! ");
+                //    Log.d(TAG, "eventsActionUp  -- CARD CLICKED! Swipadaptador.mostrarNoticiasView("
+                  //          +String.valueOf(sp.getCurrentPosition())+")");
+
+                    SwipadaptadorNScroll.mostrarNoticiasView(sp.getCurrentPosition());
+
+                    //Log.d(TAG, "eventsActionUp  -- sp.getCurrentPosition:"+(sp.getCurrentPosition()));
+                    //Log.d(TAG, "eventsActionUp  -- currentIndex:"+(currentIndex));
+                    urlNewsLoaded = false;
+                    indexHelperRemoveNews = 0;
+                }else{
+                    shareFabMain.show();
+                }
+                mCardSwiping = false;
+            }
+        });
+
+
+
+
+
+        sp.setListener(new SwipeStack.SwipeStackListener() {
+            @Override
+            public void onViewSwipedToLeft(final int position) {
+                Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedToLeft Position:" + String.valueOf(position));
+                Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedToLeft sp.getCurrentPosition: " + String.valueOf(sp.getCurrentPosition()));
+
+                indexHelperRemoveNews = indexHelperRemoveNews + 1;
+                Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedToLeft indexHelperRemoveNews: " + String.valueOf(indexHelperRemoveNews));
+                saveNewsGenericNScroll(SwipadaptadorNScroll,position,false);
+            }
+            @Override
+            public void onViewSwipedToRight(final int position) {
+                Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedRight Position:" + String.valueOf(position));
+                Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedRight sp.getCurrentPosition: " + String.valueOf(sp.getCurrentPosition()));
+
+                indexHelperRemoveNews = indexHelperRemoveNews + 1;
+                Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedToRight indexHelperRemoveNews: " + String.valueOf(indexHelperRemoveNews));
+
+                saveNewsGenericNScroll(SwipadaptadorNScroll,position,true);
+            }
+            @Override
+            public void onStackEmpty() {
+                deleteCache(getContext());
+                MemoryCard.clear();  //The counting of position is reset.
+                sp.resetStack();   //Restart the news.
+                Log.d(TAG,  "configUIListenersNScroll -- sp.OnStackEmpty.TRUE");
+            }
+        });
+
+    }
+
+    ///////////////////////////////////
+    /// MARK: initial UI
+    public void setupUINScrolling(final View view){
+        ////////////////////////////////////
+        Glide.with(this).load(R.drawable.loadingbl).into(imgLoaderGif);
+        containerLoaderGif.setVisibility(View.VISIBLE);
+        imgLoaderGif.setVisibility(View.VISIBLE);
+        containerLoaderGif.bringToFront();
+        imgLoaderGif.bringToFront();
+        /////////////////////////////////////
+
+        DisplayMetrics displaymetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);            //Obtiene el valor de height y width
+        height = displaymetrics.heightPixels;
+        width = displaymetrics.widthPixels;
+        windowwidth = getActivity().getWindowManager().getDefaultDisplay().getWidth();
+        screenCenter = windowwidth / 2;
+
+
+        /////////////////////////////////////
+        shareFabMain.setVisibility(View.INVISIBLE);
+        shareFabMain.setEnabled(false);
+        shareFabMain.hide();
+        ///////////////////////////////////  SP
+        sp.setEnabled(false);
+        ///////////////////////////////////  ScrollViews
+
+        final AnimatorSet anim4 =  (AnimatorSet) AnimatorInflater.loadAnimator(getContext(), R.anim.share_moving);
+        anim4.setTarget(shareFabMain);
+        anim4.start();
+        anim4.addListener(new AnimatorListenerAdapter(){
+            @Override
+            public void onAnimationEnd(Animator animation) {
+              /*  new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        anim4.start();
+                    }
+                }, 5000); */
+            }
+        });
+        basura.bringToFront();
+        paloma.bringToFront();
+        basura.setVisibility(View.INVISIBLE);
+        paloma.setVisibility(View.INVISIBLE);
+    }
+
+    ///////////////////////////////////
+    public void showNewsNScrolling(final ArrayList<Noticia> defaultListNews,boolean fromMenuSlide,  int catFromMenuSlide) {
+        Log.e(TAGTIME, "showNewsNScrolling -- DELAY:" + String.valueOf(getRunningTime()));
+        if (getActivity() == null) {
+            Log.d(TAG, "showNewsNScrolling -- getActivity: NULL");
+        } else {
+            SwipadaptadorNScroll = new SwipAdapterNScrolling(getActivity(), defaultListNews, getContext());
+
+
+            if (SwipadaptadorNScroll.getCount() == 0) {
+                Log.e(TAG, "showNewsNScrolling -- Swipadaptador.getCount: No news");
+                if (fromMenuSlide){   //Check if is from Menu for show the card!
+                    if (( sp != null) && (sp.getVisibility() == View.VISIBLE)){
+                        shareFabMain.setVisibility(View.INVISIBLE);
+                        shareFabMain.hide();
+                        menuSelectedIndex = catFromMenuSlide; // 0 - 8
+                    }
+                }
+                flagMenuSlideTapped = fromMenuSlide;
+            }
+            else {
+                if(frnointernet != null)
+                    frnointernet.setVisibility(View.INVISIBLE);   //Muestra el letrero de Weak Signal
+                sp.setAdapter(SwipadaptadorNScroll);
+
+
+                    if(sp.getTopView() == null){
+                        Log.e(TAG, "showNewsNScrolling --  sp.getTopView.NULL, sp.ResetStack");
+                        sp.resetStack();
+                    }
+
+
+                    sp.setVisibility(View.VISIBLE);
+                    sp.setEnabled(true);
+
+
+                    shareFabMain.setVisibility(View.VISIBLE);
+                    shareFabMain.show();
+                    shareFabMain.setEnabled(true);
+            }
+        }
+    }
+
+
+    ///////////////////////////////////
+    /// MARK: Setup when user make a change in Menu.
+    public void setupForChangedNewsNScrolling(){
+        sp.removeAllViews();
+        sp.removeAllViewsInLayout();
+        sp.resetStack();
+        sp.setVisibility(View.VISIBLE);
+        shareFabMain.setVisibility(View.VISIBLE);
+        shareFabMain.setEnabled(true);
+        shareFabMain.show();
+    }
+
+    ///////////////////////////////
+    /// MARK: Save news to the Database Favorites or Recover.
+    public void saveNewsGenericNScroll(final SwipAdapterNScrolling targetAdapter, final int positionForSave,boolean forFavorites) {
+        String titulo = targetAdapter.getItem(positionForSave).getTitulo();
+        String url = targetAdapter.getItem(positionForSave).getUrl();
+        String imagen = targetAdapter.getItem(positionForSave).getImagen();
+        String autor = targetAdapter.getItem(positionForSave).getAutor();
+        String categoria = targetAdapter.getItem(positionForSave).getCategoria();
+
+        if(forFavorites)
+            registrarNoticias(titulo, imagen, url, autor, categoria);
+        else
+            registrarNoticiasRecuperar(titulo, imagen, url, autor, categoria);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /************************************************************************** SWIPESTACK SCROLLING *****************************************************/
+
 
 
 
@@ -749,25 +1085,27 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 DrawerItemNavBar selected = (DrawerItemNavBar) parent.getItemAtPosition(position);
                 Log.d(TAG, "onCreate -- onItemClick: position: " + String.valueOf(position));
-                //menuSlide(position);
 
-                startChangedNews();
-                if((MainActivity)getActivity() != null) {
+                if ((MainActivity) getActivity() != null) {
                     ((MainActivity) getActivity()).specificRecursive(position);
                 }
 
-                if (bottomFabs.getVisibility() == View.VISIBLE) {
-                    Log.d(TAG, "Setup UI -- scrollView onScrollChange: Scroll < 25, bottomFabs.INVISIBLE");
-                    hideBottomIcons();
-                    final Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            bottomFabs.setVisibility(View.INVISIBLE);
-                        }
-                    }, 300);
-                }
+                startChangedNews();
 
+                if (SWIPESTACK_SCROLLING) {
+                    if (bottomFabs.getVisibility() == View.VISIBLE) {
+                        Log.d(TAG, "Setup UI -- scrollView onScrollChange: Scroll < 25, bottomFabs.INVISIBLE");
+                        hideBottomIcons();
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                bottomFabs.setVisibility(View.INVISIBLE);
+                            }
+                        }, 300);
+                    }
+
+                }
 
 
                 String typeNews = cateNews[position];
@@ -1077,18 +1415,22 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     ///////////////////////////////////
     /// MARK: Start to change Main View.
     public void startChangedNews(){
-        if((allNewsHelper != null)&&allNewsDefault!=null) {
-            //allNewsDefault.clear();
-            //allNewsHelper.clear();
+        if(SWIPESTACK_SCROLLING) {
+            cardviewtest1.setVisibility(View.INVISIBLE);
+            cardviewContainer.setVisibility(View.INVISIBLE);
+            spaux.setVisibility(View.INVISIBLE);
+            indexHelperRemoveNews = 0;  //indexHelperRemoveNews es utilizado para saber si el usuario ha movido una Swipecard, ayuda en el inicio de cargar noticias.
+        }else{
+            sp.setVisibility(View.INVISIBLE);
+            shareFabMain.setVisibility(View.INVISIBLE);
+            shareFabMain.setEnabled(false);
+            shareFabMain.hide();
+            frnointernet.setVisibility(View.INVISIBLE);
+            imgLoaderGif.setVisibility(View.VISIBLE);
         }
-
-        cardviewtest1.setVisibility(View.INVISIBLE);
-        cardviewContainer.setVisibility(View.INVISIBLE);
-        sp.setVisibility(View.INVISIBLE);
-        spaux.setVisibility(View.INVISIBLE);
-        shareFabMain.setVisibility(View.INVISIBLE);
-        indexHelperRemoveNews = 0;  //indexHelperRemoveNews es utilizado para saber si el usuario ha movido una Swipecard, ayuda en el inicio de cargar noticias.
     }
+
+
 
     ///////////////////////////////////
     /// MARK: Setup when user make a change in Menu.
@@ -1756,7 +2098,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     public void setupOnViewSwipedToLeft(int position){
         setupOnViewSwiped(position);
         saveNewsGeneric(Swipadaptador,position,false);
-
     }
 
 
@@ -1937,12 +2278,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     public void eventsActionUp(MotionEvent ev) {
         Log.e(TAG, "eventsActionUp  -- ACTION UP! ");
 
-        diffPosY = 0;
-        diffPosX = 0;
-
-
         animationFinish(basura, paloma);
 
+        diffPosY = 0;
+        diffPosX = 0;
 
 
         x_cord = (int) ev.getRawX();
@@ -2118,6 +2457,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             }
         }
     }
+
+
     ///////////////////////////////////
     /// MARK: Todo:Checar aqui para hacer un requestSpecific y showMenu despues
     public void eventsActionUpCardNoNews(MotionEvent ev,final CardView targetCard) {
@@ -3005,9 +3346,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         return list;
     }
 
-
-
-
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -3230,7 +3568,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     private ArrayAdapter<String> dogsAdapter(String dogsArray[]) {
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, dogsArray) {
             String id;
-            int size;
+            int size; Log.d(TAG, "configUIListenersNScroll -- sp.setOnClickListener.TRUE");
+                SwipadaptadorNScroll.mostrarNoticiasView(sp.getCurrentPosition());
             String color;
 
             double d = Math.round(dpY * 0.02);

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.percentlayout.widget.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_alignParentStart="true"
+    android:layout_alignParentTop="true"
+
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".Activities.MainActivity">
+
+        <FrameLayout
+            android:id="@+id/contendor_home"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true">
+
+            <androidx.percentlayout.widget.PercentRelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipChildren="false"
+                >
+
+
+
+                <RelativeLayout
+                    android:id="@+id/loader_gif"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:layout_marginBottomPercent="38.5%"
+                    app:layout_marginTopPercent="34%"
+                    app:layout_marginStartPercent="20%"
+                    app:layout_marginEndPercent="20%"
+
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    >
+
+                    <ImageView
+                        android:id="@+id/img_loader_gif"
+                        android:scaleType="fitXY"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_centerHorizontal="true"
+                        />
+
+
+                </RelativeLayout>
+
+
+
+
+
+                <ImageView
+                    android:id="@+id/icono_mano"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/logocidnews"
+                    app:layout_marginBottomPercent="89%"
+                    app:layout_marginTopPercent="2%" />
+
+                <ImageButton
+                    android:id="@+id/boton_superior_home"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:adjustViewBounds="true"
+                    android:background="#00FFFFFF"
+                    android:padding="5dp"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/hambur_gris"
+                    app:layout_marginEndPercent="3%"
+                    app:layout_marginStartPercent="76%"
+                    app:layout_marginTopPercent="3.247%" />
+
+
+                <link.fls.swipestack.SwipeStack
+                    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+
+                    android:id="@+id/swipStack"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:layout_marginBottomPercent="18.5%"
+                    app:layout_marginTopPercent="14%"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:elevation="10dp"
+                    app:animation_duration="300"
+                    app:stack_rotation="-1"
+                    app:stack_size="2"
+                    app:stack_spacing="0dp"
+
+                    >
+
+                </link.fls.swipestack.SwipeStack>
+
+                <!--  START CONFIG OPTION 2 -->
+            </androidx.percentlayout.widget.PercentRelativeLayout>
+        </FrameLayout>
+
+
+
+
+
+
+        <ImageView
+            android:id="@+id/basuraimg"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_trash_pink1"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            app:layout_heightPercent="15%"
+
+            app:layout_marginTopPercent="30%"
+            app:layout_widthPercent="25%" />
+
+        <ImageView
+            android:id="@+id/palomaimg"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_fav_pink1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_heightPercent="15%"
+            app:layout_marginStartPercent="75%"
+            app:layout_marginTopPercent="30%"
+            app:layout_widthPercent="25%" />
+
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/shareMainFab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:clickable="true"
+            android:clipToPadding="true"
+            android:elevation="0dp"
+            android:focusable="true"
+            android:src="@drawable/sharemainfab2"
+            app:backgroundTint="@color/fabNews"
+
+            app:borderWidth="0dp"
+            app:fabCustomSize="60dp"
+
+            app:layout_marginEndPercent="11%"
+            app:layout_marginStartPercent="71%"
+            app:layout_marginTopPercent="74%" />
+
+
+
+
+            <LinearLayout
+                android:id="@+id/aviso_no_internet"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                app:layout_marginBottomPercent="6.55%"
+
+                android:background="@color/red"
+                android:layout_alignParentBottom="true"
+                android:gravity="center_horizontal">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_nowifi_red" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginEnd="15dp"
+                    android:fontFamily="@font/montserratmedium"
+                    android:text="@string/no_internet"
+                    android:textColor="#FFFFFF" />
+            </LinearLayout>
+</androidx.percentlayout.widget.PercentRelativeLayout>

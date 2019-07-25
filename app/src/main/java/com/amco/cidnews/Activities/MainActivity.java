@@ -32,6 +32,8 @@ import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 import com.amco.cidnews.Fragments.ConfigFragment;
 import com.amco.cidnews.Fragments.FavFragment;
@@ -51,10 +53,12 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestHandle;
 import com.loopj.android.http.RequestParams;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -62,6 +66,14 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import cz.msebera.android.httpclient.Header;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+
+import static com.amco.cidnews.Fragments.HomeFragment.SWIPESTACK_SCROLLING;
 
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
@@ -149,6 +161,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     String urlLanguage = "&language=en";
 
     String urlDate = "&from=";
+
+    String mFragmentName = "";
 
 
     /********************************  URL          ***********************************************/
@@ -253,7 +267,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         sizeWidth = size.x;
         sizeHeight = size.y;
 
-
         Log.d(TAG, "onCreate: YES -- sizeWidth:"+sizeWidth+"sizeHeight:"+sizeHeight);
         menuNavigation = findViewById(R.id.menu_navegation);
         menuNavigation.setOnNavigationItemSelectedListener(this);
@@ -288,11 +301,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         if(isNetworkStatusAvailable(this)){
             Log.d(TAG,"onCreate -- isNetworkStatusAvailable!");
             firstGetRequestAPI(urlTopNewsSettings,0);
-
+            //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
         }else{
             Log.d(TAG,"onCreate -- NoInternetAvailable!");
             //  slideDown(mMsjInternet);
         }
+        getSupportFragmentManager().beginTransaction().replace(R.id.contendor, new HomeFragment()).commit();
 
         menuNavigation.setSelectedItemId(R.id.home_nav);
     }
@@ -386,9 +400,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     ///////////////////////////////////
     /// MARK:
-    private boolean loadFragmant(androidx.fragment.app.Fragment fragment) {
+    private boolean loadFragmant(androidx.fragment.app.Fragment fragment,String fragmentName) {
         if (fragment != null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.contendor, fragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.contendor, fragment).addToBackStack(fragmentName).commit();
+
             return true;
         }
         return false;
@@ -425,7 +440,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 case R.id.home_nav:
                     if (mFlagHome){
                         Log.d(TAG, "onNavigationItemSelected: HomeFragment");
-
+                        mFragmentName = "Home";
                         // [START Menu_selected_event]
                         Bundle bundle = new Bundle();
                         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Home");
@@ -452,10 +467,53 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         if(changeStateSetting){
                             Log.d(TAG, "onNavigationItemSelected: HomeFragment changeStateSetting: TRUE");
                             changeStateSetting = false;
-                            allNews.clear();
-                            allNews = new ArrayList<>();
-                            firstGetRequestAPI(urlTopNewsSettings,0);
+
+
+                            if (SWIPESTACK_SCROLLING) {
+                                allNews.clear();
+                                allNews = new ArrayList<>();
+                                //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
+                                firstGetRequestAPI(urlTopNewsSettings, 0);
+                            }else{
+
+                                allNews.clear();
+                                allNews = new ArrayList<>();
+                                //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
+
+                                firstGetRequestAPI(urlTopNewsSettings, 0);
+                            }
                         }
+
+
+
+                        if (getSupportFragmentManager().getFragments().size() == 0) {
+                            Log.d(TAG,"onNavigationItemSelected -- Home.Selected -- BSEC == 0 -- " +
+                                    "getFragments.size:"
+                                    +getSupportFragmentManager().getFragments().size());
+
+                        }else {
+
+                            Log.d(TAG,"onNavigationItemSelected -- Home.Selected -- getFragments.size1:"
+                                    +getSupportFragmentManager().getFragments().size());
+
+
+
+
+
+                            getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+
+
+                            Log.d(TAG,"onNavigationItemSelected -- Home.Selected -- getFragments.size2:"
+                                    +getSupportFragmentManager().getFragments().size());
+
+                            /*
+                            for(int i = 1; i< getSupportFragmentManager().getFragments().size();i++){
+                                getSupportFragmentManager().popBackStack();
+                                //getSupportFragmentManager().getFragments().remove(i);
+                            }*/
+                        }
+
                     }
                     break;
 
@@ -476,6 +534,13 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         mFlagFavorites=false;
                         mFlagRecover=true;
                         mFlagSettings=true;
+                        mFragmentName = "Favorites";
+
+
+
+
+
+
 
                         fragment = new FavFragment();
                         imgBtnCross.setVisibility(View.INVISIBLE);
@@ -497,8 +562,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         //
                         animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/2);
                         marginScrollMenuBottom = sizeWidth/2;
-                        //
+                        mFragmentName = "Recover";
 
+                        //
                         mFlagHome = true;
                         mFlagFavorites=true;
                         mFlagRecover=false;
@@ -523,6 +589,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/2 + sizeWidth/4);
                         marginScrollMenuBottom = sizeWidth/2 + sizeWidth/4;
                         //
+                        mFragmentName = "Settings";
+
                         mFlagHome = true;
                         mFlagFavorites = true;
                         mFlagRecover=true;
@@ -534,7 +602,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     break;
 
             }
-            itemSelected = loadFragmant(fragment);
+
+            if (!mFragmentName.contentEquals("Home")) {
+                itemSelected = loadFragmant(fragment, mFragmentName);
+            }else
+                itemSelected = true;
 
             if(animateCrossButton) {
                 Animation fadeIn = new AlphaAnimation(0, 1);
@@ -614,6 +686,91 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         return false;
     }
 
+
+
+    ///////////////////////////////////
+    /// MARK: This is a first Request to the API NEWS for a better UX. After a Success if the is no news
+    //for show, it would go for the next URL
+    public void firstGetRequestAPIOkHttp(final String [] typeUrl, final int mNewsIndex){
+
+        OkHttpClient client = new OkHttpClient();
+        Request mRequestOkHttp  = new Request.Builder()
+                .url(typeUrl[mNewsIndex])
+                .build();
+
+
+        if (stateArrayMain[mNewsIndex]) {
+
+            client.newCall(mRequestOkHttp).enqueue(new Callback() {
+                @Override
+                public void onFailure(@NotNull Call call, @NotNull IOException e) {
+
+                }
+
+                @Override
+                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                    try {
+                        JSONObject mResponse = new JSONObject(new String(response.body().string()));
+                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onSuccess, mFirstNewsIndex:" + mNewsIndex);
+                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onSuccess, totalResults:" + mResponse.getInt("totalResults"));
+                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onSuccess, labelsForNews:" + labelsForNewsSettings[mNewsIndex]);
+
+                        if (mResponse.getInt("totalResults") == 0) {
+
+                            if (mNewsIndex + 1 < 9) {
+                                firstGetRequestAPIOkHttp(typeUrl, mNewsIndex + 1); //???
+                            } else
+                                Toast.makeText(getApplicationContext(),
+                                        "All news have been seen", Toast.LENGTH_SHORT).show();
+                        } else {
+
+                            //Let know to the HomeFrag that we have news!
+                            allNews = addMoreNews(mResponse.toString(), labelsForNewsSettings[mNewsIndex], allNews);
+
+                            if (allNews.size() == 0) {
+
+                                if (mNewsIndex + 1 < 9) {
+                                    firstGetRequestAPIOkHttp(typeUrl, mNewsIndex + 1); //???
+                                } else
+                                    Toast.makeText(getApplicationContext(),
+                                            "All news have been seen", Toast.LENGTH_SHORT).show();
+
+                            } else {
+                                if (activityListener != null) {
+                                    activityListener.setGeneralNews();
+                                }
+
+
+                                if (mNewsIndex + 1 < 9) {
+                                    generalRecursive(mNewsIndex + 1, false, true);
+                                } else
+                                    Toast.makeText(getApplicationContext(),
+                                            "All news have been seen", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onFailure:" + e.toString());
+                    }
+
+                }
+            });
+        }else {
+
+            if (mNewsIndex + 1 < 9) {
+                firstGetRequestAPIOkHttp(typeUrl, mNewsIndex + 1); //???
+            }else {
+                //Toast.makeText(getApplicationContext(), "All news requested?", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+
+
+    }
+
+
+
+
     ///////////////////////////////////
     /// MARK: This is a first Request to the API NEWS for a better UX. After a Success if the is no news
     //for show, it would go for the next URL
@@ -678,9 +835,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
 
 
-                        Log.d(TAG, "firstGetRequestAPI -- onFailure: statusCode:" + statusCode);
+                        Log.e(TAG, "firstGetRequestAPI -- onFailure: statusCode:" + statusCode+", Error:"+error);
 
 
+                        if (statusCode == 0){
+                            //Toast.makeText(MainActivity.this, "Weak Signal", Toast.LENGTH_SHORT).show();
+                            if(activityListener != null){
+                                activityListener.msjWeakSignal();
+                            }
+                        }
                         if(responseBody != null) {
                             if (responseBody.length != 0) {
                                 try {
@@ -755,9 +918,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             }else {
                 if(index == 8 && defNews){
                     //FINISH
-                    if(HomeFragment.Swipadaptador.getCount() == 0){
-                        if (null != activityListener) {
-                            activityListener.setGeneralNews();
+                    if (SWIPESTACK_SCROLLING) {
+                        if (HomeFragment.Swipadaptador.getCount() == 0) {
+                            if (null != activityListener) {
+                                activityListener.setGeneralNews();
+                            }
+                        }
+                    }else{
+                        if (HomeFragment.SwipadaptadorNScroll.getCount() == 0) {
+                            if (null != activityListener) {
+                                activityListener.setGeneralNews();
+                            }
                         }
                     }
                     Log.d(TAG,"generalRecursive  -- FinishALL allNews.size:"+allNews.size());
@@ -791,7 +962,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     }
                     @Override
                     public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-
+                        if (statusCode == 0){
+                            //Toast.makeText(MainActivity.this, "Weak Signal", Toast.LENGTH_SHORT).show();
+                            if(activityListener != null){
+                                activityListener.msjWeakSignal();
+                            }
+                        }
                     }
                     @Override
                     public void onFinish() {
@@ -807,6 +983,13 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                             @Override
                             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                                if (statusCode == 0){
+                                    //Toast.makeText(MainActivity.this, "Weak Signal", Toast.LENGTH_SHORT).show();
+                                    if(activityListener != null){
+                                        activityListener.msjWeakSignal();
+                                    }
+                                }
+
 
                             }
 
@@ -814,10 +997,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                             public void onFinish(){
                                 Log.d(TAG,"specificRecursive -- onFinish, ALLNewsMenu.size:" +allNewsMenu.size());
                                 //Make the change for homeFrag
-                                if (null != activityListener) {
-                                    Log.d(TAG,"generalRecursive -- onFinish, allNews.size(after) onFinish:" +allNews.size());
+                                if(allNewsMenu.size() != 0) {
+                                    if (null != activityListener) {
+                                        Log.d(TAG, "generalRecursive -- onFinish, allNews.size(after) onFinish:" + allNews.size());
 
-                                    activityListener.setSpeficicNewsFromMenu(index);
+                                        activityListener.setSpeficicNewsFromMenu(index);
+                                    }
                                 }
                             }
                         });
@@ -924,10 +1109,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     /// MARK: HttpClient
     public AsyncHttpClient requestHttpClient() {
         final AsyncHttpClient client = new AsyncHttpClient();
-        client.setConnectTimeout(5000);
-        client.setResponseTimeout(5000);
-        client.setTimeout(5000);
-        client.setMaxRetriesAndTimeout(1, 100);
+        client.setConnectTimeout(10000);
+        client.setResponseTimeout(10000);
+        client.setMaxRetriesAndTimeout(2, 10000);
         return client;
     }
 
@@ -1074,3 +1258,169 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 }
 
     /* ******************************************* TRASH ******************************************/
+/*
+*
+*
+    ///////////////////////////////////
+    /// MARK: This is a first Request to the API NEWS for a better UX. After a Success if the is no news
+    //for show, it would go for the next URL
+    public void firstGetRequestAPIOkHttp(final String [] typeUrl, final int mNewsIndex){
+
+
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request mRequestOkHttp  = new Request.Builder()
+                .url(typeUrl[mNewsIndex])
+                .build();
+
+
+        if (stateArrayMain[mNewsIndex]) {
+
+            client.newCall(mRequestOkHttp).enqueue(new Callback() {
+                @Override
+                public void onFailure(@NotNull Call call, @NotNull IOException e) {
+
+                }
+
+                @Override
+                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                    try {
+                        JSONObject mResponse = new JSONObject(new String(response.body().string()));
+                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onSuccess, mFirstNewsIndex:" + mNewsIndex);
+                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onSuccess, totalResults:" + mResponse.getInt("totalResults"));
+                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onSuccess, labelsForNews:" + labelsForNewsSettings[mNewsIndex]);
+
+                        if (mResponse.getInt("totalResults") == 0) {
+
+                            if (mNewsIndex + 1 < 9) {
+                                firstGetRequestAPIOkHttp(typeUrl, mNewsIndex + 1); //???
+                            } else
+                                Toast.makeText(getApplicationContext(),
+                                        "All news have been seen", Toast.LENGTH_SHORT).show();
+                        } else {
+
+                            //Let know to the HomeFrag that we have news!
+                            allNews = addMoreNews(mResponse.toString(), labelsForNewsSettings[mNewsIndex], allNews);
+
+                            if (allNews.size() == 0) {
+
+                                if (mNewsIndex + 1 < 9) {
+                                    firstGetRequestAPIOkHttp(typeUrl, mNewsIndex + 1); //???
+                                } else
+                                    Toast.makeText(getApplicationContext(),
+                                            "All news have been seen", Toast.LENGTH_SHORT).show();
+
+                            } else {
+                                if (activityListener != null) {
+                                    activityListener.setGeneralNews();
+                                }
+
+
+                                if (mNewsIndex + 1 < 9) {
+                                    generalRecursiveOkHttp(mNewsIndex + 1, false, true);
+                                } else
+                                    Toast.makeText(getApplicationContext(),
+                                            "All news have been seen", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onFailure:" + e.toString());
+                    }
+
+                }
+            });
+        }else {
+
+            if (mNewsIndex + 1 < 9) {
+                firstGetRequestAPIOkHttp(typeUrl, mNewsIndex + 1); //???
+            }else {
+                //Toast.makeText(getApplicationContext(), "All news requested?", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+
+
+    }
+
+
+
+    ///////////////////////////////////
+    /// MARK:
+    public void generalRecursiveOkHttp(final int index, final boolean defNews, final boolean topNews){
+        if(topNews)
+            typeUrl = urlTopNewsSettings;
+        else
+            typeUrl = urlDefaultNewsSettings;
+
+
+
+
+        OkHttpClient client = new OkHttpClient();
+        if(index < 9) {
+            if (stateArrayMain[index]) {
+                Request mRequestOkHttp = new Request.Builder()
+                        .url(typeUrl[index])
+                        .build();
+                client.newCall(mRequestOkHttp).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(@NotNull Call call, @NotNull IOException e) {
+
+                    }
+
+                    @Override
+                    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                        try {
+
+                            JSONObject mResponse = new JSONObject(new String(response.body().string()));
+                            allNews = addMoreNews(mResponse.toString(), labelsForNewsSettings[index], allNews);
+                        }catch (JSONException e) {
+                            e.printStackTrace();
+                            Log.d(TAG, "generalRecursiveOkHttp -- onFailure:" + e.toString());
+                        }
+
+                        if(index == 8 && defNews){
+                            //FINISH
+                            Log.d(TAG,"generalRecursiveOkHttp  -- FinishALL allNews.size:"+allNews.size());
+                            if (null != activityListener) {
+                                activityListener.setGeneralNews();
+                            }
+                        }else {
+                            Log.d(TAG,"generalRecursiveOkHttp  -- onFinish, generalRecursive, defNews:"+defNews);
+                            Log.d(TAG,"generalRecursiveOkHttp  -- onFinish, generalRecursive, topNews:"+topNews);
+
+                            generalRecursiveOkHttp(index + 1, defNews, topNews);
+                        }
+                    }
+                });
+
+            }
+            else{
+                if(index == 8 && defNews){
+                    //FINISH
+                    if (SWIPESTACK_SCROLLING) {
+                        if (HomeFragment.Swipadaptador.getCount() == 0) {
+                            if (null != activityListener) {
+                                activityListener.setGeneralNews();
+                            }
+                        }
+                    }else{
+                        if (HomeFragment.SwipadaptadorNScroll.getCount() == 0) {
+                            if (null != activityListener) {
+                                activityListener.setGeneralNews();
+                            }
+                        }
+                    }
+                    Log.d(TAG,"generalRecursiveOkHttp  -- FinishALL allNews.size:"+allNews.size());
+                }else
+                    generalRecursiveOkHttp(index + 1, defNews, topNews);
+            }
+        }else
+            generalRecursiveOkHttp(0,true,false);
+
+    }
+
+*
+*
+* */
