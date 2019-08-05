@@ -97,6 +97,7 @@
                     app:stack_size="2"
                     app:stack_spacing="0dp"
 
+
                     >
 
                 </link.fls.swipestack.SwipeStack>
@@ -133,25 +134,25 @@
             app:layout_widthPercent="25%" />
 
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/shareMainFab"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:clickable="true"
-            android:clipToPadding="true"
-            android:elevation="0dp"
-            android:focusable="true"
-            android:src="@drawable/sharemainfab2"
-            app:backgroundTint="@color/fabNews"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/shareMainFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:clipToPadding="true"
+        android:focusable="true"
+        android:src="@drawable/sharemainfab2"
 
-            app:borderWidth="0dp"
-            app:fabCustomSize="60dp"
+        app:backgroundTint="@color/fabNews"
+        app:fabSize="auto"
+        app:fabCustomSize="66dp"
+        app:layout_marginEndPercent="11%"
+        app:layout_marginBottomPercent="16%"
 
-            app:layout_marginEndPercent="11%"
-            app:layout_marginStartPercent="71%"
-            app:layout_marginTopPercent="74%" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+
+        />
 
 
 

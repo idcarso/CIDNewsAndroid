@@ -3,6 +3,7 @@ package com.amco.cidnews.Adapters;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,7 +24,11 @@ import com.amco.cidnews.Utilities.Noticia;
 import com.amco.cidnews.Utilities.VistaWeb;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.Request;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookSdk;
 import com.facebook.share.widget.ShareDialog;
@@ -64,6 +69,7 @@ public class SwipAdapterNScrolling extends ArrayAdapter<Noticia>  {
             e.printStackTrace();
         }
     }
+
 
 
     @Nullable
@@ -138,10 +144,12 @@ public class SwipAdapterNScrolling extends ArrayAdapter<Noticia>  {
                 Glide.with(activity).load(drawableResourceId).into(img);
         else {
             requestImg = (Glide.with(activity)
-                        .load(noticia.getImagen()).priority(Priority.HIGH)
+                        .load(noticia.getImagen()).priority(Priority.HIGH).timeout(4000)
                         .thumbnail(Glide.with(getContext())
                                 .load(R.drawable.loadingblocks))
                         .into(img)).getRequest();
+
+
             }
 
         return  convertView;
@@ -152,4 +160,5 @@ public class SwipAdapterNScrolling extends ArrayAdapter<Noticia>  {
     public int getCount() {
         return noticias.size();
     }
+
 }

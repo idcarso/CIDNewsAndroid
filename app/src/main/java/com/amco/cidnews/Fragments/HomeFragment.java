@@ -27,12 +27,12 @@ import android.nfc.Tag;
 import android.opengl.GLES20;
 import android.opengl.GLES32;
 import android.opengl.GLUtils;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 
 
-
-
+import android.os.Process;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -767,8 +767,9 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 flagMenuSlideTapped = fromMenuSlide;
             }
             else {
-                if(frnointernet != null)
+                if(frnointernet != null) {
                     frnointernet.setVisibility(View.INVISIBLE);   //Muestra el letrero de Weak Signal
+                }
                 sp.setAdapter(SwipadaptadorNScroll);
 
 
@@ -778,7 +779,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                     }
 
 
-                    sp.setVisibility(View.VISIBLE);
+                sp.setVisibility(View.VISIBLE);
                     sp.setEnabled(true);
 
 
@@ -804,18 +805,34 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
     ///////////////////////////////
     /// MARK: Save news to the Database Favorites or Recover.
-    public void saveNewsGenericNScroll(final SwipAdapterNScrolling targetAdapter, final int positionForSave,boolean forFavorites) {
-        String titulo = targetAdapter.getItem(positionForSave).getTitulo();
-        String url = targetAdapter.getItem(positionForSave).getUrl();
-        String imagen = targetAdapter.getItem(positionForSave).getImagen();
-        String autor = targetAdapter.getItem(positionForSave).getAutor();
-        String categoria = targetAdapter.getItem(positionForSave).getCategoria();
+    public void saveNewsGenericNScroll(final SwipAdapterNScrolling targetAdapter, final int positionForSave,final boolean forFavorites) {
+        final String titulo = targetAdapter.getItem(positionForSave).getTitulo();
+        final String url = targetAdapter.getItem(positionForSave).getUrl();
+        final String imagen = targetAdapter.getItem(positionForSave).getImagen();
+        final String autor = targetAdapter.getItem(positionForSave).getAutor();
+        final String categoria = targetAdapter.getItem(positionForSave).getCategoria();
 
-        if(forFavorites)
-            registrarNoticias(titulo, imagen, url, autor, categoria);
+
+
+        if(forFavorites) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+                    registrarNoticias(titulo, imagen, url, autor, categoria);
+                }
+            }).start();
+        }
         else
-            registrarNoticiasRecuperar(titulo, imagen, url, autor, categoria);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+                    registrarNoticiasRecuperar(titulo, imagen, url, autor, categoria);
+                }
+            }).start();
     }
+
 
 
 
@@ -1513,6 +1530,9 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         targetTrash.animate().scaleY(0.01f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(300);
         targetTrash.animate().scaleX(0.01f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(300);
 
+        targetCheck.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        targetTrash.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+
         ObjectAnimator animator1 = ObjectAnimator.ofFloat(targetTrash, "translationX", -250);
         ObjectAnimator animator2 =  ObjectAnimator.ofFloat(targetCheck, "translationX", 250 );
 
@@ -1528,10 +1548,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                targetCheck.setVisibility(View.INVISIBLE);
+                targetTrash.setLayerType(View.LAYER_TYPE_NONE, null);
                 targetTrash.setVisibility(View.INVISIBLE);
-                targetCheck.animate().scaleY(1f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(1000);
-                targetCheck.animate().scaleX(1f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(1000);
                 targetTrash.animate().scaleY(1f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(1000);
                 targetTrash.animate().scaleX(1f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(1000);
             }
@@ -1540,12 +1558,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
+                targetCheck.setLayerType(View.LAYER_TYPE_NONE, null);
                 targetCheck.setVisibility(View.INVISIBLE);
-                targetTrash.setVisibility(View.INVISIBLE);
                 targetCheck.animate().scaleY(1f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(1000);
                 targetCheck.animate().scaleX(1f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(1000);
-                targetTrash.animate().scaleY(1f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(1000);
-                targetTrash.animate().scaleX(1f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(1000);
             }
         });
 
@@ -1563,24 +1579,30 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     /// MARK: Animation when card is swiping to left direction.
     public void animationLeftSwipe(float currentProgress) {
         /////////////////
-        // Log.d("POSITION ", "animationLeftSwipe: " + String.valueOf(currentProgress));
-
+        //Log.d(TAG, "animationLeftSwipe -- currentProgress:" + currentProgress);
         Log.d(TAG, "animationLeftSwipe -- MemoryCardIndex:  Value: " + String.valueOf(MemoryCard.size()));
-        ObjectAnimator animator1 = ObjectAnimator.ofFloat(basura, "translationX", (-currentProgress * 150));
-        animator1.setRepeatCount(0);
-        animator1.setDuration(0);
-        animator1.start();
         /////////////////
-        Float D = Math.abs(400 * currentProgress) + 120;
+        Float D = Math.abs((400) * currentProgress) + 120;
         RelativeLayout.LayoutParams params = new PercentRelativeLayout.LayoutParams(D.intValue(), D.intValue());
         int marginTopIcons = Double.valueOf(height * 0.3 + currentProgress * 200).intValue();
         params.setMargins(0, marginTopIcons, 0, 0);
         params.addRule(RelativeLayout.ALIGN_PARENT_START, RelativeLayout.TRUE);
-
         basura.setLayoutParams(params);
-        basura.setAlpha(-currentProgress * 2);
-        basura.setVisibility(View.VISIBLE);
-        paloma.setVisibility(View.INVISIBLE);
+
+
+        if(-currentProgress > 0.125) {
+            ObjectAnimator animator1 = ObjectAnimator.ofFloat(basura, "translationX", (-currentProgress * 300));
+            animator1.setRepeatCount(0);
+            animator1.setDuration(0);
+            animator1.start();
+
+
+            basura.setAlpha(-currentProgress * 4f);
+            basura.setVisibility(View.VISIBLE);
+            paloma.setVisibility(View.INVISIBLE);
+        }else{
+            basura.setAlpha(0f);
+        }
     }
     //////////////////////////////
     /// MARK: Animation when card is swiping to right direction.
@@ -1588,13 +1610,28 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         //  Log.d("POSITION ", "animationLeftSwipe: " + String.valueOf(currentProgress));
         //Log.d("HomeFragment", "animationRightSwipe -- allNewsDefault.size: " + String.valueOf(allNewsDefault.size()));
 
-        Log.d(TAG, "animationRightSwipe -- allNewsDefault.size: " + String.valueOf(allNewsDefault.size()));
-        ObjectAnimator animator1 = ObjectAnimator.ofFloat(paloma, "translationX", (-currentProgress * 150));
-        animator1.setRepeatCount(0);
-        animator1.setDuration(0);
-        animator1.start();
         /////////////////
-        animationMoveIconRight(currentProgress);
+        Float D = Math.abs(400 * currentProgress) + 120;
+        RelativeLayout.LayoutParams params = new PercentRelativeLayout.LayoutParams(D.intValue(), D.intValue());
+        params.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
+        int marginTopIcons = Double.valueOf(height * 0.3 - currentProgress * 200).intValue();
+        params.setMargins(0, marginTopIcons, 0, 0);
+        paloma.setLayoutParams(params);
+
+        if(currentProgress > 0.125) {
+
+            Log.d(TAG, "animationRightSwipe -- allNewsDefault.size: " + String.valueOf(allNewsDefault.size()));
+            ObjectAnimator animator1 = ObjectAnimator.ofFloat(paloma, "translationX", (-currentProgress * 300));
+            animator1.setRepeatCount(0);
+            animator1.setDuration(0);
+            animator1.start();
+
+            paloma.setAlpha(currentProgress * 4f);
+            paloma.setVisibility(View.VISIBLE);
+            basura.setVisibility(View.INVISIBLE);
+        }else
+            paloma.setAlpha(0f);
+
     }
     //////////////////////////////
     /// MARK: Animation move icon when card is swiping to right direction.
@@ -1817,6 +1854,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                     if(sp.getTopView() == null){
                         Log.e(TAG, "showNews --  sp.getTopView.NULL, sp.ResetStack");
                         sp.resetStack();
+
                     }
 
 

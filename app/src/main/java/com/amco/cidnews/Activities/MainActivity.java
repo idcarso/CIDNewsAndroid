@@ -14,7 +14,9 @@ import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Process;
 import android.util.Base64;
 import android.util.Log;
 import android.view.*;
@@ -115,6 +117,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     //DB Connection
     ConexionSQLiteHelper conn;
+    //Fragment
+    androidx.fragment.app.Fragment mFragmentLoad = null;
 
     //APIS KEY
     /*
@@ -428,8 +432,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     ///////////////////////////////////
     /// MARK: Main Bottom Menu
     @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        androidx.fragment.app.Fragment fragment = null;
+    public boolean onNavigationItemSelected(@NonNull final  MenuItem item) {
+        mFragmentLoad = null;
 
         boolean itemSelected;
         if (databaseCountHelper() == 0) {
@@ -448,71 +452,47 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
                         // [END Menu_selected_event]
 
-                        //
-                        animationScrollMenuBottom(marginScrollMenuBottom,0);
-                        marginScrollMenuBottom = 0;
-                        //
-
-                        mFlagHome=false;
-                        mFlagFavorites=true;
-                        mFlagRecover=true;
-                        mFlagSettings=true;
-                        animateCrossButton = false;
-
-                        item.setEnabled(true);
-                        fragment = new HomeFragment();
-                        imgBtnCross.setVisibility(View.INVISIBLE);
-
-
-                        if(changeStateSetting){
-                            Log.d(TAG, "onNavigationItemSelected: HomeFragment changeStateSetting: TRUE");
-                            changeStateSetting = false;
-
-
-                            if (SWIPESTACK_SCROLLING) {
-                                allNews.clear();
-                                allNews = new ArrayList<>();
-                                //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
-                                firstGetRequestAPI(urlTopNewsSettings, 0);
-                            }else{
-
-                                allNews.clear();
-                                allNews = new ArrayList<>();
-                                //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
-
-                                firstGetRequestAPI(urlTopNewsSettings, 0);
-                            }
-                        }
-
-
-
-                        if (getSupportFragmentManager().getFragments().size() == 0) {
-                            Log.d(TAG,"onNavigationItemSelected -- Home.Selected -- BSEC == 0 -- " +
-                                    "getFragments.size:"
-                                    +getSupportFragmentManager().getFragments().size());
-
-                        }else {
-
-                            Log.d(TAG,"onNavigationItemSelected -- Home.Selected -- getFragments.size1:"
-                                    +getSupportFragmentManager().getFragments().size());
 
 
 
 
 
-                            getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+                                mFlagHome=false;
+                                mFlagFavorites=true;
+                                mFlagRecover=true;
+                                mFlagSettings=true;
+                                animateCrossButton = false;
+
+                                imgBtnCross.setVisibility(View.INVISIBLE);
+
+
+                                if(changeStateSetting){
+                                    Log.d(TAG, "onNavigationItemSelected: HomeFragment changeStateSetting: TRUE");
+                                    changeStateSetting = false;
+
+
+                                    if (SWIPESTACK_SCROLLING) {
+                                        allNews.clear();
+                                        allNews = new ArrayList<>();
+                                        //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
+                                        firstGetRequestAPI(urlTopNewsSettings, 0);
+                                    }else{
+
+                                        allNews.clear();
+                                        allNews = new ArrayList<>();
+                                        //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
+
+                                        firstGetRequestAPI(urlTopNewsSettings, 0);
+                                    }
+                                }
 
 
 
-                            Log.d(TAG,"onNavigationItemSelected -- Home.Selected -- getFragments.size2:"
-                                    +getSupportFragmentManager().getFragments().size());
 
-                            /*
-                            for(int i = 1; i< getSupportFragmentManager().getFragments().size();i++){
-                                getSupportFragmentManager().popBackStack();
-                                //getSupportFragmentManager().getFragments().remove(i);
-                            }*/
-                        }
+                                animationScrollMenuBottom(marginScrollMenuBottom,0);
+                                marginScrollMenuBottom = 0;
+
 
                     }
                     break;
@@ -526,10 +506,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
                         // [END Menu_selected_event]
 
-                        //
-                        animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/4);
-                        marginScrollMenuBottom = sizeWidth/4;
-                        //
+
                         mFlagHome = true;
                         mFlagFavorites=false;
                         mFlagRecover=true;
@@ -542,11 +519,18 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
 
 
-                        fragment = new FavFragment();
+                        mFragmentLoad = new FavFragment();
                         imgBtnCross.setVisibility(View.INVISIBLE);
                         animateCrossButton = !consultarNoticiasFavoritas("%");
+                        //
+                        animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/4);
+                        marginScrollMenuBottom = sizeWidth/4;
+                        //
+
                     }else
                         animateCrossButton=false;
+
+
                     break;
 
 
@@ -559,9 +543,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
                         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
                         // [END Menu_selected_event]
-                        //
-                        animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/2);
-                        marginScrollMenuBottom = sizeWidth/2;
+
                         mFragmentName = "Recover";
 
                         //
@@ -569,11 +551,19 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         mFlagFavorites=true;
                         mFlagRecover=false;
                         mFlagSettings=true;
-                        fragment = new RecoverFragment();
+                        mFragmentLoad = new RecoverFragment();
 
                         animateCrossButton = false;
                         imgBtnCross.setVisibility(View.INVISIBLE);
+
+                        //
+                        animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/2);
+                        marginScrollMenuBottom = sizeWidth/2;
+
+
                     }
+
+
                     break;
 
 
@@ -585,10 +575,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
                         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
                         // [END Menu_selected_event]
-                        //
-                        animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/2 + sizeWidth/4);
-                        marginScrollMenuBottom = sizeWidth/2 + sizeWidth/4;
-                        //
+
                         mFragmentName = "Settings";
 
                         mFlagHome = true;
@@ -596,33 +583,45 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         mFlagRecover=true;
                         mFlagSettings = false;
 
-                        fragment = new ConfigFragment();
+                        mFragmentLoad = new ConfigFragment();
                         animateCrossButton = true;
+
+                        //
+                        animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/2 + sizeWidth/4);
+                        marginScrollMenuBottom = sizeWidth/2 + sizeWidth/4;
+                        //
+
                     }
+
                     break;
 
             }
 
-            if (!mFragmentName.contentEquals("Home")) {
-                itemSelected = loadFragmant(fragment, mFragmentName);
-            }else
-                itemSelected = true;
-
-            if(animateCrossButton) {
-                Animation fadeIn = new AlphaAnimation(0, 1);
-                fadeIn.setInterpolator(new DecelerateInterpolator());
-                fadeIn.setDuration(800);
-                imgBtnCross.setAnimation(fadeIn);
-                imgBtnCross.setVisibility(View.VISIBLE);
-                imgBtnCross.setEnabled(true);
-
-                mFlagHome=true;
-            }
 
         }
         /*Fin de menu inferior*/
-        return itemSelected;
+        return true;
     }
+
+    public void finishTapMenuNavigationSetup(){
+
+        if (!mFragmentName.contentEquals("Home")) {
+            loadFragmant(mFragmentLoad, mFragmentName);
+        }
+
+        if(animateCrossButton) {
+            Animation fadeIn = new AlphaAnimation(0, 1);
+            fadeIn.setInterpolator(new DecelerateInterpolator());
+            fadeIn.setDuration(800);
+            imgBtnCross.setAnimation(fadeIn);
+            imgBtnCross.setVisibility(View.VISIBLE);
+            imgBtnCross.setEnabled(true);
+
+            mFlagHome=true;
+        }
+
+    }
+
 
 
     ///////////////////////////////////
@@ -1236,6 +1235,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         Log.d(TAG,"animationScrollMenuBottom --  marginStart:"+marginStart);
 
 
+        scrollMenuPosition.setLayerType(View.LAYER_TYPE_HARDWARE,null);
+
         Animation mAnimation = new Animation() {
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
@@ -1249,9 +1250,35 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                 //params.leftMargin = marginStart + (int) ((marginEnd - marginStart) * interpolatedTime);
                 scrollMenuPosition.setLayoutParams(params);
+
             }
         };
-        mAnimation.setDuration(600); // in ms
+        mAnimation.setDuration(75); // in ms
+        mAnimation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                scrollMenuPosition.setLayerType(View.LAYER_TYPE_NONE,null);
+                if (marginEnd != 0)
+                    finishTapMenuNavigationSetup();
+                else {
+                    Log.d(TAG,"animationScrollMenuBottom -- mAnimation.onAnimationEnd margin End == 0");
+                    if (!(getSupportFragmentManager().getFragments().size() == 0))
+                        getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                }
+
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
         scrollMenuPosition.startAnimation(mAnimation);
     }
 
