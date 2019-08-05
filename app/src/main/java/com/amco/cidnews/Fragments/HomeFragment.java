@@ -2723,7 +2723,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
     /******************************************** HELPERS  *****************************************/
-
     ///////////////////////////////////
     /// MARK: Add time for recover news
     public long addTime(long startTime){
