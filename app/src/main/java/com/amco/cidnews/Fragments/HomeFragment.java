@@ -1118,6 +1118,11 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
 
     //region NAVIGATION DRAWER: SELECCION DE OPCIONES
+
+    /**
+     * FUNCION QUE CONFIGURA LAS ACCIONES DEL DRAWER MENU (TAP OPTIONS)
+     * @param view
+     */
     public void setupMenu(View view){
 
         drawerLayout = (DrawerLayout) view.findViewById(R.id.drawer_layout); //Obtener drawer
@@ -1145,7 +1150,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
                 String typeNews = cateNews[position];
 
-                if (position < 8) {
+                if (position < 9) {
 
                     if ((MainActivity) getActivity() != null) {
 
