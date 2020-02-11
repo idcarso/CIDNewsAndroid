@@ -6,28 +6,24 @@ import android.animation.AnimatorInflater;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+
 import android.net.Uri;
-import android.nfc.Tag;
-import android.opengl.GLES20;
-import android.opengl.GLES32;
-import android.opengl.GLUtils;
-import android.os.AsyncTask;
+
 import android.os.Bundle;
 import android.os.Handler;
 
@@ -114,6 +110,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.percentlayout.widget.PercentFrameLayout;
 import androidx.percentlayout.widget.PercentRelativeLayout;
 
@@ -121,6 +118,7 @@ import javax.microedition.khronos.opengles.GL;
 
 import static com.amco.cidnews.Activities.MainActivity.getRunningTime;
 import static com.amco.cidnews.Activities.MainActivity.isNetworkStatusAvailable;
+import static com.amco.cidnews.Activities.MainActivity.mFlagHome;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
 
@@ -139,6 +137,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
     //////////////////////////////// MAIN VAR
     static public SwipeStack sp;
+
     static public SwipAdapterNScrolling SwipadaptadorNScroll;
 
     static public SwipAdapter Swipadaptador;
@@ -146,7 +145,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     static public CardView cardviewContainer,cardviewtest1, spaux, swipNoNews;
 
     //MENU SLIDE
-    DrawerLayout drawerLayout;
+    //DRAWER LAYOUT
+    public static DrawerLayout drawerLayout;
 
 
     //DATA API FROM HOMEACTIVITY
@@ -164,6 +164,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     ScrollView scrollViewShow;
     View viewBckgrnd;
     View viewBckgrndNoNews;
+
     /////////////////////////////////// TEST CONNECTION FB
     private ConnectionQuality mConnectionClass = ConnectionQuality.UNKNOWN;
     private ConnectionClassManager mConnectionClassManager;
@@ -177,16 +178,16 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     RelativeLayout containerLoaderGif;
     LinearLayout llmenu,ddmenu, frnointernet, bottomFabs,mMenuSlide;
     ImageView  mano1,basura,paloma,heightscroll,bottomFabFB,bottomFabTwitter,bottomFabWhats,imgLoaderGif;
-    ImageButton btnSupDer;
+    public static ImageButton btnSupDer;
     WebView web;
-    FloatingActionButton shareFabMain;
+    public static FloatingActionButton shareFabMain;
      AsyncHttpClient masterClient;
     ProgressBar progressBar;
 
 
     RequestHandle requestTopHeadlines;
     //////////////////////////////// STRINGS
-    String cateNews[] = {"HEALTH", "CONSTRUCTION", "RETAIL", "EDUCATION", "ENTERTAINMENT", "ENVIRONMENT", "FINANCE", "ENERGY", "TELECOM"};
+    String cateNews[] = {"HEALTH", "CONSTRUCTION", "RETAIL", "EDUCATION", "ENTERTAINMENT", "ENVIRONMENT", "FINANCE", "ENERGY", "TELECOM","ABOUT US"};
     //
     final String labelsNews[] = {"salud", "construcción", "retail", "educación", "entretenimiento", "ambiente", "banca", "energía", "telecom"};
     String categoriesNews[] = {"SALUD", "CONSTRUCCIÓN", "RETAIL", "EDUCACIÓN", "ENTRETENIMIENTO", "AMBIENTE", "BANCA", "ENERGÍA", "TELECOM"};
@@ -268,36 +269,26 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     Bitmap mNextBitmapLoaded = null;
     ImageView mImg;
 
+    //BANDERA PARA SABER SI SE SELECCIONO ABOUT US
+    boolean banderaAbout = false;
+
+
+    //BANDERA PARA SABER SI EL DRAWER LAYOUT ESTA ABIERTO
+    public static boolean estadoDrawer = false;
 
 
 
-    private ImagePassingAdapter mPassingData = new ImagePassingAdapter() {
+    //region VISTAS RESTANTES DEL HOME FRAGMENT
+    TextView txt_cid;
+    //endregion
+
+
+    // SE MODIFICO ESTE METODO 1/10/2019
+    private ImagePassingAdapter mPassingData =  new ImagePassingAdapter() {
         @Override
-        public void sendingImage(Bitmap bitmap, String url) {
-          //  Log.d(TAG,"sendingImage -- url: "+url);
-           // Log.d(TAG,"sendingImage -- getUrl: "+allNewsDefault.get(sp.getCurrentPosition() + 1).getImagen());
-
-
-
-            /*
-            if (allNewsDefault.get(sp.getCurrentPosition() + 1).getImagen().contentEquals(url)){
-                mNextBitmapLoaded = bitmap;
-                Log.d(TAG,"sendingImage -- mNextBitmapLoaded = bitmap");
-
-
-                if(bitmap == null)
-                    Log.d(TAG,"sendingImage -- mNextBitmapLoaded,bitmap:null");
-                else
-                    Log.d(TAG,"sendingImage -- mNextBitmapLoaded,bitmap != null");
-            }else{
-                mNextBitmapLoaded =  null;
-                Log.d(TAG,"sendingImage -- mNextBitmapLoaded = null");
-            }
-
-            mImg.setImageBitmap(mNextBitmapLoaded);*/
-
-        }
+        public void sendingImage(Bitmap bitmap, String url) {}
     };
+
 
 
     @Override
@@ -315,8 +306,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
 
-
-
     @Override
     public void onReloadNextImage() {
         mNextBitmapLoaded = null;
@@ -324,76 +313,62 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
 
+    //SECCION DE CODIGO COMENTADO ELIMINADO 1/10/2019
 
-
-
-
-
-   /* @Override
-    public void imageLoaded(Bitmap bitmap,String currentUrl){
-        Log.d("HomeFrag","imageLoaded");
-
-       if (allNewsDefault.get(sp.getCurrentPosition() + 1).getUrl().contentEquals(currentUrl)){
-           mNextBitmapLoaded = bitmap;
-
-           Log.d("HomeFrag","imageLoaded -- mNextBitmapLoaded = bitmap");
-
-       }else{
-           mNextBitmapLoaded =  null;
-           Log.d("HomeFrag","imageLoaded -- mNextBitmapLoaded = null");
-
-       }
-    }*/
-
-
-   /*
-     @Override
-     public void requestImage(){
-
-         Log.d("HomeFrag","requestImage");
-
-         if (mNextBitmapLoaded != null){
-                Log.d("HomeFrag","requestImage -- mNextBitmapLoaded != null");
-               // mPassingData.sendingImage();
-
-             }
-     }*/
 
     ///////////////////////////////////
     /// MARK:
     @Override
     public void setGeneralNews(){
+
         Log.d(TAG,"setGeneralNews");
+
         if (SWIPESTACK_SCROLLING) {
-            if ( getActivity() != null) {
+
+            if ( getActivity() != null ) {
+
                 allNewsFromAct = ((MainActivity) getActivity()).allNews;
                 allNewsDefault = allNewsFromAct;
-                if (allNewsDefault.size() != 0)
+
+                if ( allNewsDefault.size() != 0 ) {
+
                     showNews(allNewsDefault, false, 0);
 
-                Log.d(TAG, "setGeneralNews allNews(MainActivity).size: " +
-                        allNewsFromAct);
+                }
+
+                Log.d(TAG, "setGeneralNews allNews(MainActivity).size: " + allNewsFromAct);
 
             }
-        }
-        else {
-                if (getActivity() != null) {
-                    allNewsFromAct = ((MainActivity) getActivity()).allNews;
-                    allNewsDefault = allNewsFromAct;
-                    if (allNewsDefault.size() != 0)
-                        showNewsNScrolling(allNewsDefault, false, 0);
+        } else {
+
+            if (getActivity() != null) {
+
+                allNewsFromAct = ((MainActivity) getActivity()).allNews;
+                allNewsDefault = allNewsFromAct;
+
+                if (allNewsDefault.size() != 0) {
+
+                    showNewsNScrolling(allNewsDefault, false, 0);
 
                 }
+
+            }
+
         }
     }
 
 
     ///////////////////////////////////
-    /// MARK:
+    /// MARK: METODO QUE MUESTRA EL AVISO DE QUE NO HAY RED
     @Override
     public void msjWeakSignal(){
-        if(frnointernet != null)
+
+        if (frnointernet != null) {
+
             frnointernet.setVisibility(View.VISIBLE);   //Muestra el letrero de Weak Signal
+
+        }
+
     }
 
 
@@ -401,25 +376,32 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     /// MARK:
     @Override
     public void setSpeficicNewsFromMenu(int mIndex) {
+
         Log.d(TAG, "setSpeficicNewsFromMenu");
+
         if (SWIPESTACK_SCROLLING){
+
             if ((MainActivity) getActivity() != null) {
+
                 specificNewsFromAct = ((MainActivity) getActivity()).allNewsMenu;
                 allNewsDefault = new ArrayList<>();
                 allNewsDefault = specificNewsFromAct;
                 setupForChangedNews();
                 showNews(allNewsDefault, true, mIndex);
-            }
-        }
 
-        else {
+            }
+        } else {
+
             if ((MainActivity) getActivity() != null) {
+
                 specificNewsFromAct = ((MainActivity) getActivity()).allNewsMenu;
                 allNewsDefault = new ArrayList<>();
                 allNewsDefault = specificNewsFromAct;
                 setupForChangedNewsNScrolling();
                 showNewsNScrolling(allNewsDefault, true, mIndex);
+
             }
+
         }
 
     }
@@ -430,78 +412,42 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     /// MARK:
     @Override
     public void sendingImage(Bitmap bitmap,String url) {
+
         Log.d(TAG,"sendingImage?");
+
     }
 
 
-    ///////////////////////////////////
-    /// MARK:
+    //CODIGO COMENTADO ELIMINADO 1/10/2019
+
+
+     //region FRAGMENT: CICLO DE VIDA
+
     @Override
-    public void onSaveInstanceState(Bundle outState) {   //No se utiliza
-        Log.e(TAGTIME, "onSaveInstanceState DELAY:" + String.valueOf(getRunningTime()));
-        outState.putInt("PositionKey", currentIndex);
-        outState.putInt("MemoryKey", memoryIndex);
-        outState.putStringArrayList("MemoryCardKey", MemoryCard);  //Array de String de las Urls a borrar
-        outState.putInt("MenuSelectedKey", MemoryLoadIndex);
-        outState.putString("watchingNewsKey", watchingNews);
-     //   outState.putParcelableArrayList("myArrayList", newsApiSaved);
-        super.onSaveInstanceState(outState);
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        Log.e("HOME FRAGMENT", "ESTOY EN ONATTACH");
     }
 
-
-    /****************************************** LIFECYCLE *****************************************/
-
-
-    ///////////////////////////////////
-    /// MARK:
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
-        Log.e(TAGTIME, "onCreate:" + String.valueOf(getRunningTime()));
+        //Log.e(TAGTIME, "onCreate:" + String.valueOf(getRunningTime()));
+        Log.e("HOME FRAGMENT", "ESTOY EN ONCREATE");
         ((MainActivity) getActivity()).setActivityListener(HomeFragment.this);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
-    }
-
-    ///////////////////////////////////
-    /// MARK:
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.d(TAG, "onDestroyView True" );
-
-
-    }
-    ///////////////////////////////////
-    /// MARK:
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-        Log.e(TAGTIME, "onDestroy:" + String.valueOf(getRunningTime()));
-        if  (masterClient != null) {
-            masterClient.getThreadPool().shutdown();
-        }
-        //REQUEST NEW ARRAYLIST! FROM ACT
-        ((MainActivity)getActivity()).refreshDeletedNews();
-    }
-
-
-    @Override
-    public void onResume(){
-        super.onResume();
-        Log.e(TAGTIME, "onResume:" + String.valueOf(getRunningTime()));
 
     }
 
-
-
-    ///////////////////////////////////
-    /// MARK:
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView True" );
-        Log.e(TAGTIME, "onCreateView,  Start Inflating.." + getRunningTime());
+
+        Log.e("HOME FRAGMENT", "ESTOY EN ON CREATE VIEW");
+        //Log.d(TAG, "onCreateView True" );
+        //Log.e(TAGTIME, "onCreateView,  Start Inflating.." + getRunningTime());
         final View view = inflater.inflate(R.layout.frame_home_main, container, false);
-        Log.e(TAGTIME, "onCreateView, After Inflating.." + getRunningTime());
+        //Log.e(TAGTIME, "onCreateView, After Inflating.." + getRunningTime());
 
         setupMenu(view);
 
@@ -510,12 +456,16 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             /////////////////////////////////////  Prioridad en cargar
             setupCreateView(view, inflater, container);
             Log.e(TAGTIME, "onCreateView,  End Setting" + String.valueOf(getRunningTime()));
+
             if (allNewsDefault.size() != 0) {
+
                 showNews(allNewsDefault, false, 0);
                 Log.e(TAGTIME, "onCreate: allNewsFromAct" + allNewsFromAct.size());
 
             } else {
+
                 if ((MainActivity) getActivity() != null) {
+
                     allNewsDefault = ((MainActivity) getActivity()).allNews;
                     Log.e(TAGTIME, "onCreate: allNewsDefault = AllNews:" +
                             ((MainActivity) getActivity()).allNews.size());
@@ -523,48 +473,234 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                             ((MainActivity) getActivity()).allNewsMenu.size());
 
                     showNews(allNewsDefault, false, 0);
+
                 }
+
                 Log.e(TAGTIME, "onCreate: allNewsFromAct" + allNewsFromAct.size());
+
             }
 
-        }else {
+        } else {
 
             /////////////////////////////////////
             setupCreateViewNoScroll(view);
             Log.e(TAGTIME, "onCreateView,  End Setting" + String.valueOf(getRunningTime()));
+
             if (allNewsDefault.size() != 0) {
+
                 showNewsNScrolling(allNewsDefault, false, 0);
                 Log.e(TAGTIME, "onCreate: allNewsFromAct" + allNewsFromAct.size());
 
             } else {
-                if (getActivity() != null &&  ((MainActivity) getActivity()).allNews.size() != 0){
+
+                if (getActivity() != null &&  ((MainActivity) getActivity()).allNews.size() != 0) {
+
                     allNewsDefault = ((MainActivity) getActivity()).allNews;
                     Log.e(TAGTIME, "onCreate: allNewsDefault = AllNews:" + ((MainActivity) getActivity()).allNews.size());
                     Log.e(TAGTIME, "onCreate: allNewsDefault = AllNewsMenu :" + ((MainActivity) getActivity()).allNewsMenu.size());
                     showNewsNScrolling(allNewsDefault, false, 0);
+
                 }
             }
 
-
         }
+
+        /* ----------------------------- NUEVOS METODOS ALEX ------------------------------------ */
+
+        //EVENTO QUE ESCUCHA LAS ACCIONES DEL DRAWER LAYOUT (MENU DEL HOME)
+        drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
+
+            @Override
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+
+
+                if (banderaAbout == false) {
+                    if (slideOffset < 0.8) {
+                        MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
+                        MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+
+                    } else if (slideOffset > 0.4) {
+                        MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(false);
+                        MainActivity.scrollMenuPosition.setVisibility(View.INVISIBLE);
+                    }
+                }
+                //SI SE DIO CLIC DEL MENU EN ABOUT US, HASTA QUE CUMPLA LA POSICION DEL DRAWER
+                //EN PANTALLA, SE MUESTRA EL FRAGMENT
+                /*if (banderaAbout == true && (slideOffset < 1)) {
+
+                    Fragment fragmentAboutUs = new AboutFragment();
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
+                    //transaction.replace(R.id.contendor_home, fragmentAboutUs);
+                    //transaction.commit();
+                    transaction.show(fragmentAboutUs);
+                    Log.w("HOME-FRAGMENT", "BANDERA ABOUT: " + banderaAbout);
+
+                } else if (banderaAbout == false && (slideOffset < 0.8)) { //CUANDO EL VALOR DEL DESPLAZAMIENTO SE CUMPLA, MUESTRAS EL SCROLL Y CAMBIAS DE TINTA EL ICONO DE HOME
+
+                    //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
+                    MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
+
+                    //SI EL SCROLL ES INVISIBLE, LO ESCONDEMOS CUANDO EL DRAWER LAYOUT ESTE CERRADO
+                    if (MainActivity.scrollMenuPosition.getVisibility() == View.INVISIBLE) {
+
+                        MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+
+                    }
+
+                } else if (banderaAbout == false && (slideOffset > 0.4)) { //CUANDO EL VALOR DEL DESPLAZAMIENTO SE CUMPLA, OCULTAS EL SCROLL Y CAMBIAS DE TINTA EL ICONO DE HOME
+
+                    //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
+                    MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(false);
+
+                    //SI EL SCROLL ES VISIBLE, LO ESCONDEMOS CUANDO EL DRAWER LAYOUT ESTE ABIERTO
+                    if (MainActivity.scrollMenuPosition.getVisibility() == View.VISIBLE) {
+
+                        MainActivity.scrollMenuPosition.setVisibility(View.INVISIBLE);
+
+                    }
+                }
+                */
+
+            }
+
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+
+                //CADA QUE SE ABRE EL DRAWER LAYOUT SE COLOCA LA BANDERA EN FALSO PARA NO ACTIVAR
+                //EL LANZAMIENTO DEL FRAGMENT HASTA QUE SE SELECCIONA ABOUT US DEL DRAWER LAYOUT
+                banderaAbout = false;
+
+                //SIRVE PARA SABER EN QUE ESTADO SE ENCUENTRA EL DRAWER
+                //TRUE: ABIERTO
+                //FALSE: CERRADO
+                estadoDrawer = true;
+
+
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+                //CADA QUE SE ABRE EL DRAWER LAYOUT SE COLOCA LA BANDERA EN FALSO PARA NO ACTIVAR
+                //EL LANZAMIENTO DEL FRAGMENT HASTA QUE SE SELECCIONA ABOUT US DEL DRAWER LAYOUT
+                banderaAbout = false;
+
+                //SIRVE PARA SABER EN QUE ESTADO SE ENCUENTRA EL DRAWER
+                //TRUE: ABIERTO
+                //FALSE: CERRADO
+                estadoDrawer = false;
+
+                /*if (banderaAbout == true) {
+                    if (MainActivity.scrollMenuPosition.getVisibility() == View.VISIBLE) {
+                        Toast.makeText(getContext(), "Selecciono about y el scroll es visible", Toast.LENGTH_SHORT).show();
+                        MainActivity.scrollMenuPosition.setVisibility(View.INVISIBLE);
+                        MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(false);
+                    }
+                } else {
+                    Toast.makeText(getContext(), "Sin about us y el scroll debe ser visible", Toast.LENGTH_SHORT).show();
+                }*/
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        });
 
         return view;
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        Log.e("HOME FRAGMENT", "ESTOY EN ON ACTIVITY CREATED");
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+
+        Log.e("HOME FRAGMENT", "ESTOY EN ON VIEW STATE RESTORED");
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        Log.e("HOME FRAGMENT", "ESTOY EN ON START");
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+
+        Log.e("HOME FRAGMENT", "ESTOY EN ON RESUME");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        Log.e("HOME FRAGMENT", "ESTOY EN ON PAUSE");
+        //CUANDO PASE A ONPAUSE ESTE FRAGMENT, CERRAMOS EL DRAWER LAYOUT
+        if (estadoDrawer == true) {
+            drawerLayout.closeDrawer(Gravity.END);
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        Log.e("HOME FRAGMENT", "ESTOY EN ON STOP");
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        Log.e("HOME FRAGMENT", "ESTOY EN ON DESTROY VIEW");
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        Log.e("HOME FRAGMENT", "ESTOY EN ON DESTROY");
+        Log.e(TAGTIME, "onDestroy:" + String.valueOf(getRunningTime()));
+        if  (masterClient != null) {
+            masterClient.getThreadPool().shutdown();
+        }
+        //REQUEST NEW ARRAYLIST! FROM ACT
+        ((MainActivity)getActivity()).refreshDeletedNews();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+        Log.e("HOME FRAGMENT", "ESTOY EN ON DETACH");
+    }
+
+    //endregion
 
 
 
 
 
-    /********************************************************************** SwipeStack NOT SCROLLING *********************************************/
+    /********************************* SwipeStack NOT SCROLLING ***********************************/
 
     public void setupCreateViewNoScroll(View view){
+
         /////////////////////////////////////
         sp = view.findViewById(R.id.swipStack);
         frnointernet = view.findViewById(R.id.aviso_no_internet);
         frnointernet.setVisibility(View.INVISIBLE);
         containerLoaderGif = view.findViewById(R.id.loader_gif);
         imgLoaderGif = view.findViewById(R.id.img_loader_gif);
+
+        //VISTA RESTANTE
+        txt_cid = (TextView) view.findViewById(R.id.txt_cid);
 
         ////////////
         btnSupDer = view.findViewById(R.id.boton_superior_home);
@@ -575,9 +711,12 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
         setupUINScrolling(view);
         configUIListenersNScroll(view);
+
     }
 
-    /******** LISTENERS NScrolling *****/
+
+    /************************************* LISTENERS NScrolling ***********************************/
+
 
     ///////////////////////////////////
     /// MARK: config Listeners UI
@@ -586,8 +725,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         btnSupDer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Log.d(TAG,"configUIListenersNScroll -- btnSupDer -- onClick.TRUE");
                 drawerLayout.openDrawer(GravityCompat.END);
+
             }
         });
 
@@ -665,10 +806,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         });
 
 
-
-
-
         sp.setListener(new SwipeStack.SwipeStackListener() {
+
             @Override
             public void onViewSwipedToLeft(final int position) {
                 Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedToLeft Position:" + String.valueOf(position));
@@ -678,6 +817,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedToLeft indexHelperRemoveNews: " + String.valueOf(indexHelperRemoveNews));
                 saveNewsGenericNScroll(SwipadaptadorNScroll,position,false);
             }
+
             @Override
             public void onViewSwipedToRight(final int position) {
                 Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedRight Position:" + String.valueOf(position));
@@ -688,6 +828,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
                 saveNewsGenericNScroll(SwipadaptadorNScroll,position,true);
             }
+
             @Override
             public void onStackEmpty() {
                 deleteCache(getContext());
@@ -699,45 +840,43 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
     }
 
+
     ///////////////////////////////////
     /// MARK: initial UI
     public void setupUINScrolling(final View view){
+
         ////////////////////////////////////
         Glide.with(this).load(R.drawable.loadingbl).into(imgLoaderGif);
         containerLoaderGif.setVisibility(View.VISIBLE);
         imgLoaderGif.setVisibility(View.VISIBLE);
         containerLoaderGif.bringToFront();
         imgLoaderGif.bringToFront();
-        /////////////////////////////////////
 
+        /////////////////////////////////////
         DisplayMetrics displaymetrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);            //Obtiene el valor de height y width
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);//Obtiene el valor de height y width
         height = displaymetrics.heightPixels;
         width = displaymetrics.widthPixels;
         windowwidth = getActivity().getWindowManager().getDefaultDisplay().getWidth();
         screenCenter = windowwidth / 2;
 
-
         /////////////////////////////////////
         shareFabMain.setVisibility(View.INVISIBLE);
         shareFabMain.setEnabled(false);
         shareFabMain.hide();
+
         ///////////////////////////////////  SP
         sp.setEnabled(false);
-        ///////////////////////////////////  ScrollViews
 
+        ///////////////////////////////////  ScrollViews
         final AnimatorSet anim4 =  (AnimatorSet) AnimatorInflater.loadAnimator(getContext(), R.anim.share_moving);
         anim4.setTarget(shareFabMain);
         anim4.start();
         anim4.addListener(new AnimatorListenerAdapter(){
             @Override
             public void onAnimationEnd(Animator animation) {
-              /*  new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        anim4.start();
-                    }
-                }, 5000); */
+                //CODIGO COMENTADO ELIMINADO 1/10/2019
+
             }
         });
         basura.bringToFront();
@@ -746,54 +885,69 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         paloma.setVisibility(View.INVISIBLE);
     }
 
+
     ///////////////////////////////////
     public void showNewsNScrolling(final ArrayList<Noticia> defaultListNews,boolean fromMenuSlide,  int catFromMenuSlide) {
+
         Log.e(TAGTIME, "showNewsNScrolling -- DELAY:" + String.valueOf(getRunningTime()));
+
         if (getActivity() == null) {
+
             Log.d(TAG, "showNewsNScrolling -- getActivity: NULL");
+
         } else {
+
             SwipadaptadorNScroll = new SwipAdapterNScrolling(getActivity(), defaultListNews, getContext());
 
-
             if (SwipadaptadorNScroll.getCount() == 0) {
+
                 Log.e(TAG, "showNewsNScrolling -- Swipadaptador.getCount: No news");
-                if (fromMenuSlide){   //Check if is from Menu for show the card!
-                    if (( sp != null) && (sp.getVisibility() == View.VISIBLE)){
+
+                if (fromMenuSlide) {   //Check if is from Menu for show the card!
+
+                    if (( sp != null) && (sp.getVisibility() == View.VISIBLE)) {
+
                         shareFabMain.setVisibility(View.INVISIBLE);
                         shareFabMain.hide();
                         menuSelectedIndex = catFromMenuSlide; // 0 - 8
+
                     }
                 }
+
                 flagMenuSlideTapped = fromMenuSlide;
-            }
-            else {
-                if(frnointernet != null) {
-                    frnointernet.setVisibility(View.INVISIBLE);   //Muestra el letrero de Weak Signal
+            } else {
+
+                if (frnointernet != null) {
+
+                    frnointernet.setVisibility(View.INVISIBLE);//Muestra el letrero de Weak Signal
+
                 }
+
                 sp.setAdapter(SwipadaptadorNScroll);
+                if (sp.getTopView() == null) {
 
+                    Log.e(TAG, "showNewsNScrolling --  sp.getTopView.NULL, sp.ResetStack");
+                    sp.resetStack();
 
-                    if(sp.getTopView() == null){
-                        Log.e(TAG, "showNewsNScrolling --  sp.getTopView.NULL, sp.ResetStack");
-                        sp.resetStack();
-                    }
-
+                }
 
                 sp.setVisibility(View.VISIBLE);
-                    sp.setEnabled(true);
+                sp.setEnabled(true);
+                shareFabMain.setVisibility(View.VISIBLE);
+                shareFabMain.show();
+                shareFabMain.setEnabled(true);
 
-
-                    shareFabMain.setVisibility(View.VISIBLE);
-                    shareFabMain.show();
-                    shareFabMain.setEnabled(true);
             }
+
         }
+
     }
 
 
     ///////////////////////////////////
     /// MARK: Setup when user make a change in Menu.
     public void setupForChangedNewsNScrolling(){
+
         sp.removeAllViews();
         sp.removeAllViewsInLayout();
         sp.resetStack();
@@ -801,159 +955,49 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         shareFabMain.setVisibility(View.VISIBLE);
         shareFabMain.setEnabled(true);
         shareFabMain.show();
+
     }
+
 
     ///////////////////////////////
     /// MARK: Save news to the Database Favorites or Recover.
     public void saveNewsGenericNScroll(final SwipAdapterNScrolling targetAdapter, final int positionForSave,final boolean forFavorites) {
+
         final String titulo = targetAdapter.getItem(positionForSave).getTitulo();
         final String url = targetAdapter.getItem(positionForSave).getUrl();
         final String imagen = targetAdapter.getItem(positionForSave).getImagen();
         final String autor = targetAdapter.getItem(positionForSave).getAutor();
         final String categoria = targetAdapter.getItem(positionForSave).getCategoria();
 
-
-
         if(forFavorites) {
+
             new Thread(new Runnable() {
                 @Override
                 public void run() {
+
                     Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                     registrarNoticias(titulo, imagen, url, autor, categoria);
+
                 }
             }).start();
-        }
-        else
+        } else {
+
             new Thread(new Runnable() {
                 @Override
                 public void run() {
+
                     Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                     registrarNoticiasRecuperar(titulo, imagen, url, autor, categoria);
+
                 }
             }).start();
+
+        }
+
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /************************************************************************** SWIPESTACK SCROLLING *****************************************************/
-
-
+    /*********************************** SWIPESTACK SCROLLING *************************************/
 
 
     /**************************************** INITIAL SETUP ***************************************/
@@ -961,7 +1005,9 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     ///////////////////////////////////
     /// MARK: initial params
     public void setupCreateView(View view,LayoutInflater inflater,ViewGroup container){
+
         mImg = view.findViewById(R.id.ImgTest);
+
         /////////////////////////////////////
         sp = view.findViewById(R.id.swipStack);
         frnointernet = view.findViewById(R.id.aviso_no_internet);
@@ -977,7 +1023,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         viewBckgrnd = inflater.inflate(R.layout.backcardview, container, false);
         containerLoaderGif = view.findViewById(R.id.loader_gif);
         imgLoaderGif = view.findViewById(R.id.img_loader_gif);
-        //mMenuSlide = view.findViewById(R.id.slide_menu);
+        //LINEA DE CODIGO COMENTADA ELIMINADA 1/10/2019
 
         ////////////
         bottomFabs = view.findViewById(R.id.content_bottomfabs);
@@ -1000,14 +1046,16 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     ///////////////////////////////////
     /// MARK: initial UI
     public void setupUI(final View view){
+
+
         ////////////////////////////////////
         Glide.with(this).load(R.drawable.loadingbl).into(imgLoaderGif);
         containerLoaderGif.setVisibility(View.VISIBLE);
         imgLoaderGif.setVisibility(View.VISIBLE);
         containerLoaderGif.bringToFront();
         imgLoaderGif.bringToFront();
-        /////////////////////////////////////
 
+        /////////////////////////////////////
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);            //Obtiene el valor de height y width
         height = displaymetrics.heightPixels;
@@ -1016,30 +1064,22 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         screenCenter = windowwidth / 2;
         swipNoNews.addView(viewBckgrndNoNews);
 
+        //CODIGO COMENTADO ELIMINADO 1/10/2019
 
-        /*
-        global.heightPhone = height;
-        global.widthPhone = width;
-        global.densityDpi = displaymetrics.densityDpi;
-        global.dpx = Math.round(((global.widthPhone) * 160) / global.densityDpi);
-        global.dpy = Math.round(((global.heightPhone) * 160) / global.densityDpi);
-        global.densityNum = displaymetrics.density;
-        dpX = global.dpx;
-        dpY = global.dpy;
-        scale = global.densityNum;
-        float d = Math.round(global.densityNum);
-        dps = (int) d;*/
         /////////////////////////////////////
         fabOpen = android.view.animation.AnimationUtils.loadAnimation(getContext(), R.anim.sharebutton_open);
         fabClose = android.view.animation.AnimationUtils.loadAnimation(getContext(), R.anim.sharebutton_close);
         rotateFoward = android.view.animation.AnimationUtils.loadAnimation(getContext(), R.anim.rotate_foward);
         rotateBackward = android.view.animation.AnimationUtils.loadAnimation(getContext(), R.anim.rotate_backward);
+
         /////////////////////////////////////
         cardviewContainer.setVisibility(View.INVISIBLE);
         shareFabMain.setVisibility(View.INVISIBLE);
         shareFabMain.setEnabled(false);
+
         ///////////////////////////////////  SP
         sp.setEnabled(false);
+
         ///////////////////////////////////  ScrollViews
         scrollView.setVerticalScrollBarEnabled(false);
         scrollViewShow.setVerticalScrollBarEnabled(true);
@@ -1054,36 +1094,35 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
+
                         anim4.start();
+
                     }
                 }, 5000);
             }
         });
+
         basura.bringToFront();
         paloma.bringToFront();
         basura.setVisibility(View.INVISIBLE);
         paloma.setVisibility(View.INVISIBLE);
 
-
-
         cardviewContainer.setEnabled(true);
         sp.setEnabled(false);
         cardviewtest1.setEnabled(true);
 
-        /*if(web!=null) {
-            RelativeLayout.LayoutParams layoutParams3 = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, web.getHeight());
-            heightscroll.setLayoutParams(layoutParams3);
-        }*/
+        //CODIGO COMENTADO ELIMINADO 1/10/2019
 
     }
 
-    ///////////////////////////////////
-    /// MARK:Setup Menu
-    public void setupMenu(View view){
-        drawerLayout = (DrawerLayout) view.findViewById(R.id.drawer_layout); //Obtener drawer
-        ListView drawerList = (ListView) view.findViewById(R.id.nav_list); //Obtener listview
-        ArrayList<DrawerItemNavBar> items = new ArrayList<DrawerItemNavBar>();
 
+
+    //region NAVIGATION DRAWER: SELECCION DE OPCIONES
+    public void setupMenu(View view){
+
+        drawerLayout = (DrawerLayout) view.findViewById(R.id.drawer_layout); //Obtener drawer
+        final ListView drawerList = (ListView) view.findViewById(R.id.nav_list); //Obtener listview
+        ArrayList<DrawerItemNavBar> items = new ArrayList<DrawerItemNavBar>();
         items.add(new DrawerItemNavBar(getResources().getString(R.string.health), R.drawable.ic_health_menu));
         items.add(new DrawerItemNavBar(getResources().getString(R.string.construction), R.drawable.ic_construction_menu));
         items.add(new DrawerItemNavBar(getResources().getString(R.string.retail), R.drawable.ic_retail_menu));
@@ -1093,41 +1132,94 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         items.add(new DrawerItemNavBar(getResources().getString(R.string.finance), R.drawable.ic_finance_menu));
         items.add(new DrawerItemNavBar(getResources().getString(R.string.energy), R.drawable.ic_energy_menu));
         items.add(new DrawerItemNavBar(getResources().getString(R.string.telecom), R.drawable.ic_telecom_menu));
-
+        items.add(new DrawerItemNavBar(getResources().getString(R.string.about_us), R.drawable.ic_about_menu));
         drawerList.setAdapter(new DrawerAdapter(getContext(), items));// Relacionar el adaptador y la escucha de la lista del drawer
         View footer = getLayoutInflater().inflate(R.layout.footer_cidnews, null);
         drawerList.addFooterView(footer);
         drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
                 DrawerItemNavBar selected = (DrawerItemNavBar) parent.getItemAtPosition(position);
                 Log.d(TAG, "onCreate -- onItemClick: position: " + String.valueOf(position));
 
-                if ((MainActivity) getActivity() != null) {
-                    ((MainActivity) getActivity()).specificRecursive(position);
-                }
+                String typeNews = cateNews[position];
 
-                startChangedNews();
+                if (position < 8) {
 
-                if (SWIPESTACK_SCROLLING) {
-                    if (bottomFabs.getVisibility() == View.VISIBLE) {
-                        Log.d(TAG, "Setup UI -- scrollView onScrollChange: Scroll < 25, bottomFabs.INVISIBLE");
-                        hideBottomIcons();
-                        final Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                bottomFabs.setVisibility(View.INVISIBLE);
-                            }
-                        }, 300);
+                    if ((MainActivity) getActivity() != null) {
+
+                        ((MainActivity) getActivity()).specificRecursive(position);
+
                     }
 
+                    startChangedNews();
+
+                    if (SWIPESTACK_SCROLLING) {
+
+                        if (bottomFabs.getVisibility() == View.VISIBLE) {
+
+                            Log.d(TAG, "Setup UI -- scrollView onScrollChange: Scroll < 25, bottomFabs.INVISIBLE");
+                            hideBottomIcons();
+                            final Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    bottomFabs.setVisibility(View.INVISIBLE);
+
+                                }
+                            }, 300);
+
+                        }
+
+                    }
+
+                    Log.d(TAG, "setupMenu -- drawerList.setOnItemClickListener -- cateNews[" + position + "]: " + typeNews);
+                    drawerLayout.closeDrawers();
+
+                } else if (position == 9) {
+
+                    //ACTIVAMOS BANDERA DE QUE SE SELECCIONO ABOUT US
+                    banderaAbout = true;
+
+                    //HACEMOS INVISIBLES CUANDO ENTRA ABOUT US SCROLL Y SELECCION DE BOTTOM NAVIGATION VIEW
+                    MainActivity.scrollMenuPosition.setVisibility(View.INVISIBLE);
+                    MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(false);
+
+                    InhabilitarHome();
+
+                    //AGREGAMOS EL FRAGMENT EN LA PARTE SUPERIOR PARA NO PERDER EL ESTADO DEL HOME
+                    Fragment fragmentAboutUs = new AboutFragment();
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
+                    transaction.add(R.id.contendor_home, fragmentAboutUs).commit();
+
+                    //CERRAMOS EL DRAWER LAYOUT CUANDO SE HACE CLIC EN ABOUT US
+                    drawerLayout.closeDrawer(Gravity.END);
+
+                    //transaction.replace(R.id.contendor_home, fragmentAboutUs);
+                    //transaction.commit();
+                    //transaction.show(fragmentAboutUs).commit();
+                    //transaction.replace(R.id.contendor_home, fragmentAboutUs).commit();
+
+
+                    /*if (banderaAbout == true) {
+                        //SI EL SCROLL ES VISIBLE, LO ESCONDEMOS ESTANDO EN ABOUT US
+                        if (MainActivity.scrollMenuPosition.getVisibility() == View.VISIBLE) {
+
+                            MainActivity.scrollMenuPosition.setVisibility(View.INVISIBLE);
+                            Log.w("SCROLL NAVIGATION", "CAMBIO A INVISIBLE");
+
+                        }
+
+                        //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
+                        MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(false);
+                    }*/
+
+                    //ACTIVAMOS LA BANDERA DE QUE SE SELECCIONO ABOUT US
+                    //banderaAbout = true;
                 }
-
-
-                String typeNews = cateNews[position];
-                Log.d(TAG,"setupMenu -- drawerList.setOnItemClickListener -- cateNews["+position
-                        +"]: "+typeNews);
 
                 // [START event]
                 Bundle bundle = new Bundle();
@@ -1135,51 +1227,75 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST, bundle);
                 // [END event]
 
-                drawerLayout.closeDrawers();
+                //drawerLayout.closeDrawers();
+
             }
         });
 
     }
+    //endregion
 
+
+    public static void InhabilitarHome(){
+        btnSupDer.setEnabled(false);
+        sp.setEnabled(false);
+        shareFabMain.setEnabled(false);
+        shareFabMain.setVisibility(View.INVISIBLE);
+    }
+
+    public static void HabilitarHome(){
+        btnSupDer.setEnabled(true);
+        sp.setEnabled(true);
+        shareFabMain.setEnabled(true);
+        shareFabMain.setVisibility(View.VISIBLE);
+    }
     /****************************************** LISTENERS *****************************************/
 
     ///////////////////////////////////
     /// MARK: config Listeners UI
     public void configUIListeners(final View view){
-
         btnSupDer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Log.d(TAG,"btnSupDer -- onClick.TRUE");
                 drawerLayout.openDrawer(Gravity.END);
+
             }
         });
-
 
         swipNoNews.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+
                 Log.d(TAG, "configUIListeners -- swipNoNews --  onTouch: ");
                 isSwiping = true;
                 v.getParent().requestDisallowInterceptTouchEvent(true);
                 switch (event.getAction()) {
+
                     case MotionEvent.ACTION_CANCEL:
                         Log.e("animationSwipe!", "ACTION: CANCEL ");
                         break;
+
                     case MotionEvent.ACTION_DOWN:
                         Log.e("animationSwipe!", "ACTION DOWN!");
                         eventsActionDown(event);
                         break;
+
                     case MotionEvent.ACTION_UP:
                         Log.e("animationSwipe!", "ACTION UP!");
                         eventsActionUpCardNoNews(event,swipNoNews);
                         break;
+
                     case MotionEvent.ACTION_MOVE:
                         Log.e("animationSwipe!", "ACTION MOVE!");
                         eventsActionMoveCardNoNews(event,swipNoNews);
                         break;
+
                 }
+
                 return true;
+
             }
         });
 
@@ -1487,6 +1603,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         bottomFabWhats.animate().scaleX(0.01f).setInterpolator(new AccelerateDecelerateInterpolator()).setDuration(300);
         ///////
     }
+
     ///////////////////////////////////
     /// MARK: Show the bottom social media icons
     public void showBottomIcons(){
@@ -1522,6 +1639,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         if ((progressSwipe * 100) > 1)
             animationRightSwipe(progressSwipe);
     }
+
     //////////////////////////////
     /// MARK: Animation when swipe finish.
     public void animationFinish(final ImageView targetTrash, final ImageView targetCheck) {
@@ -1575,6 +1693,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         btnSupDer.setVisibility(View.VISIBLE);
         btnSupDer.bringToFront();
     }
+
     //////////////////////////////
     /// MARK: Animation when card is swiping to left direction.
     public void animationLeftSwipe(float currentProgress) {
@@ -1604,6 +1723,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             basura.setAlpha(0f);
         }
     }
+
     //////////////////////////////
     /// MARK: Animation when card is swiping to right direction.
     public void animationRightSwipe(float currentProgress) {
@@ -1633,6 +1753,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             paloma.setAlpha(0f);
 
     }
+
     //////////////////////////////
     /// MARK: Animation move icon when card is swiping to right direction.
     public void animationMoveIconRight(float currentProgress){
@@ -1648,9 +1769,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
 
-
-
-
     /*************************************** CHECK APPS INSTALLED **********************************/
 
     /// MARK:
@@ -1662,6 +1780,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             return false;
         }
     }
+
+
     ///////////////////////////////////
     /// MARK:
     public  boolean facebookInstalled(Activity activity){
@@ -1990,6 +2110,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         }
 
         Log.d(TAG, "swipeToUp -- web.isActivated: " + String.valueOf(web.isActivated()) + ",web.isEnable:" + String.valueOf(web.isEnabled()));
+
         web.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -2131,6 +2252,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         setupOnViewSwiped(position);
         saveNewsGeneric(Swipadaptador,position,true);
     }
+
     ///////////////////////////////////
     /// MARK:
     public void setupOnViewSwipedToLeft(int position){
@@ -2160,6 +2282,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         cardviewContainer.setRotation(0);
         Likes = 0;
     }
+
     ///////////////////////////////////
     /// MARK:
     public void eventsActionDown(MotionEvent ev) {
@@ -2172,6 +2295,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         y = startPointY;
         Likes = 0;
     }
+
     ///////////////////////////////////
     /// MARK:
     public void eventsActionMove(MotionEvent ev, View v) {
@@ -2311,6 +2435,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             v.getParent().requestDisallowInterceptTouchEvent(false);
         }
     }
+
     ///////////////////////////////////
     /// MARK:
     public void eventsActionUp(MotionEvent ev) {
@@ -2419,6 +2544,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             animators.start();
         }
     }
+
     ///////////////////////////////////
     /// MARK:
     public void eventsActionMoveCardNoNews(MotionEvent ev,CardView targetCard) {
@@ -2778,6 +2904,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             return false;
         }
     }
+
+
+
+
 
 
 
@@ -3384,425 +3514,3 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /* ******************************************* TRASH ******************************************/
-
-
-
-
-
-    /*
-    ///////////////////////////////////
-    /// MARK:
-    public void crearMenu(final View view) {
-        List<String> dogsList = new ArrayList<String>();
-        dogsList.add("S");
-        dogsList.add("HEALTH");
-        dogsList.add("CONSTRUCTION");
-        dogsList.add("RETAIL");
-        dogsList.add("EDUCATION");
-        dogsList.add("ENTERTAINMENT");
-        dogsList.add("ENVIRONMENT");
-        dogsList.add("FINANCE");
-        dogsList.add("ENERGY");
-        dogsList.add("TELECOM");
-        dogsList.add("CID NEWS");
-
-        popUpContents = new String[dogsList.size()];
-        dogsList.toArray(popUpContents);
-        popupWindowDogs = popupWindowDogs();
-
-        btnSupDer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                //showMenuSlideWithAnimation();
-
-                popupWindowDogs.setAnimationStyle(R.style.popupAnim);
-                popupWindowDogs.setElevation(30f);
-                popupWindowDogs.showAsDropDown(view, 0, -550);
-
-
-            }
-        });
-
-
-        llmenu = (LinearLayout) view.findViewById(R.id.swipe_menu_fav);
-        llmenu.bringToFront();
-        ddmenu = view.findViewById(R.id.swipe_menu_favdismiss);
-        ddmenu.bringToFront();
-        llmenu.setOnTouchListener(new OnSwipeTouchListener(getContext()) {
-            @Override
-            public void onSwipeLeft() {
-                super.onSwipeLeft();
-                Log.d("LLMENU", "onSwipeLeft: TRUE");
-                popupWindowDogs.setAnimationStyle(R.style.popupAnim);
-                popupWindowDogs.setElevation(30f);
-                popupWindowDogs.showAsDropDown(view, 20 * dps, -3000);
-                //showMenuSlideWithAnimation();
-            }
-        });
-        ddmenu.setOnTouchListener(new OnSwipeTouchListener(getContext()) {
-            @Override
-            public void onSwipeRight() {
-                super.onSwipeRight();
-
-                popupWindowDogs.dismiss();
-                //dismissMenuSlideWithAnimation();
-
-
-            }
-        });
-    }
-
-    public void dismissMenuSlideWithAnimation(){
-
-        Log.d("DDMENU", "onSwipeLeft: TRUE");
-        Animation animation   =    AnimationUtils.loadAnimation(getContext(), R.anim.anim_dismiss);
-        Log.i("animate","Begin Animation");
-        //mMenuSlide.setAnimation(animation);
-
-        animation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-
-                //mMenuSlide.setVisibility(View.INVISIBLE);
-
-                Log.i("animate Dismiss","End Animation");
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-                animation.start();
-
-            }
-        });
-        //mMenuSlide.animate();
-        animation.start();
-        Log.i("animate2","End Animation");
-
-
-    }
-
-    public void showMenuSlideWithAnimation(){
-    //    mMenuSlide.setVisibility(LinearLayout.VISIBLE);
-        Animation animation   =    AnimationUtils.loadAnimation(getContext(), R.anim.anim_show);
-        Log.i("animate","Begin Animation");
-      //  mMenuSlide.setAnimation(animation);
-     //   mMenuSlide.bringToFront();
-
-        animation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-            @Override
-            public void onAnimationEnd(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        animation.start();
-        Log.i("animate","End Animation");
-    }
-    */
-
-
-    /*
-    ///////////////////////////////////
-    /// MARK:
-    public PopupWindow popupWindowDogs() {
-        MainActivity mainActivity = (MainActivity) getActivity();
-        final PopupWindow popupWindow = new PopupWindow(mainActivity);
-        final ListView listView = new ListView(mainActivity);
-
-        //listView.setAdapter(dogsAdapter(popUpContents));
-
-        popupWindow.setFocusable(true);
-        popupWindow.setWidth(Math.round(width - 20 * dps));  //width-25*dps
-        popupWindow.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
-        popupWindow.setBackgroundDrawable(getResources().getDrawable(R.color.blanco));
-        popupWindow.setContentView(listView);
-
-        listView.setClickable(true);
-        listView.setItemsCanFocus(true);
-        listView.setDivider(null);
-        listView.setOnTouchListener(new OnSwipeTouchListener(getContext()) {
-            @Override
-            public void onSwipeRight() {
-                super.onSwipeRight();
-                popupWindowDogs.dismiss();
-            }
-        });
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View view, int position, long arg3) {   //Tap en el menu Slide
-                if (position == 0 || position == 10) {
-                } else {
-                    view.setBackgroundColor(0xFF29B9E8);
-                    Animation animation1 = new AlphaAnimation(0.4f, 1);
-                    animation1.setDuration(750);
-                    animation1.setAnimationListener(new Animation.AnimationListener() {
-                        @Override
-                        public void onAnimationStart(Animation animation) {
-                        }
-                        @Override
-                        public void onAnimationEnd(Animation animation) {
-                            popupWindowDogs.dismiss();
-
-                        }
-                        @Override
-                        public void onAnimationRepeat(Animation animation) {
-                        }
-                    });
-                    view.setAnimation(animation1);
-                    String option = "";
-
-                    Log.d("HomeFragment", "popupWindowDogs -- Position:"+String.valueOf(position));
-                    menuSlide(position - 1);
-                }
-            }
-        });
-        return popupWindow;
-    }
-    */
-
-///////////////////////////////////
-/// MARK:
-    /*
-    private ArrayAdapter<String> dogsAdapter(String dogsArray[]) {
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, dogsArray) {
-            String id;
-            int size; Log.d(TAG, "configUIListenersNScroll -- sp.setOnClickListener.TRUE");
-                SwipadaptadorNScroll.mostrarNoticiasView(sp.getCurrentPosition());
-            String color;
-
-            double d = Math.round(dpY * 0.02);
-            int porcentaje = (int) d + 4;
-
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-
-                // setting the ID and text for every items in the list
-                String item = getItem(position);
-
-                TextView listItem = new TextView(getActivity());
-                listItem.setTextColor(Color.WHITE);
-                listItem.setPadding(30 * dps, 8 * dps, 0, 8 * dps);
-                listItem.setCompoundDrawablePadding(20 * dps);
-                listItem.setLetterSpacing((float) 0.05 * dps);
-                int porcentajey = (int) Math.round(height - 72 * scale);
-
-                int espacio = (int) Math.round(((height - 72 * scale) / 12) * (Math.floor(getResources().getDisplayMetrics().scaledDensity) / getResources().getDisplayMetrics().scaledDensity));
-                int espacio1 = (int) Math.round(((height - 72 * scale) / 12));
-                int porcentaje = (int) Math.round(((espacio1) / 3) / getResources().getDisplayMetrics().scaledDensity);
-
-
-
-                switch (item) {
-
-                    case "HEALTH":
-                        id = "menu_sup_salud";
-                        Drawable img = ContextCompat.getDrawable(getContext(), R.drawable.ic_health_menu);
-                        img.setBounds(0, 0, 25 * dps, 25 * dps);
-                        listItem.setCompoundDrawables(img, null, null, null);
-                        size = porcentaje;
-                        color = "#1596C1";
-                        break;
-
-                    case "EDUCATION":
-                        id = "menu_sup_edu";
-                        Drawable img2 = ContextCompat.getDrawable(getContext(), R.drawable.ic_education_menu);
-                        img2.setBounds(0, 0, 25 * dps, 25 * dps);
-                        listItem.setCompoundDrawables(img2, null, null, null);
-                        size = porcentaje;
-                        color = "#1596C1";
-                        break;
-
-                    case "ENTERTAINMENT":
-                        id = "menu_sup_ent";
-                        Drawable img3 = ContextCompat.getDrawable(getContext(), R.drawable.ic_entertainment_menu);
-                        img3.setBounds(0, 0, 25 * dps, 25 * dps);
-                        listItem.setCompoundDrawables(img3, null, null, null);
-                        size = porcentaje;
-                        color = "#1596C1";
-                        break;
-                    case "RETAIL":
-                        id = "menu_sup_ret";
-                        Drawable img1 = ContextCompat.getDrawable(getContext(), R.drawable.ic_retail_menu);
-                        img1.setBounds(0, 0, 25 * dps, 25 * dps);
-                        listItem.setCompoundDrawables(img1, null, null, null);
-                        size = porcentaje;
-                        color = "#1596C1";
-                        break;
-
-                    case "ENVIRONMENT":
-                        id = "menu_sup_amb";
-                        Drawable img4 = ContextCompat.getDrawable(getContext(), R.drawable.ic_environment_menu);
-                        img4.setBounds(0, 0, 25 * dps, 25 * dps);
-                        listItem.setCompoundDrawables(img4, null, null, null);
-                        size = porcentaje;
-                        color = "#1596C1";
-                        break;
-                    case "ENERGY":
-                        id = "menu_sup_ene";
-                        Drawable img6 = ContextCompat.getDrawable(getContext(), R.drawable.ic_energy_menu);
-                        img6.setBounds(0, 0, 25 * dps, 25 * dps);
-                        listItem.setCompoundDrawables(img6, null, null, null);
-                        size = porcentaje;
-                        color = "#1596C1";
-                        break;
-                    case "CONSTRUCTION":
-                        id = "menu_sup_cons";
-                        Drawable img0 = ContextCompat.getDrawable(getContext(), R.drawable.ic_construction_menu);
-                        img0.setBounds(0, 0, 25 * dps, 25 * dps);
-                        listItem.setCompoundDrawables(img0, null, null, null);
-                        size = porcentaje;
-                        color = "#1596C1";
-                        break;
-
-                    case "FINANCE":
-                        id = "menu_sup_ban";
-                        Drawable img5 = ContextCompat.getDrawable(getContext(), R.drawable.ic_finance_menu);
-                        img5.setBounds(0, 0, 25 * dps, 25 * dps);
-                        listItem.setCompoundDrawables(img5, null, null, null);
-                        size = porcentaje;
-                        color = "#1596C1";
-                        break;
-
-
-                    case "TELECOM":
-                        id = "menu_sup_tel";
-                        Drawable img7 = ContextCompat.getDrawable(getContext(), R.drawable.ic_telecom_menu);
-                        img7.setBounds(0, 0, 25 * dps, 25 * dps);
-                        listItem.setCompoundDrawables(img7, null, null, null);
-                        size = porcentaje;
-                        color = "#1596C1";
-                        break;
-
-                    case "CID NEWS":
-                        //listItem.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                        listItem.setText("A");
-                        listItem.setTextColor(Color.rgb(21, 150, 193));
-                        Drawable img8 = ContextCompat.getDrawable(getContext(), R.drawable.logocidnews);
-                        img8.setBounds(0, 0, 100 * dps, 50 * dps);
-                        listItem.setCompoundDrawables(img8, null, null, null);
-                        size = porcentaje;
-                        listItem.setPadding(Math.round(((width) / 2) - 50 * dps), espacio, 0, 20 * dps);
-                        break;
-
-
-                    case "S":
-                        listItem.setTextColor(Color.rgb(21, 150, 193));
-                        size = 0;
-                        listItem.setPadding(0, espacio + espacio / 5, 0, 0);
-                        color = "#1596C1";
-                        break;
-
-                }
-
-                listItem.setText(item);
-                listItem.setTag(id);
-                listItem.setTextSize(size);
-                listItem.setBackgroundColor(Color.parseColor(color));
-
-
-                return listItem;
-            }
-        };
-        return adapter;
-    }
-
-    */
-
-
-
-
-
-    /*
-
-    ///////////////////////////////////////////////////////////  SQL No usable Temporal
-    /// MARK:
-    public void saveTempDB(ArrayList<Noticia> allNews) {
-        ContentValues valores = new ContentValues();
-        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(getActivity(), "db_temporal", null, 1);
-        SQLiteDatabase db = conn.getWritableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + Utilidades.TABLA_NOTICIAS_TEMPORAL + "", null);
-        for (int i = 0; i < allNews.size(); i++) {
-            valores.put(Utilidades.TITULO, allNews.get(i).getTitulo());
-            valores.put(Utilidades.URLIMAGEN, allNews.get(i).getImagen());
-            valores.put(Utilidades.URL, allNews.get(i).getUrl());
-            valores.put(Utilidades.AUTOR, allNews.get(i).getAutor());
-            valores.put(Utilidades.CATEGORIA, allNews.get(i).getCategoria());
-            valores.put(Utilidades.GUARDAR, "yes");
-            db.insert(Utilidades.TABLA_NOTICIAS_TEMPORAL, null, valores);
-        }
-        cursor.close();
-        db.close();
-        conn.close();
-    }
-    public void setupDBTemp() {
-        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(getActivity(), "db_temp", null, 1);
-        SQLiteDatabase db = conn.getWritableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + Utilidades.TABLA_NOTICIAS_TEMPORAL + "", null);
-    }
-    ///////////////////////////////////////////////////////////  Bitmap
-    public static Bitmap getBitmapFromView(View view) {
-        Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(returnedBitmap);
-        Drawable bgDrawable = view.getBackground();
-        if (bgDrawable != null)
-            bgDrawable.draw(canvas);
-        else
-            canvas.drawColor(Color.WHITE);
-        view.draw(canvas);
-        return returnedBitmap;
-    }*/
-
-
-
-
-
-
- /*//////////////////////////////////
-    /// MARK:
-    public void consultPreferences(){
-        if (!config_inicial())
-            for (int i = 0; i < stateArray.length; i++)
-                stateArray[i] = consultarEstado(categoriesNews[i]);
-        else
-            for (int i = 0; i < stateArray.length; i++)
-                stateArray[i] = 1;
-    }*/

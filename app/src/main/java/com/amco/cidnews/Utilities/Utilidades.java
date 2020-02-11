@@ -21,7 +21,7 @@ public class Utilidades {
 
 
 
-
+    //TABLA DE NOTICIAS
     public static final String CREAR_TABLA_NOTICA = "CREATE TABLE "+TABLA_NOTICIA+" ("+TITULO+" TEXT," +
             " "+IMAGEN+" TEXT, " +
             ""+URL+" TEXT," +
@@ -29,8 +29,10 @@ public class Utilidades {
             ""+CATEGORIA+" TEXT," +
             ""+TIEMPO+" LONG)";
 
-
+    //TABLA DE REFERENCIAS (CONFIGURACION DE NOTICIAS)
     public static final String CREAR_TABLA_PREFERENCIA = "CREATE TABLE "+TABLA_PREFERENCIA+" ("+CATEGORIA+" TEXT,"+ESTADO+" INT)";
+
+    //TABLA DE RECUPERAR NOTICIAS (TRASH - BASURA)
     public static final String CREAR_TABLA_RECUPERAR = "CREATE TABLE "+TABLA_RECUPERAR+" ("+TITULO+" TEXT," +
             " "+IMAGEN+" TEXT, " +
             ""+URL+" TEXT," +

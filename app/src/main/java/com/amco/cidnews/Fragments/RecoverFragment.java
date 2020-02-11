@@ -97,11 +97,17 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
     @Nullable
     @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.frame_recover, container, false);
+
         configUI(view);
+
         configUIListeners();
+
         consultarNoticiasFavoritas("%",0);  /// bandera2=1 puede ver la noticia
+
         crearMenu(view);
+
         return view;
     }
 
@@ -117,6 +123,7 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
     }
 
     public void setupUI(){
+
         ((MainActivity)getActivity()).imgBtnCross.setVisibility(View.INVISIBLE);
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -476,7 +483,7 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
         SQLiteDatabase db = conn.getWritableDatabase();
         String [] parametros = {url};
         Cursor cursor = db.rawQuery( "SELECT url FROM "+Utilidades.TABLA_NOTICIA+" WHERE "+Utilidades.URL+" =?", parametros);
-        Log.d(" recovering News... Recuperando:", "");
+        Log.d("recoveringNews dice: ", "recovering News... Recuperando:");
         if(cursor.getCount()==0)
         {
             Log.d(" NOTICIA:", "NO HAY");
@@ -500,13 +507,14 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
 
     private void consultarNoticiasFavoritas(String categoria,int bandera) {
 
-
         conn = new ConexionSQLiteHelper(getActivity(),"db_noticias",null,1);
         SQLiteDatabase db = conn.getReadableDatabase();
         String [] parametros = {categoria.toString()};
         Cursor cursor = db.rawQuery("SELECT * FROM "+Utilidades.TABLA_RECUPERAR+" WHERE "+Utilidades.CATEGORIA+" LIKE ?",parametros);
         Noticia noticia = null;
-        ListaNoticias = new ArrayList<Noticia>();//ListaNoticias es el Array de la tabla (Que sera Recover o noticias DELETED )
+        //ListaNoticias es el Array de la tabla (Que sera Recover o noticias DELETED )
+        ListaNoticias = new ArrayList<Noticia>();
+
         if(cursor.getCount()==0)
         {
             Log.e("RecoverFragment", "consultarNoticiasFavoritas: EMPTY");

@@ -23,44 +23,39 @@ import com.amco.cidnews.R;
 import com.amco.cidnews.Utilities.Utilidades;
 
 
-/*
-*
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-*
-* */
-
-
 public class ConfigFragment extends Fragment {
+
     ImageView image_salud,image_retail,image_cons,image_entre,image_amb,image_edu,image_ene,image_ban,image_tel;
+
     Button saved;
+
     int estado_actual,estado_siguiente;
+
     TextView txenvio,txhealth,txretail,txconstruc,txentertain,txeducation,txenergy,txtelecom,txfinance;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View view =  inflater.inflate(R.layout.frame_config2,container,false);
-        image_salud = (ImageView) view.findViewById(R.id.img_salud);
-        image_retail = (ImageView) view.findViewById(R.id.img_retail);
-        image_cons = (ImageView) view.findViewById(R.id.img_cons);
-        image_entre = (ImageView) view.findViewById(R.id.img_entretenimiento);
-        image_amb = (ImageView) view.findViewById(R.id.img_ambiente);
-        image_edu = (ImageView) view.findViewById(R.id.img_educacion);
-        image_ene = (ImageView) view.findViewById(R.id.img_energia);
-        image_ban = (ImageView) view.findViewById(R.id.img_banca);
-        image_tel = (ImageView) view.findViewById(R.id.img_telecom);
+        image_salud =  view.findViewById(R.id.img_salud);
+        image_retail =  view.findViewById(R.id.img_retail);
+        image_cons =  view.findViewById(R.id.img_cons);
+        image_entre =  view.findViewById(R.id.img_entretenimiento);
+        image_amb =  view.findViewById(R.id.img_ambiente);
+        image_edu =  view.findViewById(R.id.img_educacion);
+        image_ene =  view.findViewById(R.id.img_energia);
+        image_ban =  view.findViewById(R.id.img_banca);
+        image_tel =  view.findViewById(R.id.img_telecom);
 
-        txhealth = (TextView) view.findViewById(R.id.config_salud);
-        txretail = (TextView) view.findViewById(R.id.config_retail);
-        txconstruc = (TextView) view.findViewById(R.id.config_construccion);
-        txentertain = (TextView) view.findViewById(R.id.confi_entrenimiento);
-        txeducation = (TextView) view.findViewById(R.id.config_educacion);
-        txenergy = (TextView) view.findViewById(R.id.config_energia);
-        txenvio = (TextView) view.findViewById(R.id.config_ambiente);
-        txtelecom = (TextView) view.findViewById(R.id.config_telecom);
-        txfinance = (TextView) view.findViewById(R.id.config_banca);
+        txhealth = view.findViewById(R.id.config_salud);
+        txretail = view.findViewById(R.id.config_retail);
+        txconstruc = view.findViewById(R.id.config_construccion);
+        txentertain = view.findViewById(R.id.confi_entrenimiento);
+        txeducation = view.findViewById(R.id.config_educacion);
+        txenergy = view.findViewById(R.id.config_energia);
+        txenvio = view.findViewById(R.id.config_ambiente);
+        txtelecom =  view.findViewById(R.id.config_telecom);
+        txfinance = view.findViewById(R.id.config_banca);
 
         config_inicial();
         config_obtenerValores();

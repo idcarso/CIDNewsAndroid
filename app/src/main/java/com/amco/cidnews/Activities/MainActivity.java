@@ -5,19 +5,14 @@ import android.app.FragmentTransaction;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Process;
-import android.util.Base64;
+
 import android.util.Log;
 import android.view.*;
 import android.view.animation.Animation;
@@ -34,9 +29,12 @@ import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import androidx.fragment.app.FragmentManager;
 
+import com.amco.cidnews.Fragments.AboutFragment;
 import com.amco.cidnews.Fragments.ConfigFragment;
 import com.amco.cidnews.Fragments.FavFragment;
 import com.amco.cidnews.Fragments.HomeFragment;
@@ -61,8 +59,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -73,9 +69,10 @@ import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
+
 
 import static com.amco.cidnews.Fragments.HomeFragment.SWIPESTACK_SCROLLING;
+import static com.amco.cidnews.Fragments.HomeFragment.estadoDrawer;
 
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
@@ -99,24 +96,31 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public ListenFromActivity activityListener;
 
     //View
-    public BottomNavigationView menuNavigation;
+
+    //MENU INFERIOR DE LA APLICACIÓN
+    public static BottomNavigationView menuNavigation;
+
     public ImageButton imgBtnCross;
     public RelativeLayout.LayoutParams layoutParamsNewsBackUp;
-    public ImageView scrollMenuPosition;
+
+    //BARRA BLANCA DE DESPLAZAMIENTO PARA EL NAVIGATION BOTTOM
+    public static ImageView scrollMenuPosition;
 
     String [] typeUrl;
-    //int mFirstNewsIndex = 0;
 
-    boolean mFlagHome=true;
-    boolean mFlagSettings=true;
-    boolean mFlagFavorites=true;
-    boolean mFlagRecover=true;
+
+    public static boolean mFlagHome=true;
+    public static boolean mFlagSettings=true;
+    public static boolean mFlagFavorites=true;
+    public static boolean mFlagRecover=true;
+
     public boolean animateCrossButton=false;
-    public boolean changeStateSetting = false;
     public boolean [] stateArrayMain = {false,false,false ,false,false,false ,false,false,false};
+    public boolean changeStateSetting = false;
 
     //DB Connection
     ConexionSQLiteHelper conn;
+
     //Fragment
     androidx.fragment.app.Fragment mFragmentLoad = null;
 
@@ -221,6 +225,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
 
     final String labelsForNews[] = {"salud", "construcción", "retail", "educación", "entretenimiento", "ambiente", "banca", "energía", "telecom"};
+
     final String labelsForNewsSettings[] = {"salud", "retail", "construcción", "entretenimiento","ambiente","educación", "energía",  "banca",  "telecom"};
 
 
@@ -229,61 +234,84 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     int sizeHeight = 0;
 
 
+    //NAVIGATION DRAWER MENU
+    public static DrawerLayout drawerLayout;
+
     public MainActivity(){
 
     }
 
-    /****************************************** LIFECYCLE *****************************************/
+    //region CICLO DE VIDA ACTIVITY
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate: Create!");
+
+        Log.w("MAIN-ACTIVITY", "ESTOY EN ON CREATE");
+
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
 
         hideSoftKeyboard();
-        prefs = getSharedPreferences("com.amco.cidnews", MODE_PRIVATE);
+
+        prefs = getSharedPreferences("com.amco.cidnews", MODE_PRIVATE);  //First Run check
+
         startTime = SystemClock.elapsedRealtime(); //Returns milliseconds since boot
+
         FirebaseApp.initializeApp(getApplicationContext());
-        config_inicial();
-        consultNoNewsShow("%");
+
+        config_inicial(); //Inicia DB
+
+        consultNoNewsShow("%");  //Obtiene y compara noticias borradas
 
         setContentView(R.layout.activity_main);
 
         Date cDate = new Date();
+
         String fDate = new SimpleDateFormat("yyyy-MM-dd").format(cDate);
+
         urlDate = urlDate.concat(fDate);
 
         for(int i=0;i<9;i++) {
+
             urlTopNewsSettings[i] = urlBase.concat(urlTypeSettings[i].concat(urlSortBy.concat(urlAPIKey[i].concat(urlLanguage.concat(urlDate)))));
             urlTopNewsMenu[i] = urlBase+urlTypeMenuSlide[i]+urlSortBy+urlAPIKey[i]+urlLanguage+urlDate;
 
-            Log.d(TAG,"onCreate -- urlTopNewsSettings["+i+"]:"+urlTopNewsSettings[i]);
+            Log.d("MAIN ACTIVITY","ON CREATE -> urlTopNewsSettings["+i+"]:"+urlTopNewsSettings[i]);
+
             urlDefaultNewsSettings = urlTopNewsSettings;
+
             urlDefaultNewsMenu = urlTopNewsMenu;
         }
 
         //Scroll BottomNavigationView
         scrollMenuPosition = findViewById(R.id.scroll_menu_inferior);
+
         Point size = new Point();
         getWindowManager().getDefaultDisplay().getSize(size);
         sizeWidth = size.x;
         sizeHeight = size.y;
 
-        Log.d(TAG, "onCreate: YES -- sizeWidth:"+sizeWidth+"sizeHeight:"+sizeHeight);
+        Log.d("MAIN ACTIVITY", "ON CREATE -> sizeWidth: "+sizeWidth+" sizeHeight: "+sizeHeight);
+
         menuNavigation = findViewById(R.id.menu_navegation);
         menuNavigation.setOnNavigationItemSelectedListener(this);
-        //BottomNavigationViewHelper.disableShiftMode(menuNavigation);
+
+
 
         imgBtnCross = findViewById(R.id.config_back);
         imgBtnCross.setVisibility(View.INVISIBLE);
         imgBtnCross.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
+
                 if (databaseCountHelper() == 0) {
+
                     mensaje();
-                }else{
+
+                } else {
+
                     menuNavigation.setSelectedItemId(R.id.home_nav);
                     imgBtnCross.setVisibility(View.INVISIBLE);
 
@@ -297,124 +325,134 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
 
         if (prefs.getBoolean("firstrun", true)) {
+
             ventanaEmergente();
+
             prefs.edit().putBoolean("firstrun", false).apply();
+
         }
 
 
         if(isNetworkStatusAvailable(this)){
-            Log.d(TAG,"onCreate -- isNetworkStatusAvailable!");
+
+            Log.d("MAIN ACTIVITY","ON CREATE -> isNetworkStatusAvailable!");
             firstGetRequestAPI(urlTopNewsSettings,0);
             //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
+
         }else{
+
             Log.d(TAG,"onCreate -- NoInternetAvailable!");
             //  slideDown(mMsjInternet);
+
         }
+
+
+
+        //----------
         getSupportFragmentManager().beginTransaction().replace(R.id.contendor, new HomeFragment()).commit();
+        //----------
 
+        
         menuNavigation.setSelectedItemId(R.id.home_nav);
-    }
 
+        //ENLAZAMOS EL MENU SLIDE
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-    @Override
-    protected void onStop(){
-        super.onStop();
-        Log.d(TAG, "onStop: ");
     }
 
     @Override
-    protected void onPause(){
-        super.onPause();
-        Log.d(TAG, "onPause: ");
+    protected void onStart() {
+        super.onStart();
+
+        Log.w("MAIN-ACTIVITY", "ESTOY EN ON START");
     }
 
     @Override
     protected  void onResume(){
+
         super.onResume();
+
+        Log.w("MAIN-ACTIVITY", "ESTOY EN ON RESUME");
+        /*
         Log.d(TAG, "onResume: TRUE");
         Log.e(TAG, "onResume:" + String.valueOf(getRunningTime()));
 
         mFlagFavorites=true;
+
+         */
+
     }
 
     @Override
-    public void onBackPressed() {
-        // TODO Auto-generated method stub
-        Log.d(TAG,"onBackPressed");
-        moveTaskToBack(true); // I don't think you're looking for this.
-        super.onBackPressed();
+    protected void onPause(){
+
+        super.onPause();
+        Log.w("MAIN-ACTIVITY", "ESTOY EN ON PAUSE");
+
     }
 
-
     @Override
-    public void finish() {
-        //super.finish();
-        moveTaskToBack(true);
+    protected void onStop(){
+
+        super.onStop();
+        Log.w("MAIN-ACTIVITY", "ESTOY EN ON STOP");
+
     }
 
     @Override
     protected  void onRestart(){
-        super.onRestart();
-        Log.d(TAG, "onRestart: TRUE");
 
-        if(HomeFragment.cardviewContainer != null) {
+        super.onRestart();
+        Log.w("MAIN-ACTIVITY", "ESTOY EN ON RESTART");
+        if (HomeFragment.cardviewContainer != null) {
+
             HomeFragment.cardviewContainer.setScrollY(0);
+
         }
 
     }
 
-    ///////////////////////////////////
-    /// MARK:
     @Override
-    public  boolean isFinishing(){
-        super.isFinishing();
-        Log.d(TAG, "Finishing: TRUE ");
-        return false;
+    protected void onDestroy() {
+        super.onDestroy();
+
+        Log.w("MAIN-ACTIVITY", "ESTOY EN ON DESTROY");
     }
 
-    ///////////////////////////////////
-    /// MARK:
+    //endregion
+
+
+
+    //region ALERTAS
+
+    // TUTORIAL DE COMO FUNCIONA LA APLICACION CUANDO SE INSTALA POR PRIMERA VEZ
     private void ventanaEmergente() {
+
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
         if (prev != null) {
+
             ft.remove(prev);
+
         }
         ft.addToBackStack(null);
         final DialogFragment dialogFragment = new MyDialogFragment();
         dialogFragment.show(ft, "dialog");
+
     }
 
-
-
-
-    ///////////////////////////////////
-    /// MARK:
+    //METODO PARA SABER SI HAY CONFIGURACIONES ACTIVADAS O NO
     public int databaseCountHelper() {
-
         int allStatesSum = 0;
-
-        for(int i=0;i<9;i++){
-            if(stateArrayMain[i])
+        for (int i=0;i<9;i++) {
+            if(stateArrayMain[i]) {
                 allStatesSum += 1;
+            }
         }
-
         return allStatesSum;
     }
 
-    ///////////////////////////////////
-    /// MARK:
-    private boolean loadFragmant(androidx.fragment.app.Fragment fragment,String fragmentName) {
-        if (fragment != null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.contendor, fragment).addToBackStack(fragmentName).commit();
-
-            return true;
-        }
-        return false;
-    }
-
-    ///////////////////////////////////
-    /// MARK:
+    //TOAST PERSONALIZADO PARA ALERTA DE QUE SE DEBE SELECCIONAR UNA CONFIGURACION
     public void mensaje(){
 
         Toast toast = new Toast(this);
@@ -429,187 +467,57 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     }
 
-    ///////////////////////////////////
-    /// MARK: Main Bottom Menu
-    @Override
-    public boolean onNavigationItemSelected(@NonNull final  MenuItem item) {
-        mFragmentLoad = null;
-
-        boolean itemSelected;
-        if (databaseCountHelper() == 0) {
-            mensaje();
-            itemSelected = false;
-        } else {
-            switch (item.getItemId()) {
-                case R.id.home_nav:
-                    if (mFlagHome){
-                        Log.d(TAG, "onNavigationItemSelected: HomeFragment");
-                        mFragmentName = "Home";
-                        // [START Menu_selected_event]
-                        Bundle bundle = new Bundle();
-                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Home");
-                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
-                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-                        // [END Menu_selected_event]
-
-
-
-
-
-
-
-                                mFlagHome=false;
-                                mFlagFavorites=true;
-                                mFlagRecover=true;
-                                mFlagSettings=true;
-                                animateCrossButton = false;
-
-                                imgBtnCross.setVisibility(View.INVISIBLE);
-
-
-                                if(changeStateSetting){
-                                    Log.d(TAG, "onNavigationItemSelected: HomeFragment changeStateSetting: TRUE");
-                                    changeStateSetting = false;
-
-
-                                    if (SWIPESTACK_SCROLLING) {
-                                        allNews.clear();
-                                        allNews = new ArrayList<>();
-                                        //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
-                                        firstGetRequestAPI(urlTopNewsSettings, 0);
-                                    }else{
-
-                                        allNews.clear();
-                                        allNews = new ArrayList<>();
-                                        //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
-
-                                        firstGetRequestAPI(urlTopNewsSettings, 0);
-                                    }
-                                }
-
-
-
-
-                                animationScrollMenuBottom(marginScrollMenuBottom,0);
-                                marginScrollMenuBottom = 0;
-
-
-                    }
-                    break;
-
-                case R.id.fav_nav:   //Favoritos
-                    if(mFlagFavorites){
-                        // [START Menu_selected_event]
-                        Bundle bundle = new Bundle();
-                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Favorites");
-                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
-                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-                        // [END Menu_selected_event]
-
-
-                        mFlagHome = true;
-                        mFlagFavorites=false;
-                        mFlagRecover=true;
-                        mFlagSettings=true;
-                        mFragmentName = "Favorites";
-
-
-
-
-
-
-
-                        mFragmentLoad = new FavFragment();
-                        imgBtnCross.setVisibility(View.INVISIBLE);
-                        animateCrossButton = !consultarNoticiasFavoritas("%");
-                        //
-                        animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/4);
-                        marginScrollMenuBottom = sizeWidth/4;
-                        //
-
-                    }else
-                        animateCrossButton=false;
-
-
-                    break;
-
-
-
-                case R.id.recover_nav:
-                    if(mFlagRecover){
-                        // [START Menu_selected_event]
-                        Bundle bundle = new Bundle();
-                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Recover");
-                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
-                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-                        // [END Menu_selected_event]
-
-                        mFragmentName = "Recover";
-
-                        //
-                        mFlagHome = true;
-                        mFlagFavorites=true;
-                        mFlagRecover=false;
-                        mFlagSettings=true;
-                        mFragmentLoad = new RecoverFragment();
-
-                        animateCrossButton = false;
-                        imgBtnCross.setVisibility(View.INVISIBLE);
-
-                        //
-                        animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/2);
-                        marginScrollMenuBottom = sizeWidth/2;
-
-
-                    }
-
-
-                    break;
-
-
-                case R.id.config_nav:  //Preferencias
-                    if(mFlagSettings) {
-                        // [START Menu_selected_event]
-                        Bundle bundle = new Bundle();
-                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Settings");
-                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
-                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-                        // [END Menu_selected_event]
-
-                        mFragmentName = "Settings";
-
-                        mFlagHome = true;
-                        mFlagFavorites = true;
-                        mFlagRecover=true;
-                        mFlagSettings = false;
-
-                        mFragmentLoad = new ConfigFragment();
-                        animateCrossButton = true;
-
-                        //
-                        animationScrollMenuBottom(marginScrollMenuBottom,sizeWidth/2 + sizeWidth/4);
-                        marginScrollMenuBottom = sizeWidth/2 + sizeWidth/4;
-                        //
-
-                    }
-
-                    break;
-
-            }
-
-
+    //MUESTRA LA ALERTA DEL ESTADO DE LA CONECTIVIDAD
+    public static boolean isNetworkStatusAvailable(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null) {
+            NetworkInfo netInfos = connectivityManager.getActiveNetworkInfo();
+            if (netInfos != null)
+                if (netInfos.isConnected())
+                    return true;
         }
-        /*Fin de menu inferior*/
-        return true;
+        return false;
     }
 
+    //endregion
+
+
+
+    //region METODOS
+
+    //METODO PARA MOSTRAR LOS FRAGMENTS SOBRE EL CONTENEDOR PRINCIPAL EN EL ACTIVITY
+    private boolean loadFragmant(androidx.fragment.app.Fragment fragment,String fragmentName) {
+
+        /*if (fragment != null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.contendor, fragment).commit();
+            return true;
+        } else {
+            return false;
+        }*/
+
+
+        if (fragment != null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.contendor, fragment).addToBackStack(fragmentName).commit();
+            //getSupportFragmentManager().beginTransaction().replace(R.id.contendor, fragment).commit();
+            return true;
+        }
+        return false;
+
+
+
+
+    }
+
+    //AL FINALIZAR EL TOUCH DEL BOTTOM NATIGATION VIEW, CAMBIAMOS FRAGMENT Y MOSTRAMOS IMAGE VIEW DE TACHE
     public void finishTapMenuNavigationSetup(){
 
         if (!mFragmentName.contentEquals("Home")) {
             loadFragmant(mFragmentLoad, mFragmentName);
         }
 
+
         if(animateCrossButton) {
+
             Animation fadeIn = new AlphaAnimation(0, 1);
             fadeIn.setInterpolator(new DecelerateInterpolator());
             fadeIn.setDuration(800);
@@ -618,66 +526,75 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             imgBtnCross.setEnabled(true);
 
             mFlagHome=true;
+
         }
+
+
 
     }
 
-
-
-    ///////////////////////////////////
-    /// MARK:
     private boolean consultarNoticiasFavoritas(String categoria) {
+
         conn = new ConexionSQLiteHelper(this,"db_noticias",null,1);
         SQLiteDatabase db = conn.getReadableDatabase();
         String [] parametros = {categoria.toString()};
         Cursor cursor = db.rawQuery("SELECT * FROM "+Utilidades.TABLA_NOTICIA+" WHERE "+Utilidades.CATEGORIA+" LIKE ?",parametros);
-       if(cursor.getCount()==0) {
+        if (cursor.getCount()==0) {
             Log.d(TAG, "consultarNoticiasFavoritas --  cursor.getCount = 0");
             cursor.close();
             return false;
         }
         else {
-           cursor.close();
-           return true;
+            cursor.close();
+            return true;
         }
+
     }
 
-    ///////////////////////////////////
-    /// MARK:
     public static long getRunningTime(){
+
         return SystemClock.elapsedRealtime() - startTime;
+
     }
 
-
-
-
-    ///////////////////////////////////
-    /// MARK: Check the state of the database turning ON all preferences (first time) or check each state.
+    //CONFIGURACION INICIAL DE LA APLICACION, CARGAR Y ACTIVA TODAS LAS CONFIGURACIONES
     public boolean config_inicial() {
+
         String[] categorias = {"SALUD", "RETAIL", "CONSTRUCCIÓN", "ENTRETENIMIENTO", "AMBIENTE", "EDUCACIÓN", "ENERGÍA", "BANCA", "TELECOM"};
         ConexionSQLiteHelper conn = new ConexionSQLiteHelper(this, "db_noticias", null, 1);
         SQLiteDatabase db = conn.getWritableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + Utilidades.TABLA_PREFERENCIA + "", null);
         ContentValues valores = new ContentValues();
 
-        if (cursor.getCount() == 0) {  //There is no DB existing
+        if (cursor.getCount() == 0) {  //LA BASE DE DATOS NO EXISTE
+
             Log.e(TAG, "config_inicial<------ CARGANDO BASE UNA UNICA VEZ");
             for (int i = 0; i < categorias.length; i++) {
+
                 valores.put(Utilidades.ESTADO, 1);
                 valores.put(Utilidades.CATEGORIA, categorias[i]);
                 db.insert(Utilidades.TABLA_PREFERENCIA, null, valores);
                 stateArrayMain[i] = true;
+
             }
+
             db.close();
             return true;
-        } else {//If exist a configuration take the data from db.
+
+        } else {//SI EXISTE LA BASE DE DATOS, TOMA LA CONFIGURACION
+
             Log.e(TAG, "config_inicial<------  lista la configuracion");
             cursor.moveToFirst();
             for (int i = 0; i < categorias.length; i++) {
+
                 if(cursor.getInt(1) == 0)
+
                     stateArrayMain[i] = false;
+
                 else
+
                     stateArrayMain[i] = true;
+
                 cursor.moveToNext();
             }
         }
@@ -685,9 +602,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         return false;
     }
 
+    //region NOTICIAS
 
-
-    ///////////////////////////////////
     /// MARK: This is a first Request to the API NEWS for a better UX. After a Success if the is no news
     //for show, it would go for the next URL
     public void firstGetRequestAPIOkHttp(final String [] typeUrl, final int mNewsIndex){
@@ -768,8 +684,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
 
-
-
     ///////////////////////////////////
     /// MARK: This is a first Request to the API NEWS for a better UX. After a Success if the is no news
     //for show, it would go for the next URL
@@ -778,100 +692,101 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         final RequestParams mParams = new RequestParams();
 
 
-            if (stateArrayMain[mNewsIndex]) {
-                Log.d(TAG, "firstGetRequestAPI -- onSuccess, stateArrayMain:[" +
-                        mNewsIndex + "]:" + stateArrayMain[mNewsIndex]);
+        if (stateArrayMain[mNewsIndex]) {
+            Log.d(TAG, "firstGetRequestAPI -- onSuccess, stateArrayMain:[" +
+                    mNewsIndex + "]:" + stateArrayMain[mNewsIndex]);
 
-                RequestHandle mRequest = mClient.get(typeUrl[mNewsIndex], mParams, new AsyncHttpResponseHandler() {
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                        try {
-                            JSONObject mResponse = new JSONObject(new String(responseBody));
-                            Log.d(TAG, "firstGetRequestAPI -- onSuccess, mFirstNewsIndex:" + mNewsIndex);
-                            Log.d(TAG, "firstGetRequestAPI -- onSuccess, totalResults:" + mResponse.getInt("totalResults"));
-                            Log.d(TAG, "firstGetRequestAPI -- onSuccess, labelsForNews:" + labelsForNewsSettings[mNewsIndex]);
+            RequestHandle mRequest = mClient.get(typeUrl[mNewsIndex], mParams, new AsyncHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                    try {
+                        JSONObject mResponse = new JSONObject(new String(responseBody));
+                        Log.d(TAG, "firstGetRequestAPI -- onSuccess, mFirstNewsIndex:" + mNewsIndex);
+                        Log.d(TAG, "firstGetRequestAPI -- onSuccess, totalResults:" + mResponse.getInt("totalResults"));
+                        Log.d(TAG, "firstGetRequestAPI -- onSuccess, labelsForNews:" + labelsForNewsSettings[mNewsIndex]);
 
-                            if (mResponse.getInt("totalResults") == 0) {
+                        if (mResponse.getInt("totalResults") == 0) {
+
+                            if (mNewsIndex + 1 < 9) {
+                                firstGetRequestAPI(typeUrl, mNewsIndex + 1); //???
+                            }else
+                                Toast.makeText(getApplicationContext(),
+                                        "All news have been seen",Toast.LENGTH_SHORT).show();
+                        } else {
+
+                            //Let know to the HomeFrag that we have news!
+                            allNews = addMoreNews(new String(responseBody), labelsForNewsSettings[mNewsIndex], allNews);
+
+                            if (allNews.size() == 0 ){
 
                                 if (mNewsIndex + 1 < 9) {
                                     firstGetRequestAPI(typeUrl, mNewsIndex + 1); //???
                                 }else
                                     Toast.makeText(getApplicationContext(),
                                             "All news have been seen",Toast.LENGTH_SHORT).show();
-                            } else {
 
-                                //Let know to the HomeFrag that we have news!
-                                allNews = addMoreNews(new String(responseBody), labelsForNewsSettings[mNewsIndex], allNews);
-
-                                if (allNews.size() == 0 ){
-
-                                    if (mNewsIndex + 1 < 9) {
-                                        firstGetRequestAPI(typeUrl, mNewsIndex + 1); //???
-                                    }else
-                                        Toast.makeText(getApplicationContext(),
-                                                "All news have been seen",Toast.LENGTH_SHORT).show();
-
-                                }else {
-                                    if (activityListener != null) {
-                                        activityListener.setGeneralNews();
-                                    }
-
-
-                                    if (mNewsIndex + 1 < 9) {
-                                        generalRecursive(mNewsIndex + 1, false, true);
-                                    }else
-                                        Toast.makeText(getApplicationContext(),
-                                                "All news have been seen",Toast.LENGTH_SHORT).show();
+                            }else {
+                                if (activityListener != null) {
+                                    activityListener.setGeneralNews();
                                 }
+
+
+                                if (mNewsIndex + 1 < 9) {
+                                    generalRecursive(mNewsIndex + 1, false, true);
+                                }else
+                                    Toast.makeText(getApplicationContext(),
+                                            "All news have been seen",Toast.LENGTH_SHORT).show();
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Log.d(TAG, "firstGetRequestAPI -- onFailure:" + e.toString());
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Log.d(TAG, "firstGetRequestAPI -- onFailure:" + e.toString());
+                    }
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+
+
+                    Log.e(TAG, "firstGetRequestAPI -- onFailure: statusCode:" + statusCode+", Error:"+error);
+
+
+                    if (statusCode == 0){
+                        //Toast.makeText(MainActivity.this, "Weak Signal", Toast.LENGTH_SHORT).show();
+                        if(activityListener != null){
+                            activityListener.msjWeakSignal();
                         }
                     }
+                    if(responseBody != null) {
+                        if (responseBody.length != 0) {
+                            try {
+                                JSONObject mResponse = new JSONObject(new String(responseBody));
 
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                                Log.d(TAG, "firstGetRequestAPI -- onFailure: names:" + mResponse.names());
+                                Log.d(TAG, "firstGetRequestAPI -- onFailure: toString:" + mResponse.toString());
 
-
-                        Log.e(TAG, "firstGetRequestAPI -- onFailure: statusCode:" + statusCode+", Error:"+error);
-
-
-                        if (statusCode == 0){
-                            //Toast.makeText(MainActivity.this, "Weak Signal", Toast.LENGTH_SHORT).show();
-                            if(activityListener != null){
-                                activityListener.msjWeakSignal();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                Log.d(TAG, "firstGetRequestAPI -- onFailure Failure:" + e.toString());
                             }
                         }
-                        if(responseBody != null) {
-                            if (responseBody.length != 0) {
-                                try {
-                                    JSONObject mResponse = new JSONObject(new String(responseBody));
 
-                                    Log.d(TAG, "firstGetRequestAPI -- onFailure: names:" + mResponse.names());
-                                    Log.d(TAG, "firstGetRequestAPI -- onFailure: toString:" + mResponse.toString());
-
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                    Log.d(TAG, "firstGetRequestAPI -- onFailure Failure:" + e.toString());
-                                }
-                            }
-
-                        }
                     }
-                });
+                }
+            });
 
-            }else {
+        }else {
 
-                if (mNewsIndex + 1 < 9) {
-                    firstGetRequestAPI(typeUrl, mNewsIndex + 1); //???
-                }else
-                    Toast.makeText(getApplicationContext(),
-                            "All news requested?",Toast.LENGTH_SHORT).show();
-            }
+            if (mNewsIndex + 1 < 9) {
+                firstGetRequestAPI(typeUrl, mNewsIndex + 1); //???
+            }else
+                Toast.makeText(getApplicationContext(),
+                        "All news requested?",Toast.LENGTH_SHORT).show();
+        }
 
         //}
     }
+
 
     ///////////////////////////////////
     /// MARK:
@@ -948,17 +863,38 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         final AsyncHttpClient mClient = requestHttpClient();
         final RequestParams mParams = new RequestParams();
-                final RequestHandle mRequestTop = mClient.get(urlTopNewsMenu[index], mParams, new AsyncHttpResponseHandler() {
+        final RequestHandle mRequestTop = mClient.get(urlTopNewsMenu[index], mParams, new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                Log.d(TAG,"specificRecursive -- onSuccess, TopNews Index:" +index);
+                Log.d(TAG,"specificRecursive -- onSuccess, allNewsMenu.size(before):" +allNewsMenu.size());
+                Log.d(TAG,"specificRecursive -- onSuccess, labelsForNews:" +labelsForNews[index]);
+                Log.d(TAG,"specificRecursive -- onSuccess, allNews.size(after)!!:" +allNews.size());
+
+                allNewsMenu = addMoreNews(new String(responseBody), labelsForNews[index], allNewsMenu);
+                Log.d(TAG,"generalRecursive -- onSuccess, allNewsMenu.size(after):" +allNewsMenu.size());
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                if (statusCode == 0){
+                    //Toast.makeText(MainActivity.this, "Weak Signal", Toast.LENGTH_SHORT).show();
+                    if(activityListener != null){
+                        activityListener.msjWeakSignal();
+                    }
+                }
+            }
+            @Override
+            public void onFinish() {
+                RequestHandle mRequestDefault = mClient.get(urlDefaultNewsMenu[index], mParams, new AsyncHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                        Log.d(TAG,"specificRecursive -- onSuccess, TopNews Index:" +index);
+                        Log.d(TAG,"specificRecursive -- onSuccess, DefaultNews");
                         Log.d(TAG,"specificRecursive -- onSuccess, allNewsMenu.size(before):" +allNewsMenu.size());
                         Log.d(TAG,"specificRecursive -- onSuccess, labelsForNews:" +labelsForNews[index]);
-                        Log.d(TAG,"specificRecursive -- onSuccess, allNews.size(after)!!:" +allNews.size());
-
                         allNewsMenu = addMoreNews(new String(responseBody), labelsForNews[index], allNewsMenu);
-                        Log.d(TAG,"generalRecursive -- onSuccess, allNewsMenu.size(after):" +allNewsMenu.size());
+                        Log.d(TAG,"specificRecursive -- onSuccess, allNewsMenu.size(after):" +allNewsMenu.size());
                     }
+
                     @Override
                     public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
                         if (statusCode == 0){
@@ -967,46 +903,25 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                                 activityListener.msjWeakSignal();
                             }
                         }
+
+
                     }
+
                     @Override
-                    public void onFinish() {
-                        RequestHandle mRequestDefault = mClient.get(urlDefaultNewsMenu[index], mParams, new AsyncHttpResponseHandler() {
-                            @Override
-                            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                                Log.d(TAG,"specificRecursive -- onSuccess, DefaultNews");
-                                Log.d(TAG,"specificRecursive -- onSuccess, allNewsMenu.size(before):" +allNewsMenu.size());
-                                Log.d(TAG,"specificRecursive -- onSuccess, labelsForNews:" +labelsForNews[index]);
-                                allNewsMenu = addMoreNews(new String(responseBody), labelsForNews[index], allNewsMenu);
-                                Log.d(TAG,"specificRecursive -- onSuccess, allNewsMenu.size(after):" +allNewsMenu.size());
+                    public void onFinish(){
+                        Log.d(TAG,"specificRecursive -- onFinish, ALLNewsMenu.size:" +allNewsMenu.size());
+                        //Make the change for homeFrag
+                        if(allNewsMenu.size() != 0) {
+                            if (null != activityListener) {
+                                Log.d(TAG, "generalRecursive -- onFinish, allNews.size(after) onFinish:" + allNews.size());
+
+                                activityListener.setSpeficicNewsFromMenu(index);
                             }
-
-                            @Override
-                            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                                if (statusCode == 0){
-                                    //Toast.makeText(MainActivity.this, "Weak Signal", Toast.LENGTH_SHORT).show();
-                                    if(activityListener != null){
-                                        activityListener.msjWeakSignal();
-                                    }
-                                }
-
-
-                            }
-
-                            @Override
-                            public void onFinish(){
-                                Log.d(TAG,"specificRecursive -- onFinish, ALLNewsMenu.size:" +allNewsMenu.size());
-                                //Make the change for homeFrag
-                                if(allNewsMenu.size() != 0) {
-                                    if (null != activityListener) {
-                                        Log.d(TAG, "generalRecursive -- onFinish, allNews.size(after) onFinish:" + allNews.size());
-
-                                        activityListener.setSpeficicNewsFromMenu(index);
-                                    }
-                                }
-                            }
-                        });
+                        }
                     }
                 });
+            }
+        });
     }
 
 
@@ -1015,10 +930,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public ArrayList<Noticia> addMoreNews(String response, String categoria, ArrayList<Noticia> list) {
         ArrayList<Noticia> mHelperList = new ArrayList<>();
 
-        if(allNewsDeleted != null)
+        if (allNewsDeleted != null) {
             mHelperList.addAll(allNewsDeleted);
-        else
+        } else {
             mHelperList = null;
+        }
 
         try {
             JSONObject jsonArray = new JSONObject(response);
@@ -1045,38 +961,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         list.add(new Noticia(titulo, imagen, url, description, autor, categoria_local, 0L));
                     }else{
                         if (mHelperList.size() != 0) {
-                        /*
-                        mNewsHelper = new Noticia(titulo, imagen, url, description, autor, categoria_local, 0L);
 
-                        if (allNewsDeleted.contains(mNewsHelper)) {
-                            Log.d("MainActivity", "addMoreNEWS. allNEWSDELETED CONTAINS IN:" + i);
-                            // duplicateList.add(item);
-                        } else {
-                            list.add(new Noticia(titulo, imagen, url, description, autor, categoria_local, 0L));
-                        }
-                        //
-                        for (int j = 0; j < mHelperList.size(); j++) {
-                                if (url.equals(mHelperList.get(j).getUrl())) {
-                                    flagNoAdd = true;
-                                    j = mHelperList.size();
-                                    mHelperList.remove(j);
-                                    //allNewsDeletedHelper.remove(j);
-                                    Log.e("HomeFragment", "addMoreNews -- mHelperList.size: " +mHelperList.size());
-
-                                    //Log.e("HomeFragment", "addMoreNews -- noNewsForShow != NULL" + String.valueOf(getRunningTime()));
-                                    Log.e("HomeFragment", "addMoreNews -- url Match: " + String.valueOf(url));
-
-                                } else {
-                                    if ((j + 1) == mHelperList.size()) {
-                                        list.add(new Noticia(titulo, imagen, url, description, autor, categoria_local, 0L));
-                                        Log.e("HomeFragment", "addMoreNews -- url ADD: " + String.valueOf(url));
-                                    } else {
-                                        flagNoAdd = false;
-                                       // Log.e("HomeFragment", "addMoreNews -- url should NO ADD: " + String.valueOf(url));
-                                    }
-                                }
-                            }
-                        */
                             for (int j = mHelperList.size() - 1; j >= 0; j--) {
                                 if (url.equals(mHelperList.get(j).getUrl())) {
                                     mHelperList.remove(j);
@@ -1104,6 +989,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         return list;
     }
 
+
+
+
+
     ///////////////////////////////////
     /// MARK: HttpClient
     public AsyncHttpClient requestHttpClient() {
@@ -1114,27 +1003,413 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         return client;
     }
 
+    private void consultNoNewsShow(String categoria) {
 
-    ///////////////////////////////////
-    /// MARK:
+        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(this,"db_noticias",null,1);
+        SQLiteDatabase db = conn.getReadableDatabase();
+        String [] parametros = { categoria.toString() };
+        Cursor cursor = db.rawQuery("SELECT * FROM "+Utilidades.TABLA_RECUPERAR+" WHERE "+Utilidades.CATEGORIA+" LIKE ?",parametros);
+        Noticia noticia = null;
+        if(cursor.getCount()==0)
+        {
+            Log.e("RecoverFragment", "consultNoNewsShow: EMPTY");
+            allNewsDeleted = null;
+        }
+        else
+        {
+            Log.e("RecoverFragment", "consultNoNewsShow: NEWS!");
+            while (cursor.moveToNext()) {
+                noticia = new Noticia(cursor.getString(0), cursor.getString(1), cursor.getString(2), "", cursor.getString(3), cursor.getString(4), cursor.getLong(5));
+                allNewsDeleted.add(noticia);
+                allNewsDeletedHelper =allNewsDeleted;
+            }
+        }
+        cursor.close();
+        db.close();
+        conn.close();
+    }
+
+    //endregion
+
+
+    //endregion
+
+
+
+    //region LISTENERS
+
+    //SELECCION DE APARTADOS EN BOTTOM NAVIGATION VIEW
+    @Override
+    public boolean onNavigationItemSelected(@NonNull final  MenuItem item) {
+
+        mFragmentLoad = null;
+
+        boolean itemSelected;
+
+        if (databaseCountHelper() == 0) {
+
+            mensaje();
+            itemSelected = false;
+
+        } else {
+
+            switch (item.getItemId()) {
+
+                case R.id.home_nav:
+
+                    //CUANDO DEMOS CLIC EN HOME, SE VERIFICA LA BANDERA DE ABOUT US, SI ESTA ACTIVA QUITAMOS Y COLOCAMOS EL HOME
+                    if (AboutFragment.activoAbout == true) {
+
+                        //PONEMOS EN TRUE LA BANDERA DE HOME
+                        //mFlagHome = true;
+
+                        /*androidx.fragment.app.Fragment fragmentAbout = new AboutFragment();
+                        androidx.fragment.app.Fragment fragmentHome = new HomeFragment();
+                        androidx.fragment.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
+                        //transaction.replace(R.id.contendor_home, fragmentHome);
+                        transaction.remove(fragmentAbout).commit();
+
+                        //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
+                        MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);*/
+
+                        /*mFlagHome = true;
+
+
+                        MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+                        MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
+
+                        androidx.fragment.app.Fragment fragmentAbout = new AboutFragment();
+                        androidx.fragment.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
+                        transaction.remove(fragmentAbout).commit();*/
+
+                        AboutFragment.imageButtonRegresar.performClick();
+
+                    }
+
+                    if (HomeFragment.estadoDrawer == true) {
+                        //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
+                        MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
+
+                        //SI EL SCROLL ES INVISIBLE, LO ESCONDEMOS CUANDO EL DRAWER LAYOUT ESTE CERRADO
+                        if (MainActivity.scrollMenuPosition.getVisibility() == View.INVISIBLE) {
+
+                            MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+
+                        }
+                        HomeFragment.drawerLayout.closeDrawers();
+                    }
+
+                    if (mFlagHome) {
+
+
+                        Log.d(TAG, "onNavigationItemSelected: HomeFragment");
+                        mFragmentName = "Home";
+
+                        // [START Menu_selected_event]
+                        Bundle bundle = new Bundle();
+                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Home");
+                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
+                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+                        // [END Menu_selected_event]
+
+                        mFlagHome = false;
+                        mFlagFavorites = true;
+                        mFlagRecover = true;
+                        mFlagSettings = true;
+                        animateCrossButton = false;
+
+
+
+                        imgBtnCross.setVisibility(View.INVISIBLE);
+
+
+                        if (changeStateSetting) {
+                            Log.d(TAG, "onNavigationItemSelected: HomeFragment changeStateSetting: TRUE");
+                            changeStateSetting = false;
+
+                            if (SWIPESTACK_SCROLLING) {
+
+                                allNews.clear();
+                                allNews = new ArrayList<>();
+                                //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
+                                firstGetRequestAPI(urlTopNewsSettings, 0);
+
+                            } else {
+
+                                allNews.clear();
+                                allNews = new ArrayList<>();
+                                //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
+
+                                firstGetRequestAPI(urlTopNewsSettings, 0);
+
+                            }
+                        }
+
+                        mFragmentLoad = new HomeFragment();
+
+                        animationScrollMenuBottom(marginScrollMenuBottom, 0);
+                        marginScrollMenuBottom = 0;
+
+                    }
+                    break;
+
+                case R.id.fav_nav:   //Favoritos
+
+                    if (AboutFragment.activoAbout == true) {
+                        MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+                    }
+                    //VERIFICAMOS EL ESTADO DE LAS VISTAS EN CASO DE QUE EL DRAWER VIEW ESTE ABIERTO
+                    if (HomeFragment.estadoDrawer == true) {
+
+                        //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
+                        MainActivity.menuNavigation.getMenu().getItem(1).setCheckable(true);
+
+                        //SI EL SCROLL ES INVISIBLE, LO ESCONDEMOS CUANDO EL DRAWER LAYOUT ESTE CERRADO
+                        if (MainActivity.scrollMenuPosition.getVisibility() == View.INVISIBLE) {
+
+                            MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+
+                        }
+
+                    }
+                    
+                    if (mFlagFavorites) {
+
+
+
+                        // [START Menu_selected_event]
+
+                        Bundle bundle = new Bundle();
+                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Favorites");
+                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
+                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+
+                        // [END Menu_selected_event]
+
+
+                        mFlagHome = true;
+                        mFlagFavorites = false;
+                        mFlagRecover = true;
+                        mFlagSettings = true;
+                        mFragmentName = "Favorites";
+
+
+
+                        mFragmentLoad = new FavFragment();
+                        imgBtnCross.setVisibility(View.INVISIBLE);
+                        animateCrossButton = !consultarNoticiasFavoritas("%");
+                        //
+                        animationScrollMenuBottom(marginScrollMenuBottom, sizeWidth / 4);
+                        marginScrollMenuBottom = sizeWidth / 4;
+                        //
+
+                    } else
+                        animateCrossButton = false;
+
+
+                    break;
+
+
+                case R.id.recover_nav:
+
+                    if (AboutFragment.activoAbout == true) {
+                        MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+                    }
+
+                    //VERIFICAMOS EL ESTADO DE LAS VISTAS EN CASO DE QUE EL DRAWER VIEW ESTE ABIERTO
+                    if (HomeFragment.estadoDrawer == true) {
+
+                        //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
+                        MainActivity.menuNavigation.getMenu().getItem(2).setCheckable(true);
+
+                        //SI EL SCROLL ES INVISIBLE, LO ESCONDEMOS CUANDO EL DRAWER LAYOUT ESTE CERRADO
+                        if (MainActivity.scrollMenuPosition.getVisibility() == View.INVISIBLE) {
+
+                            MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+
+                        }
+
+                    }
+
+                    if (mFlagRecover) {
+
+
+                        // [START Menu_selected_event]
+
+                        Bundle bundle = new Bundle();
+                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Recover");
+                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
+                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+
+                        // [END Menu_selected_event]
+
+                        mFragmentName = "Recover";
+
+                        //
+                        mFlagHome = true;
+                        mFlagFavorites = true;
+                        mFlagRecover = false;
+                        mFlagSettings = true;
+
+                        mFragmentLoad = new RecoverFragment();
+                        animateCrossButton = false;
+                        imgBtnCross.setVisibility(View.INVISIBLE);
+
+                        //
+                        animationScrollMenuBottom(marginScrollMenuBottom, sizeWidth / 2);
+                        marginScrollMenuBottom = sizeWidth / 2;
+
+
+                    }
+
+
+                    break;
+
+
+                case R.id.config_nav:  //Preferencias
+
+                    if (AboutFragment.activoAbout == true) {
+                        MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+                    }
+
+                    //VERIFICAMOS EL ESTADO DE LAS VISTAS EN CASO DE QUE EL DRAWER VIEW ESTE ABIERTO
+                    if (HomeFragment.estadoDrawer == true) {
+
+                        //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
+                        MainActivity.menuNavigation.getMenu().getItem(3).setCheckable(true);
+
+                        //SI EL SCROLL ES INVISIBLE, LO ESCONDEMOS CUANDO EL DRAWER LAYOUT ESTE CERRADO
+                        if (MainActivity.scrollMenuPosition.getVisibility() == View.INVISIBLE) {
+
+                            MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+
+                        }
+
+                    }
+
+                    if (mFlagSettings) {
+
+                        // [START Menu_selected_event]
+
+
+                        Bundle bundle = new Bundle();
+                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Settings");
+                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
+                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+
+                        // [END Menu_selected_event]
+
+                        mFragmentName = "Settings";
+
+                        mFlagHome = true;
+                        mFlagFavorites = true;
+                        mFlagRecover = true;
+                        mFlagSettings = false;
+
+                        mFragmentLoad = new ConfigFragment();
+                        animateCrossButton = true;
+
+                        //
+                        animationScrollMenuBottom(marginScrollMenuBottom, sizeWidth / 2 + sizeWidth / 4);
+                        marginScrollMenuBottom = sizeWidth / 2 + sizeWidth / 4;
+                        //
+
+                    }
+
+                    break;
+
+            }
+        }
+
+
+
+
+
+        return true;
+    }
+
     public void setActivityListener(ListenFromActivity activityListener) {
         this.activityListener = activityListener;
     }
 
+    //endregion
 
-    ///////////////////////////////////
-    /// MARK:
-    public static boolean isNetworkStatusAvailable(Context context) {
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager != null) {
-            NetworkInfo netInfos = connectivityManager.getActiveNetworkInfo();
-            if (netInfos != null)
-                if (netInfos.isConnected())
-                    return true;
-        }
-        return false;
+
+
+    //region ANIMACIONES
+
+    public void animationScrollMenuBottom(int marginOrigin, int marginDestiny){
+        //Animation WebView
+        final int marginStart = marginOrigin;// your start value
+        final int marginEnd = marginDestiny; // where to animate to
+        Log.d(TAG,"animationScrollMenuBottom --  marginEnd:"+marginEnd);
+        Log.d(TAG,"animationScrollMenuBottom --  marginStart:"+marginStart);
+        scrollMenuPosition.setLayerType(View.LAYER_TYPE_HARDWARE,null);
+
+
+        Animation mAnimation = new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+
+                /*ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) scrollMenuPosition.getLayoutParams();
+                params.setMarginStart(marginEnd);
+                scrollMenuPosition.setLayoutParams(params);*///IMPORTANTE: CERRAR COMENTARIO
+
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) scrollMenuPosition.getLayoutParams();
+                params.setMarginStart(marginStart + (int) ((marginEnd - marginStart) * interpolatedTime));
+
+                //params.leftMargin = marginStart + (int) ((marginEnd - marginStart) * interpolatedTime);
+                scrollMenuPosition.setLayoutParams(params);
+
+            }
+        };
+
+
+        mAnimation.setDuration(75); // in ms
+
+
+        mAnimation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+
+                //finishTapMenuNavigationSetup();
+
+
+                scrollMenuPosition.setLayerType(View.LAYER_TYPE_NONE,null);
+                if (marginEnd != 0)
+                    finishTapMenuNavigationSetup();
+                else {
+                    Log.d(TAG,"animationScrollMenuBottom -- mAnimation.onAnimationEnd margin End == 0");
+                    if (!(getSupportFragmentManager().getFragments().size() == 0))
+                        getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                }
+
+
+
+
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        scrollMenuPosition.startAnimation(mAnimation);
     }
 
+    //endregion
+
+
+
+    //region OTROS
 
     ///////////////////////////////////
     /// MARK:
@@ -1157,297 +1432,22 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public void refreshDeletedNews(){
 
     }
-    ///////////////////////////////////
-    /// MARK:
-    private void consultNoNewsShow(String categoria) {
 
-        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(this,"db_noticias",null,1);
-        SQLiteDatabase db = conn.getReadableDatabase();
-        String [] parametros = {categoria.toString()};
-        Cursor cursor = db.rawQuery("SELECT * FROM "+Utilidades.TABLA_RECUPERAR+" WHERE "+Utilidades.CATEGORIA+" LIKE ?",parametros);
-        Noticia noticia = null;
-        if(cursor.getCount()==0)
-        {
-            Log.e("RecoverFragment", "consultNoNewsShow: EMPTY");
-            allNewsDeleted = null;
+    @Override
+    public void onBackPressed() {
+
+        //VERIFICAMOS QUE NO TENGA EL DRAWER ABIERTO O ESTE EN ABOUT US
+        if (estadoDrawer == true || AboutFragment.activoAbout == true) {
+
+        } else {
+
+            //SOLO MINIMIZA LA APLICACION CUANDO SE DE EL BOTON DE ATRAS
+            moveTaskToBack(true);
+            //super.onBackPressed();
         }
-        else
-        {
-            Log.e("RecoverFragment", "consultNoNewsShow: NEWS!");
-            while (cursor.moveToNext()) {
-                noticia = new Noticia(cursor.getString(0), cursor.getString(1), cursor.getString(2), "", cursor.getString(3), cursor.getString(4), cursor.getLong(5));
-                allNewsDeleted.add(noticia);
-                allNewsDeletedHelper =allNewsDeleted;
-            }
-        }
-        cursor.close();
-        db.close();
-        conn.close();
+
     }
 
-
-    /********************************************* NO USE ******************************************/
-
-    public void deleteTempDB() {
-        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(this, "db_noticias", null, 1);
-        SQLiteDatabase db = conn.getWritableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + Utilidades.TABLA_NOTICIA + "", null);
-        db.delete(Utilidades.TABLA_NOTICIA, null, null);
-        cursor.close();
-        db.close();
-        conn.close();
-    }
-    public void getConfigDefaultAPINews(){
-    }
-    private void printKeyHash(){
-        try{
-            PackageInfo info = getPackageManager().getPackageInfo("com.amco.cidnews",PackageManager.GET_SIGNATURES);
-            for(Signature signature:info.signatures){
-                MessageDigest md = MessageDigest.getInstance("SHA");
-                md.update(signature.toByteArray());
-                Log.d("KeyHash:",Base64.encodeToString(md.digest(),Base64.DEFAULT));
-            }
-        }catch (PackageManager.NameNotFoundException e){
-            e.printStackTrace();
-        }catch (NoSuchAlgorithmException e){
-            e.printStackTrace();
-        }
-    }
-
-    ///////////////////////////////////
-    /// MARK:
-    private int estado(String categoria) {
-        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(this, "db_noticias", null, 1);
-        SQLiteDatabase db = conn.getWritableDatabase();
-        String[] parametros = {categoria};
-        Cursor cursor = db.rawQuery("SELECT estado FROM " + Utilidades.TABLA_PREFERENCIA + " where " + Utilidades.CATEGORIA + " =?", parametros);
-        cursor.moveToFirst();
-        db.close();///////////*******************   CLOSE 13SEP
-
-        return cursor.getInt(0);
-    }
-
-    public void animationScrollMenuBottom(int marginOrigin, int marginDestiny){
-        //Animation WebView
-        final int marginStart = marginOrigin;// your start value
-        final int marginEnd = marginDestiny; // where to animate to
-        Log.d(TAG,"animationScrollMenuBottom --  marginEnd:"+marginEnd);
-        Log.d(TAG,"animationScrollMenuBottom --  marginStart:"+marginStart);
-
-
-        scrollMenuPosition.setLayerType(View.LAYER_TYPE_HARDWARE,null);
-
-        Animation mAnimation = new Animation() {
-            @Override
-            protected void applyTransformation(float interpolatedTime, Transformation t) {
-
-                /*ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) scrollMenuPosition.getLayoutParams();
-                params.setMarginStart(marginEnd);
-                scrollMenuPosition.setLayoutParams(params);*/
-
-                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) scrollMenuPosition.getLayoutParams();
-                params.setMarginStart(marginStart + (int) ((marginEnd - marginStart) * interpolatedTime));
-
-                //params.leftMargin = marginStart + (int) ((marginEnd - marginStart) * interpolatedTime);
-                scrollMenuPosition.setLayoutParams(params);
-
-            }
-        };
-        mAnimation.setDuration(75); // in ms
-        mAnimation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                scrollMenuPosition.setLayerType(View.LAYER_TYPE_NONE,null);
-                if (marginEnd != 0)
-                    finishTapMenuNavigationSetup();
-                else {
-                    Log.d(TAG,"animationScrollMenuBottom -- mAnimation.onAnimationEnd margin End == 0");
-                    if (!(getSupportFragmentManager().getFragments().size() == 0))
-                        getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                }
-
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        scrollMenuPosition.startAnimation(mAnimation);
-    }
+    //endregion
 
 }
-
-    /* ******************************************* TRASH ******************************************/
-/*
-*
-*
-    ///////////////////////////////////
-    /// MARK: This is a first Request to the API NEWS for a better UX. After a Success if the is no news
-    //for show, it would go for the next URL
-    public void firstGetRequestAPIOkHttp(final String [] typeUrl, final int mNewsIndex){
-
-
-
-        OkHttpClient client = new OkHttpClient();
-
-        Request mRequestOkHttp  = new Request.Builder()
-                .url(typeUrl[mNewsIndex])
-                .build();
-
-
-        if (stateArrayMain[mNewsIndex]) {
-
-            client.newCall(mRequestOkHttp).enqueue(new Callback() {
-                @Override
-                public void onFailure(@NotNull Call call, @NotNull IOException e) {
-
-                }
-
-                @Override
-                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                    try {
-                        JSONObject mResponse = new JSONObject(new String(response.body().string()));
-                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onSuccess, mFirstNewsIndex:" + mNewsIndex);
-                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onSuccess, totalResults:" + mResponse.getInt("totalResults"));
-                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onSuccess, labelsForNews:" + labelsForNewsSettings[mNewsIndex]);
-
-                        if (mResponse.getInt("totalResults") == 0) {
-
-                            if (mNewsIndex + 1 < 9) {
-                                firstGetRequestAPIOkHttp(typeUrl, mNewsIndex + 1); //???
-                            } else
-                                Toast.makeText(getApplicationContext(),
-                                        "All news have been seen", Toast.LENGTH_SHORT).show();
-                        } else {
-
-                            //Let know to the HomeFrag that we have news!
-                            allNews = addMoreNews(mResponse.toString(), labelsForNewsSettings[mNewsIndex], allNews);
-
-                            if (allNews.size() == 0) {
-
-                                if (mNewsIndex + 1 < 9) {
-                                    firstGetRequestAPIOkHttp(typeUrl, mNewsIndex + 1); //???
-                                } else
-                                    Toast.makeText(getApplicationContext(),
-                                            "All news have been seen", Toast.LENGTH_SHORT).show();
-
-                            } else {
-                                if (activityListener != null) {
-                                    activityListener.setGeneralNews();
-                                }
-
-
-                                if (mNewsIndex + 1 < 9) {
-                                    generalRecursiveOkHttp(mNewsIndex + 1, false, true);
-                                } else
-                                    Toast.makeText(getApplicationContext(),
-                                            "All news have been seen", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onFailure:" + e.toString());
-                    }
-
-                }
-            });
-        }else {
-
-            if (mNewsIndex + 1 < 9) {
-                firstGetRequestAPIOkHttp(typeUrl, mNewsIndex + 1); //???
-            }else {
-                //Toast.makeText(getApplicationContext(), "All news requested?", Toast.LENGTH_SHORT).show();
-            }
-        }
-
-
-
-    }
-
-
-
-    ///////////////////////////////////
-    /// MARK:
-    public void generalRecursiveOkHttp(final int index, final boolean defNews, final boolean topNews){
-        if(topNews)
-            typeUrl = urlTopNewsSettings;
-        else
-            typeUrl = urlDefaultNewsSettings;
-
-
-
-
-        OkHttpClient client = new OkHttpClient();
-        if(index < 9) {
-            if (stateArrayMain[index]) {
-                Request mRequestOkHttp = new Request.Builder()
-                        .url(typeUrl[index])
-                        .build();
-                client.newCall(mRequestOkHttp).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(@NotNull Call call, @NotNull IOException e) {
-
-                    }
-
-                    @Override
-                    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                        try {
-
-                            JSONObject mResponse = new JSONObject(new String(response.body().string()));
-                            allNews = addMoreNews(mResponse.toString(), labelsForNewsSettings[index], allNews);
-                        }catch (JSONException e) {
-                            e.printStackTrace();
-                            Log.d(TAG, "generalRecursiveOkHttp -- onFailure:" + e.toString());
-                        }
-
-                        if(index == 8 && defNews){
-                            //FINISH
-                            Log.d(TAG,"generalRecursiveOkHttp  -- FinishALL allNews.size:"+allNews.size());
-                            if (null != activityListener) {
-                                activityListener.setGeneralNews();
-                            }
-                        }else {
-                            Log.d(TAG,"generalRecursiveOkHttp  -- onFinish, generalRecursive, defNews:"+defNews);
-                            Log.d(TAG,"generalRecursiveOkHttp  -- onFinish, generalRecursive, topNews:"+topNews);
-
-                            generalRecursiveOkHttp(index + 1, defNews, topNews);
-                        }
-                    }
-                });
-
-            }
-            else{
-                if(index == 8 && defNews){
-                    //FINISH
-                    if (SWIPESTACK_SCROLLING) {
-                        if (HomeFragment.Swipadaptador.getCount() == 0) {
-                            if (null != activityListener) {
-                                activityListener.setGeneralNews();
-                            }
-                        }
-                    }else{
-                        if (HomeFragment.SwipadaptadorNScroll.getCount() == 0) {
-                            if (null != activityListener) {
-                                activityListener.setGeneralNews();
-                            }
-                        }
-                    }
-                    Log.d(TAG,"generalRecursiveOkHttp  -- FinishALL allNews.size:"+allNews.size());
-                }else
-                    generalRecursiveOkHttp(index + 1, defNews, topNews);
-            }
-        }else
-            generalRecursiveOkHttp(0,true,false);
-
-    }
-
-*
-*
-* */

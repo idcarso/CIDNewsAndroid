@@ -52,6 +52,7 @@ import android.support.v4.app.FragmentActivity;
 * */
 
 public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
+
     private ListenRecoverFAB mRecoverFAB;
     private ArrayList<Noticia> noticias;
     private static final String TAG = "NoticiasAdapterRecover";

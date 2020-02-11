@@ -31,10 +31,7 @@ public class MyObject implements Parcelable {
         return 0;
     }
 
-  /*  @Override
-    public String toString() {
-        return number + ": " + color;
-    }*/
+
 
     public void writeToParcel(Parcel out, int flags) {
         out.writeString(titulo);
@@ -71,5 +68,7 @@ public class MyObject implements Parcelable {
     }
 
 
-    public String getCategoria(){ return categoria; }
+    public String getCategoria(){
+        return categoria;
+    }
 }

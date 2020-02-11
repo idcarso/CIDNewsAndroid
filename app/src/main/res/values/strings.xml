@@ -19,6 +19,10 @@
     <string name="energy">ENERGY</string>
     <string name="finance">FINANCE</string>
     <string name="telecom">TELECOM</string>
+    <string name="about_us">ABOUT US</string>
+    <string name="title_cid">Centro de Innovación Digital</string>
+
+
     <string name="filter_title_fav">FILTER</string>
     <string name="recover_title_rec">REMOVED</string>
     <string name="favorites_title_fav">FAVORITES</string>
@@ -34,6 +38,12 @@
     <string name="action_settings">Settings</string>
     <string name="menu_reset_all">RESET ALL</string>
 
+    <string name="what_about">What</string>
+    <string name="aboutus_about">About US</string>
+    <string name="cidnews_about">CID NEWS</string>
+    <string name="cidnews_description_about">This is a channel for\nyou to find the best notes\nof the digital world\nselect for you.</string>
 
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

@@ -52,50 +52,36 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 
-
-/*
-* import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
-*/
-
 public class VistaWeb extends Fragment {
 
-    public static final String TAG = "VistaWeb";
+    private static final String TAG = "VistaWeb";
 
-    FrameLayout mFrameToolbar;
-     static  WebView webView;
-    ImageButton btnMoreInfo;
-    ImageButton btnBack;
-    ProgressBar progressBar;
+    private FrameLayout mFrameToolbar;
+    private WebView webView;
+    private ImageButton btnMoreInfo;
+    private ImageButton btnBack;
+    private ProgressBar progressBar;
     WebSettings webSettings;
-    FloatingActionButton fav,share,trash;
 
+    //String
+    private String  url="";
 
-    String  url="";
-
-    float scale=0;
-    int pxX,pxY;
-
-    //top Margin Value ( Webview)
-    int topMarginWebview = 0;
 
     //Menu
     PopupWindow popupWindowDogs;
     String popUpContents[];
 
+    //Float
+    private float scale=0;
 
     //Int
-    int bottomMargin = 0;
-    int X=0;
+    private int X=0;
+    private int topMarginWebview = 0;
+    private int pxX,pxY;
 
     //Boolean
-    boolean flagWebView = false;
-    boolean flagSave = false;
-    boolean flagDeleted = false;
-    boolean toolbarIsInAnimation = false;
-    boolean urlLoaded = false;
+    private boolean toolbarIsInAnimation = false;
+    private boolean urlLoaded = false;
 
     @Nullable
     @Override

@@ -19,8 +19,7 @@
             <androidx.percentlayout.widget.PercentRelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:clipChildren="false"
-                >
+                android:clipChildren="false">
 
 
 
@@ -34,8 +33,7 @@
                     app:layout_marginEndPercent="20%"
 
                     android:layout_marginStart="20dp"
-                    android:layout_marginEnd="20dp"
-                    >
+                    android:layout_marginEnd="20dp">
 
                     <ImageView
                         android:id="@+id/img_loader_gif"
@@ -43,8 +41,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:layout_centerHorizontal="true"
-                        />
+                        android:layout_centerHorizontal="true"/>
 
 
                 </RelativeLayout>
@@ -55,14 +52,20 @@
 
                 <ImageView
                     android:id="@+id/icono_mano"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
                     android:adjustViewBounds="true"
-                    android:scaleType="centerCrop"
+                    android:scaleType="fitCenter"
                     android:src="@drawable/logocidnews"
-                    app:layout_marginBottomPercent="89%"
-                    app:layout_marginTopPercent="2%" />
+
+
+
+                    app:layout_heightPercent="9%"
+                    app:layout_widthPercent="35%"
+                    app:layout_marginTopPercent="2%"/>
+
+
 
                 <ImageButton
                     android:id="@+id/boton_superior_home"
@@ -71,14 +74,29 @@
                     android:layout_gravity="end"
                     android:adjustViewBounds="true"
                     android:background="#00FFFFFF"
-                    android:padding="5dp"
-                    android:paddingStart="20dp"
+                    android:padding="20dp"
+                    android:paddingStart="26dp"
                     android:paddingEnd="20dp"
                     android:scaleType="centerCrop"
                     android:src="@drawable/hambur_gris"
+
                     app:layout_marginEndPercent="3%"
                     app:layout_marginStartPercent="76%"
-                    app:layout_marginTopPercent="3.247%" />
+                    app:layout_marginTopPercent="1.247%" />
+                    <!--app:layout_marginTopPercent="3.247%"-->
+
+
+
+                <TextView
+                    android:id="@+id/txt_cid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/icono_mano"
+                    android:fontFamily="@font/montserratextrabold"
+                    android:textColor="@color/mainBlue"
+                    android:textAlignment="center"
+                    android:textSize="16sp"
+                    android:text="@string/title_cid"/>
 
 
                 <link.fls.swipestack.SwipeStack
@@ -87,18 +105,15 @@
                     android:id="@+id/swipStack"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    app:layout_marginBottomPercent="18.5%"
-                    app:layout_marginTopPercent="14%"
+                    app:layout_marginBottomPercent="16.5%"
+                    app:layout_marginTopPercent="18%"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:elevation="10dp"
                     app:animation_duration="300"
                     app:stack_rotation="-1"
                     app:stack_size="2"
-                    app:stack_spacing="0dp"
-
-
-                    >
+                    app:stack_spacing="0dp">
 
                 </link.fls.swipestack.SwipeStack>
 
@@ -106,21 +121,16 @@
             </androidx.percentlayout.widget.PercentRelativeLayout>
         </FrameLayout>
 
-
-
-
-
-
-        <ImageView
+    <ImageView
             android:id="@+id/basuraimg"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_trash_pink1"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            app:layout_heightPercent="15%"
 
+            app:layout_heightPercent="15%"
             app:layout_marginTopPercent="30%"
-            app:layout_widthPercent="25%" />
+            app:layout_widthPercent="25%"/>
 
         <ImageView
             android:id="@+id/palomaimg"
@@ -147,12 +157,10 @@
         app:fabSize="auto"
         app:fabCustomSize="66dp"
         app:layout_marginEndPercent="11%"
-        app:layout_marginBottomPercent="16%"
+        app:layout_marginBottomPercent="14%"
 
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-
-        />
+        android:layout_alignParentEnd="true"/>
 
 
 

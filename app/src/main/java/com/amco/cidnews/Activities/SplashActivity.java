@@ -7,6 +7,8 @@ import android.view.inputmethod.InputMethodManager;
 import androidx.appcompat.app.AppCompatActivity;
 import com.uxcam.UXCam;
 
+
+
 public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -14,7 +16,6 @@ public class SplashActivity extends AppCompatActivity {
         Log.e("SplashActivity", "onCreate: -------------> TRUE");
 
         UXCam.startWithKey("mr10kb29coxhprz");
-
 
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         hideSoftKeyboard();
