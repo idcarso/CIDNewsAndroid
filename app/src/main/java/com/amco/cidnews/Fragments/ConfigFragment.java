@@ -33,6 +33,8 @@ public class ConfigFragment extends Fragment {
 
     TextView txenvio,txhealth,txretail,txconstruc,txentertain,txeducation,txenergy,txtelecom,txfinance;
 
+    public static boolean isAnyConfiguration = false; // TRUE: HAY AUN QUE SEA UNA OPCION CONFIGURADA || FALSE: NO SE ESCOGIO NINGUNA OPCION
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -194,6 +196,31 @@ public class ConfigFragment extends Fragment {
             else
             {
                 Log.d("------------>>>>","<------ lista la configuracion");
+                isAnyConfiguration = FinalConfigurationStatus();
+
+                if (isAnyConfiguration == false) {
+                    // ENABLE
+                    MainActivity.menuNavigation.getMenu().getItem(0).setEnabled(false);
+                    MainActivity.menuNavigation.getMenu().getItem(1).setEnabled(false);
+                    MainActivity.menuNavigation.getMenu().getItem(2).setEnabled(false);
+                    MainActivity.menuNavigation.getMenu().getItem(3).setEnabled(true);
+                    // CHECKABLE
+                    MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(false);
+                    MainActivity.menuNavigation.getMenu().getItem(1).setCheckable(false);
+                    MainActivity.menuNavigation.getMenu().getItem(2).setCheckable(false);
+                    MainActivity.menuNavigation.getMenu().getItem(3).setCheckable(true);
+                } else {
+                    // ENABLE
+                    MainActivity.menuNavigation.getMenu().getItem(0).setEnabled(true);
+                    MainActivity.menuNavigation.getMenu().getItem(1).setEnabled(true);
+                    MainActivity.menuNavigation.getMenu().getItem(2).setEnabled(true);
+                    MainActivity.menuNavigation.getMenu().getItem(3).setEnabled(true);
+                    // CHECKABLE
+                    MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
+                    MainActivity.menuNavigation.getMenu().getItem(1).setCheckable(true);
+                    MainActivity.menuNavigation.getMenu().getItem(2).setCheckable(true);
+                    MainActivity.menuNavigation.getMenu().getItem(3).setCheckable(true);
+                }
             }
 
         db.close();
@@ -222,6 +249,27 @@ public class ConfigFragment extends Fragment {
 
 
 
+    }
+
+    /**
+     * Sirve para verificar cuando el usuario no seleccionó ninguna opción.
+     * @return
+     */
+    public boolean FinalConfigurationStatus() {
+        boolean flagConfiguration = false;
+        int counter = 0;
+        String [] categorias = {"SALUD","RETAIL","CONSTRUCCIÓN","ENTRETENIMIENTO","AMBIENTE","EDUCACIÓN","ENERGÍA","BANCA","TELECOM"};
+        for (int i = 0; i < categorias.length; i++) {
+            if (estado(categorias[i]) == 1) {
+                counter++;
+            }
+        }
+        if (counter > 0) {
+            flagConfiguration = true;
+        } else {
+            flagConfiguration = false;
+        }
+        return flagConfiguration;
     }
 
 

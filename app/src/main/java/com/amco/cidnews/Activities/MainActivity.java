@@ -488,23 +488,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     //METODO PARA MOSTRAR LOS FRAGMENTS SOBRE EL CONTENEDOR PRINCIPAL EN EL ACTIVITY
     private boolean loadFragmant(androidx.fragment.app.Fragment fragment,String fragmentName) {
 
-        /*if (fragment != null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.contendor, fragment).commit();
-            return true;
-        } else {
-            return false;
-        }*/
-
-
         if (fragment != null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.contendor, fragment).addToBackStack(fragmentName).commit();
             //getSupportFragmentManager().beginTransaction().replace(R.id.contendor, fragment).commit();
             return true;
         }
         return false;
-
-
-
 
     }
 
@@ -603,86 +592,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     //region NOTICIAS
-
-    /// MARK: This is a first Request to the API NEWS for a better UX. After a Success if the is no news
-    //for show, it would go for the next URL
-    public void firstGetRequestAPIOkHttp(final String [] typeUrl, final int mNewsIndex){
-
-        OkHttpClient client = new OkHttpClient();
-        Request mRequestOkHttp  = new Request.Builder()
-                .url(typeUrl[mNewsIndex])
-                .build();
-
-
-        if (stateArrayMain[mNewsIndex]) {
-
-            client.newCall(mRequestOkHttp).enqueue(new Callback() {
-                @Override
-                public void onFailure(@NotNull Call call, @NotNull IOException e) {
-
-                }
-
-                @Override
-                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                    try {
-                        JSONObject mResponse = new JSONObject(new String(response.body().string()));
-                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onSuccess, mFirstNewsIndex:" + mNewsIndex);
-                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onSuccess, totalResults:" + mResponse.getInt("totalResults"));
-                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onSuccess, labelsForNews:" + labelsForNewsSettings[mNewsIndex]);
-
-                        if (mResponse.getInt("totalResults") == 0) {
-
-                            if (mNewsIndex + 1 < 9) {
-                                firstGetRequestAPIOkHttp(typeUrl, mNewsIndex + 1); //???
-                            } else
-                                Toast.makeText(getApplicationContext(),
-                                        "All news have been seen", Toast.LENGTH_SHORT).show();
-                        } else {
-
-                            //Let know to the HomeFrag that we have news!
-                            allNews = addMoreNews(mResponse.toString(), labelsForNewsSettings[mNewsIndex], allNews);
-
-                            if (allNews.size() == 0) {
-
-                                if (mNewsIndex + 1 < 9) {
-                                    firstGetRequestAPIOkHttp(typeUrl, mNewsIndex + 1); //???
-                                } else
-                                    Toast.makeText(getApplicationContext(),
-                                            "All news have been seen", Toast.LENGTH_SHORT).show();
-
-                            } else {
-                                if (activityListener != null) {
-                                    activityListener.setGeneralNews();
-                                }
-
-
-                                if (mNewsIndex + 1 < 9) {
-                                    generalRecursive(mNewsIndex + 1, false, true);
-                                } else
-                                    Toast.makeText(getApplicationContext(),
-                                            "All news have been seen", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Log.d(TAG, "firstGetRequestAPIOkHttp -- onFailure:" + e.toString());
-                    }
-
-                }
-            });
-        }else {
-
-            if (mNewsIndex + 1 < 9) {
-                firstGetRequestAPIOkHttp(typeUrl, mNewsIndex + 1); //???
-            }else {
-                //Toast.makeText(getApplicationContext(), "All news requested?", Toast.LENGTH_SHORT).show();
-            }
-        }
-
-
-
-    }
-
 
     ///////////////////////////////////
     /// MARK: This is a first Request to the API NEWS for a better UX. After a Success if the is no news
@@ -989,10 +898,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         return list;
     }
 
-
-
-
-
     ///////////////////////////////////
     /// MARK: HttpClient
     public AsyncHttpClient requestHttpClient() {
@@ -1034,11 +939,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     //endregion
 
-
-
     //region LISTENERS
 
     //SELECCION DE APARTADOS EN BOTTOM NAVIGATION VIEW
+
     @Override
     public boolean onNavigationItemSelected(@NonNull final  MenuItem item) {
 
@@ -1060,35 +964,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     //CUANDO DEMOS CLIC EN HOME, SE VERIFICA LA BANDERA DE ABOUT US, SI ESTA ACTIVA QUITAMOS Y COLOCAMOS EL HOME
                     if (AboutFragment.activoAbout == true) {
 
-                        //PONEMOS EN TRUE LA BANDERA DE HOME
-                        //mFlagHome = true;
-
-                        /*androidx.fragment.app.Fragment fragmentAbout = new AboutFragment();
-                        androidx.fragment.app.Fragment fragmentHome = new HomeFragment();
-                        androidx.fragment.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                        transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
-                        //transaction.replace(R.id.contendor_home, fragmentHome);
-                        transaction.remove(fragmentAbout).commit();
-
-                        //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
-                        MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);*/
-
-                        /*mFlagHome = true;
-
-
-                        MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
-                        MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
-
-                        androidx.fragment.app.Fragment fragmentAbout = new AboutFragment();
-                        androidx.fragment.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                        transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
-                        transaction.remove(fragmentAbout).commit();*/
-
                         AboutFragment.imageButtonRegresar.performClick();
 
                     }
 
                     if (HomeFragment.estadoDrawer == true) {
+
                         //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
                         MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
 
@@ -1098,20 +979,23 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                             MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
 
                         }
+
                         HomeFragment.drawerLayout.closeDrawers();
+
                     }
 
                     if (mFlagHome) {
-
 
                         Log.d(TAG, "onNavigationItemSelected: HomeFragment");
                         mFragmentName = "Home";
 
                         // [START Menu_selected_event]
+
                         Bundle bundle = new Bundle();
                         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Home");
                         bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
                         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+
                         // [END Menu_selected_event]
 
                         mFlagHome = false;
@@ -1120,12 +1004,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         mFlagSettings = true;
                         animateCrossButton = false;
 
-
-
                         imgBtnCross.setVisibility(View.INVISIBLE);
 
-
                         if (changeStateSetting) {
+
                             Log.d(TAG, "onNavigationItemSelected: HomeFragment changeStateSetting: TRUE");
                             changeStateSetting = false;
 
@@ -1133,15 +1015,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                                 allNews.clear();
                                 allNews = new ArrayList<>();
-                                //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
                                 firstGetRequestAPI(urlTopNewsSettings, 0);
 
                             } else {
 
                                 allNews.clear();
                                 allNews = new ArrayList<>();
-                                //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
-
                                 firstGetRequestAPI(urlTopNewsSettings, 0);
 
                             }
@@ -1153,13 +1032,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         marginScrollMenuBottom = 0;
 
                     }
+
                     break;
 
                 case R.id.fav_nav:   //Favoritos
 
                     if (AboutFragment.activoAbout == true) {
+
                         MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+
                     }
+
                     //VERIFICAMOS EL ESTADO DE LAS VISTAS EN CASO DE QUE EL DRAWER VIEW ESTE ABIERTO
                     if (HomeFragment.estadoDrawer == true) {
 
@@ -1177,8 +1060,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     
                     if (mFlagFavorites) {
 
-
-
                         // [START Menu_selected_event]
 
                         Bundle bundle = new Bundle();
@@ -1188,26 +1069,24 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                         // [END Menu_selected_event]
 
-
                         mFlagHome = true;
                         mFlagFavorites = false;
                         mFlagRecover = true;
                         mFlagSettings = true;
                         mFragmentName = "Favorites";
 
-
-
                         mFragmentLoad = new FavFragment();
                         imgBtnCross.setVisibility(View.INVISIBLE);
                         animateCrossButton = !consultarNoticiasFavoritas("%");
-                        //
+
                         animationScrollMenuBottom(marginScrollMenuBottom, sizeWidth / 4);
                         marginScrollMenuBottom = sizeWidth / 4;
-                        //
 
-                    } else
+                    } else {
+
                         animateCrossButton = false;
 
+                    }
 
                     break;
 
@@ -1215,7 +1094,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 case R.id.recover_nav:
 
                     if (AboutFragment.activoAbout == true) {
+
                         MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+
                     }
 
                     //VERIFICAMOS EL ESTADO DE LAS VISTAS EN CASO DE QUE EL DRAWER VIEW ESTE ABIERTO
@@ -1235,7 +1116,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                     if (mFlagRecover) {
 
-
                         // [START Menu_selected_event]
 
                         Bundle bundle = new Bundle();
@@ -1247,7 +1127,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                         mFragmentName = "Recover";
 
-                        //
                         mFlagHome = true;
                         mFlagFavorites = true;
                         mFlagRecover = false;
@@ -1257,13 +1136,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         animateCrossButton = false;
                         imgBtnCross.setVisibility(View.INVISIBLE);
 
-                        //
                         animationScrollMenuBottom(marginScrollMenuBottom, sizeWidth / 2);
                         marginScrollMenuBottom = sizeWidth / 2;
 
 
                     }
-
 
                     break;
 
@@ -1271,7 +1148,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 case R.id.config_nav:  //Preferencias
 
                     if (AboutFragment.activoAbout == true) {
+
                         MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+
                     }
 
                     //VERIFICAMOS EL ESTADO DE LAS VISTAS EN CASO DE QUE EL DRAWER VIEW ESTE ABIERTO
@@ -1293,7 +1172,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                         // [START Menu_selected_event]
 
-
                         Bundle bundle = new Bundle();
                         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Settings");
                         bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
@@ -1311,24 +1189,21 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         mFragmentLoad = new ConfigFragment();
                         animateCrossButton = true;
 
-                        //
                         animationScrollMenuBottom(marginScrollMenuBottom, sizeWidth / 2 + sizeWidth / 4);
                         marginScrollMenuBottom = sizeWidth / 2 + sizeWidth / 4;
-                        //
 
                     }
 
                     break;
 
             }
+
         }
 
-
-
-
-
         return true;
+
     }
+
 
     public void setActivityListener(ListenFromActivity activityListener) {
         this.activityListener = activityListener;
@@ -1353,14 +1228,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
 
-                /*ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) scrollMenuPosition.getLayoutParams();
-                params.setMarginStart(marginEnd);
-                scrollMenuPosition.setLayoutParams(params);*///IMPORTANTE: CERRAR COMENTARIO
-
                 ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) scrollMenuPosition.getLayoutParams();
                 params.setMarginStart(marginStart + (int) ((marginEnd - marginStart) * interpolatedTime));
 
-                //params.leftMargin = marginStart + (int) ((marginEnd - marginStart) * interpolatedTime);
                 scrollMenuPosition.setLayoutParams(params);
 
             }
@@ -1379,9 +1249,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             @Override
             public void onAnimationEnd(Animation animation) {
 
-                //finishTapMenuNavigationSetup();
-
-
                 scrollMenuPosition.setLayerType(View.LAYER_TYPE_NONE,null);
                 if (marginEnd != 0)
                     finishTapMenuNavigationSetup();
@@ -1390,10 +1257,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     if (!(getSupportFragmentManager().getFragments().size() == 0))
                         getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 }
-
-
-
-
 
             }
 
@@ -1411,8 +1274,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     //region OTROS
 
-    ///////////////////////////////////
-    /// MARK:
     public void hideSoftKeyboard() {
         if(getCurrentFocus()!=null) {
             InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
@@ -1420,33 +1281,24 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
     }
 
-    ///////////////////////////////////
-    /// MARK:
     public void setupChangeState(){
         Log.d("MainActivity","setupChangeState");
         changeStateSetting = true;
     }
 
-    ///////////////////////////////////
-    /// MARK:
-    public void refreshDeletedNews(){
-
-    }
-
     @Override
     public void onBackPressed() {
-
         //VERIFICAMOS QUE NO TENGA EL DRAWER ABIERTO O ESTE EN ABOUT US
         if (estadoDrawer == true || AboutFragment.activoAbout == true) {
 
         } else {
-
             //SOLO MINIMIZA LA APLICACION CUANDO SE DE EL BOTON DE ATRAS
             moveTaskToBack(true);
             //super.onBackPressed();
         }
-
     }
+
+    public void refreshDeletedNews() {}
 
     //endregion
 
