@@ -1148,10 +1148,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 DrawerItemNavBar selected = (DrawerItemNavBar) parent.getItemAtPosition(position);
                 Log.d(TAG, "onCreate -- onItemClick: position: " + String.valueOf(position));
 
-                String typeNews = cateNews[position];
-
+                //String typeNews = cateNews[position];
+                String typeNews = "";
                 if (position < 9) {
-
+                    typeNews = cateNews[position];
                     if ((MainActivity) getActivity() != null) {
 
                         ((MainActivity) getActivity()).specificRecursive(position);
@@ -1180,7 +1180,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
                     }
 
-                    Log.d(TAG, "setupMenu -- drawerList.setOnItemClickListener -- cateNews[" + position + "]: " + typeNews);
+                    //Log.d(TAG, "setupMenu -- drawerList.setOnItemClickListener -- cateNews[" + position + "]: " + typeNews);
                     drawerLayout.closeDrawers();
 
                 } else if (position == 9) {
@@ -1203,27 +1203,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                     //CERRAMOS EL DRAWER LAYOUT CUANDO SE HACE CLIC EN ABOUT US
                     drawerLayout.closeDrawer(Gravity.END);
 
-                    //transaction.replace(R.id.contendor_home, fragmentAboutUs);
-                    //transaction.commit();
-                    //transaction.show(fragmentAboutUs).commit();
-                    //transaction.replace(R.id.contendor_home, fragmentAboutUs).commit();
-
-
-                    /*if (banderaAbout == true) {
-                        //SI EL SCROLL ES VISIBLE, LO ESCONDEMOS ESTANDO EN ABOUT US
-                        if (MainActivity.scrollMenuPosition.getVisibility() == View.VISIBLE) {
-
-                            MainActivity.scrollMenuPosition.setVisibility(View.INVISIBLE);
-                            Log.w("SCROLL NAVIGATION", "CAMBIO A INVISIBLE");
-
-                        }
-
-                        //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
-                        MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(false);
-                    }*/
-
-                    //ACTIVAMOS LA BANDERA DE QUE SE SELECCIONO ABOUT US
-                    //banderaAbout = true;
                 }
 
                 // [START event]
@@ -1232,7 +1211,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST, bundle);
                 // [END event]
 
-                //drawerLayout.closeDrawers();
+
 
             }
         });
