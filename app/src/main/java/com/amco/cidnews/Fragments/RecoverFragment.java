@@ -49,14 +49,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 
-/*
-*
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
-* */
-
 public class RecoverFragment extends Fragment implements ListenRecoverFAB {
     public static final String TAG = "RecoverFragment";
 
@@ -93,7 +85,7 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
 
 
 
-
+    //region: LIFECYCLE FRAGMENT
     @Nullable
     @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -110,7 +102,9 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
 
         return view;
     }
+    //endregion
 
+    //region: SETUPS UI
     public void configUI(View view){
         listRecoverView =  view.findViewById(R.id.container_recover);
         frameToolbar =  view.findViewById(R.id.toolbar_recover);
@@ -124,7 +118,12 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
 
     public void setupUI(){
 
-        ((MainActivity)getActivity()).imgBtnCross.setVisibility(View.INVISIBLE);
+        //((MainActivity)getActivity()).imgBtnCross.setVisibility(View.INVISIBLE);
+        if (ConsultarNoticiasRecover("%")) {
+            frnonoticia.setVisibility(View.VISIBLE);
+        } else {
+            frnonoticia.setVisibility(View.INVISIBLE);
+        }
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
@@ -138,13 +137,40 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
         bottonRecover.hide();
 
     }
+    //endregion
 
+    //region: CONSULTAS A LA BASE DE DATOS
+
+    /**
+     * METODO PARA CONSULTAR EN LA BASE DE DATOS SI HAY NOTICIAS O NO EN EL RECOVER
+     * @param categoria CATEGORIA DE LA NOTICIA
+     * @return TRUE = SI HAY NOTICIAS \\ FALSE = NO HAY NOTICIAS
+     */
+    private boolean ConsultarNoticiasRecover(String categoria) {
+        conn = new ConexionSQLiteHelper(getActivity(), "db_noticias", null, 1);
+        SQLiteDatabase sqLiteDatabase = conn.getReadableDatabase();
+        String [] parametros = {categoria.toString()};
+        Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM " + Utilidades.TABLA_RECUPERAR + " WHERE " + Utilidades.CATEGORIA + " LIKE ?", parametros);
+        if (cursor.getCount() <= 0) {
+            //Log.v("RecoverFragment.java", "SE MUESTRA LA EQUIS Y SE OCULTA EL TITULO");
+            conn.close();
+            return false;
+        } else {
+            //Log.v("RecoverFragment.java", "SE QUITA LA EQUIS Y SE MUESTRA EL TITULO");
+            conn.close();
+            return true;
+        }
+    }
+
+    //endregion
+
+    //region: SETUPS LISTENERS
     public void configUIListeners(){
+
         frnonoticia.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d("RecoverFragment", "Frame noticia: onClick: ");
-                //((MainActivity)getActivity()).back.performClick();
             }
         });
 
@@ -171,12 +197,24 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
                         consultarNoticiasFavoritas("%", 0);
                         if(ListaAux.size()==0)
                             bottonRecover.setAlpha(0.f);
+
+                        // AQUI METO MI CUCHARA
+                        if (ConsultarNoticiasRecover("%")) {
+                            //Log.v("RecoverFragment.java", "HAY NOTICIAS AUN");
+                            ((MainActivity)getActivity()).imgBtnCross.setVisibility(View.INVISIBLE);
+                            frnonoticia.setVisibility(View.VISIBLE);
+                        } else {
+                            //Log.v("RecoverFragment.java", "SIN NOTICAS");
+                            ((MainActivity)getActivity()).imgBtnCross.setVisibility(View.VISIBLE);
+                            frnonoticia.setVisibility(View.INVISIBLE);
+                        }
+                        bottonRecover.setImageResource(R.drawable.ic_recover_white);
+                        bottonRecover.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.undoSnackbar)));
+
                     }
 
                     @Override
                     public void onAnimationEnd(Animation animation) {
-                        bottonRecover.setImageResource(R.drawable.ic_recover_white);
-                        bottonRecover.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.undoSnackbar)));
                         //bottonRecover.show();
                         tx.setText("REMOVED");
                     }
@@ -203,6 +241,7 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
         });
 
     }
+    //endregion
 
     public void saveNews(){
         String aux1;
@@ -217,12 +256,10 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
                 for (int j = 0; j < ListaAux.size(); j++) {
                     aux1 = ListaAux.get(j);
                     if (urlNoticia.equals(aux1)) {
-                        //Banderilla = true;
                         Banderilla = false;
 
                         j = ListaAux.size();
                     } else {
-                        //Banderilla = false;
                         Banderilla = true;
 
                     }
@@ -250,7 +287,7 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
         }
     }
 
-
+    //region: SETUP MENU
     private void crearMenu (View view) {
         List<String> dogsList = new ArrayList<String>();
         dogsList.add("HEALTH");
@@ -264,12 +301,9 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
         dogsList.add("TELECOM");
         dogsList.add("RESET ALL");
 
-
-
         popUpContents = new String[dogsList.size()];
         dogsList.toArray(popUpContents);
         popupWindowDogs = popupWindowDogs();
-
 
         dogsList.remove(dogsList.size()-1);
         popUpContents = new String[dogsList.size()];
@@ -306,7 +340,6 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
 
             @Override
             public void onItemClick(AdapterView<?> arg0, View view, int position, long arg3) {
-
 
                 String option="";
                 Animation animation1 = new AlphaAnimation(0.3f,1);
@@ -357,8 +390,6 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
         });
         return popupWindow;
     }
-
-
 
     private ArrayAdapter<String> dogsAdapter(String dogsArray[]) {
 
@@ -457,9 +488,10 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
 
         return adapter;
     }
+    //endregion
 
-    private void deleteSelectedOrAll(String who)
-    {
+
+    private void deleteSelectedOrAll(String who) {
         String tipo = who;
         conn = new ConexionSQLiteHelper(getActivity(),"db_noticias",null,1);
         SQLiteDatabase db = conn.getReadableDatabase();
@@ -588,80 +620,6 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
         else
             bottonRecover.hide();
      }
+
+
 }
-
-
-//*********************************** TRASH *******************************************************/
-/*
-*   public void registrarNoticiasRecuperarTodo(ArrayList<Noticia> mListNews) {
-        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(getActivity(), "db_noticias", null, 1);
-        SQLiteDatabase db = conn.getWritableDatabase();
-        Cursor cursor;
-
-
-        for (int i = 0; i < ListaNoticias.size(); i++) {
-            String url = mListNews.get(i).getUrl();
-            String[] parametros = {url};
-            cursor = db.rawQuery("SELECT url FROM " + Utilidades.TABLA_NOTICIA + " WHERE " + Utilidades.URL + " =?", parametros);
-            if (cursor.getCount() == 0) {
-                Log.d(" Registro Noticias Recuperar:", "");
-                Log.d(" NOTICIA:", "NO HAY");
-                ContentValues valores = new ContentValues();
-                valores.put(Utilidades.TITULO, mListNews.get(i).getTitulo());
-                valores.put(Utilidades.IMAGEN, mListNews.get(i).getImagen());
-                valores.put(Utilidades.URL, url);
-                valores.put(Utilidades.AUTOR, mListNews.get(i).getAutor());
-                valores.put(Utilidades.CATEGORIA, mListNews.get(i).getCategoria());
-                valores.put(Utilidades.TIEMPO, 0);  //Utilidades.Tiempo (long) = 0, No hay uso para el tiempo en Favoritos.
-                db.insert(Utilidades.TABLA_NOTICIA, null, valores);
-            } else {
-                Log.d("NOTICIA:", "REPETIDA RECUPERAR" + String.valueOf(mListNews.get(i).getTitulo()));
-            }
-
-            if(i==ListaNoticias.size()){
-                cursor.close();
-            }
-        }
-        db.close();
-        conn.close();
-    }
-
-
-    public String getParamDeleteFromTxvw(String catTxvw){
-        String cat;
-        switch (catTxvw){
-            case "HEALTH":
-                cat = "salud";
-                break;
-            case "CONSTRUCTION":
-                cat = "construcción";
-                break;
-            case "RETAIL":
-                cat = "retail";
-                break;
-            case "EDUCATION":
-                cat = "educación";
-                break;
-            case "ENTERTAINMENT":
-                cat = "entretenimiento";
-                break;
-            case "ENVIRONMENT":
-                cat = "ambiente";
-                break;
-            case "FINANCE":
-                cat = "banca";
-                break;
-            case "ENERGY":
-                cat = "energía";
-                break;
-            case "TELECOM":
-                cat = "telecom";
-                break;
-
-            default: cat = "%";
-                break;
-
-        }
-        return cat;
-    }
-* */

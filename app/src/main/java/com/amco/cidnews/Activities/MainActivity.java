@@ -505,7 +505,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
 
 
-        if(animateCrossButton) {
+        if (animateCrossButton) {
 
             Animation fadeIn = new AlphaAnimation(0, 1);
             fadeIn.setInterpolator(new DecelerateInterpolator());
@@ -538,6 +538,27 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             return true;
         }
 
+    }
+
+    /**
+     * METODO QUE REALIZA UNA CONSULTA A LA BASE DE DATOS PARA BUSCAR SI HAY NOTICIAS EN RECOVER O NO
+     * @param categoria CATEGORIA A BUSCAR
+     * @return TRUE = HAY NOTICIAS \\ FALSE = NO HAY NOTICIA
+     */
+    private boolean ConsultarNoticiasRecover(String categoria) {
+        conn = new ConexionSQLiteHelper(this, "db_noticias", null, 1);
+        SQLiteDatabase sqLiteDatabase = conn.getReadableDatabase();
+        String [] parametros = {categoria.toString()};
+        Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM " + Utilidades.TABLA_RECUPERAR + " WHERE " + Utilidades.CATEGORIA + " LIKE ?", parametros);
+        if (cursor.getCount() <= 0) {
+            Log.v("MainActivity.java", "NO HAY REGISTROS EN RECOVER");
+            cursor.close();
+            return false;
+        } else {
+            Log.v("MainActivity.java", "EXISTEN " + cursor.getCount() + " REGISTROS EN RECOVER");
+            cursor.close();
+            return true;
+        }
     }
 
     public static long getRunningTime(){
@@ -1133,12 +1154,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         mFlagSettings = true;
 
                         mFragmentLoad = new RecoverFragment();
-                        animateCrossButton = false;
+
                         imgBtnCross.setVisibility(View.INVISIBLE);
+
+                        if (!ConsultarNoticiasRecover("%")) {
+                            animateCrossButton = true;
+                        } else {
+                            animateCrossButton = false;
+                        }
 
                         animationScrollMenuBottom(marginScrollMenuBottom, sizeWidth / 2);
                         marginScrollMenuBottom = sizeWidth / 2;
-
 
                     }
 
