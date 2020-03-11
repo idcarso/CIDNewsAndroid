@@ -537,7 +537,7 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
 
 
 
-    private void consultarNoticiasFavoritas(String categoria,int bandera) {
+    private void consultarNoticiasFavoritas(String categoria, int bandera) {
 
         conn = new ConexionSQLiteHelper(getActivity(),"db_noticias",null,1);
         SQLiteDatabase db = conn.getReadableDatabase();
@@ -550,10 +550,14 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
         if(cursor.getCount()==0)
         {
             Log.e("RecoverFragment", "consultarNoticiasFavoritas: EMPTY");
+            ((MainActivity)getActivity()).imgBtnCross.setVisibility(View.VISIBLE);
+            frnonoticia.setVisibility(View.INVISIBLE);
         }
         else
         {
             Log.e("RecoverFragment", "consultarNoticiasFavoritas: NEWS!");
+            ((MainActivity)getActivity()).imgBtnCross.setVisibility(View.INVISIBLE);
+            frnonoticia.setVisibility(View.VISIBLE);
             while (cursor.moveToNext()) {
                 if((cursor.getLong(5) - System.currentTimeMillis()) < 0){
                     deleteSelectedOrAll(cursor.getString(2));
