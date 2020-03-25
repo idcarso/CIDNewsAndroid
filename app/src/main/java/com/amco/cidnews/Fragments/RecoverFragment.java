@@ -536,7 +536,7 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
 
 
 
-
+    // HAY QUE REVISAR ESTE METODO POR QUE ROMPE LA APLICACION POR DESBORDAMIENTO DE INDICE
     private void consultarNoticiasFavoritas(String categoria, int bandera) {
 
         conn = new ConexionSQLiteHelper(getActivity(),"db_noticias",null,1);

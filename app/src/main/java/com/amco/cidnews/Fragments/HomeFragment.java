@@ -60,6 +60,7 @@ import com.amco.cidnews.Adapters.DrawerAdapter;
 import com.amco.cidnews.Adapters.SwipAdapterNScrolling;
 import com.amco.cidnews.Utilities.DrawerItemNavBar;
 import com.amco.cidnews.Utilities.ImagePassingAdapter;
+import com.amco.cidnews.Utilities.InternetVerify;
 import com.amco.cidnews.Utilities.ListenFromActivity;
 import com.amco.cidnews.Utilities.OnSwipeTouchListener;
 import com.amco.cidnews.R;
@@ -91,6 +92,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestHandle;
 import com.loopj.android.http.RequestParams;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -98,8 +100,10 @@ import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
+
 import cz.msebera.android.httpclient.Header;
 import link.fls.swipestack.SwipeStack;
+
 import android.animation.ObjectAnimator;
 import android.widget.Toast;
 
@@ -122,13 +126,10 @@ import static com.amco.cidnews.Activities.MainActivity.mFlagHome;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
 
-
-
-
-public class HomeFragment extends Fragment implements ListenFromActivity,ImagePassingAdapter, SwipAdapter.RequestImage {
+public class HomeFragment extends Fragment implements ListenFromActivity, ImagePassingAdapter, SwipAdapter.RequestImage {
 
     public static Boolean SWIPESTACK_SCROLLING = false;  //Change R.layout.frame_home -- R.layout.frame_home_withoutscroll
-    static private String TAG = "HomeFragment";
+    static private String TAG = "HomeFragment.java";
     static private String TAGTIME = "TIMEHomeFragment";
 
     // [START declare_analytics]
@@ -142,7 +143,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
     static public SwipAdapter Swipadaptador;
     static public SwipAdapterBackCard Swipadaptadoraux;
-    static public CardView cardviewContainer,cardviewtest1, spaux, swipNoNews;
+    static public CardView cardviewContainer, cardviewtest1, spaux, swipNoNews;
 
     //MENU SLIDE
     //DRAWER LAYOUT
@@ -176,18 +177,18 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     /////////////////////////////////// UI
     PercentFrameLayout lay;
     RelativeLayout containerLoaderGif;
-    LinearLayout llmenu,ddmenu, frnointernet, bottomFabs,mMenuSlide;
-    ImageView  mano1,basura,paloma,heightscroll,bottomFabFB,bottomFabTwitter,bottomFabWhats,imgLoaderGif;
+    LinearLayout llmenu, ddmenu, frnointernet, bottomFabs, mMenuSlide;
+    ImageView mano1, basura, paloma, heightscroll, bottomFabFB, bottomFabTwitter, bottomFabWhats, imgLoaderGif;
     public static ImageButton btnSupDer;
     WebView web;
     public static FloatingActionButton shareFabMain;
-     AsyncHttpClient masterClient;
+    AsyncHttpClient masterClient;
     ProgressBar progressBar;
 
 
     RequestHandle requestTopHeadlines;
     //////////////////////////////// STRINGS
-    String cateNews[] = {"HEALTH", "CONSTRUCTION", "RETAIL", "EDUCATION", "ENTERTAINMENT", "ENVIRONMENT", "FINANCE", "ENERGY", "TELECOM","ABOUT US"};
+    String cateNews[] = {"HEALTH", "CONSTRUCTION", "RETAIL", "EDUCATION", "ENTERTAINMENT", "ENVIRONMENT", "FINANCE", "ENERGY", "TELECOM", "ABOUT US"};
     //
     final String labelsNews[] = {"salud", "construcción", "retail", "educación", "entretenimiento", "ambiente", "banca", "energía", "telecom"};
     String categoriesNews[] = {"SALUD", "CONSTRUCCIÓN", "RETAIL", "EDUCACIÓN", "ENTRETENIMIENTO", "AMBIENTE", "BANCA", "ENERGÍA", "TELECOM"};
@@ -234,11 +235,11 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     int currentIndex = 0;
     int memoryIndex = 0;
     ////////
-    int startPointX, startPointY,posY, posX,dps, dpX, dpY,windowwidth, screenCenter,height, width;
+    int startPointX, startPointY, posY, posX, dps, dpX, dpY, windowwidth, screenCenter, height, width;
     int oldX = 0;
     int oldY = 0;
     ///////////////////////////////  FLOAT
-    float setAxisXCardView, setAxisYCardView,currentProgressSwiping;
+    float setAxisXCardView, setAxisYCardView, currentProgressSwiping;
     float diffFastGesture = 0;
     float diffPosY = 0;
     float diffPosX = 0;
@@ -269,13 +270,15 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     Bitmap mNextBitmapLoaded = null;
     ImageView mImg;
 
-    //BANDERA PARA SABER SI SE SELECCIONO ABOUT US
+    //region VARIABLES
+
     boolean banderaAbout = false;
-
-
-    //BANDERA PARA SABER SI EL DRAWER LAYOUT ESTA ABIERTO
     public static boolean estadoDrawer = false;
 
+    private int TIME_CHECK_CONNECTION = 5000;
+
+    Handler handlerCheckIntener;
+    //endregion
 
 
     //region VISTAS RESTANTES DEL HOME FRAGMENT
@@ -283,28 +286,25 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     //endregion
 
 
-    // SE MODIFICO ESTE METODO 1/10/2019
-    private ImagePassingAdapter mPassingData =  new ImagePassingAdapter() {
+    private ImagePassingAdapter mPassingData = new ImagePassingAdapter() {
         @Override
-        public void sendingImage(Bitmap bitmap, String url) {}
+        public void sendingImage(Bitmap bitmap, String url) {
+        }
     };
-
-
 
     @Override
     public void onRequestImage(String urlRequest) {
-        Log.d(TAG,"sendingImage -- urlRequest:"+urlRequest);
-            if(mNextBitmapLoaded != null) {
+        Log.d(TAG, "sendingImage -- urlRequest:" + urlRequest);
+        if (mNextBitmapLoaded != null) {
 
-                if(sp.getTopView() == null){
-                    Log.d(TAG, "sendingImage -- sp.getTopView == null");
-                }else {
-                    Log.d(TAG, "sendingImage -- sp.getTopView != null");
-                    sp.getRootView().setBackground(mImg.getDrawable());
-                }
+            if (sp.getTopView() == null) {
+                Log.d(TAG, "sendingImage -- sp.getTopView == null");
+            } else {
+                Log.d(TAG, "sendingImage -- sp.getTopView != null");
+                sp.getRootView().setBackground(mImg.getDrawable());
             }
+        }
     }
-
 
     @Override
     public void onReloadNextImage() {
@@ -313,199 +313,135 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
 
-    //SECCION DE CODIGO COMENTADO ELIMINADO 1/10/2019
-
-
-    ///////////////////////////////////
-    /// MARK:
     @Override
-    public void setGeneralNews(){
-
-        Log.d(TAG,"setGeneralNews");
-
+    public void setGeneralNews() {
+        Log.d(TAG, "setGeneralNews");
         if (SWIPESTACK_SCROLLING) {
-
-            if ( getActivity() != null ) {
-
+            if (getActivity() != null) {
                 allNewsFromAct = ((MainActivity) getActivity()).allNews;
                 allNewsDefault = allNewsFromAct;
-
-                if ( allNewsDefault.size() != 0 ) {
-
+                if (allNewsDefault.size() != 0) {
                     showNews(allNewsDefault, false, 0);
-
                 }
-
                 Log.d(TAG, "setGeneralNews allNews(MainActivity).size: " + allNewsFromAct);
-
             }
         } else {
-
             if (getActivity() != null) {
-
                 allNewsFromAct = ((MainActivity) getActivity()).allNews;
                 allNewsDefault = allNewsFromAct;
-
                 if (allNewsDefault.size() != 0) {
-
                     showNewsNScrolling(allNewsDefault, false, 0);
-
                 }
-
             }
-
         }
     }
 
-
-    ///////////////////////////////////
-    /// MARK: METODO QUE MUESTRA EL AVISO DE QUE NO HAY RED
     @Override
-    public void msjWeakSignal(){
-
+    public void msjWeakSignal() {
         if (frnointernet != null) {
-
             frnointernet.setVisibility(View.VISIBLE);   //Muestra el letrero de Weak Signal
-
         }
-
     }
 
-
-    ///////////////////////////////////
-    /// MARK:
-    @Override
     public void setSpeficicNewsFromMenu(int mIndex) {
-
         Log.d(TAG, "setSpeficicNewsFromMenu");
-
-        if (SWIPESTACK_SCROLLING){
-
+        if (SWIPESTACK_SCROLLING) {
             if ((MainActivity) getActivity() != null) {
-
                 specificNewsFromAct = ((MainActivity) getActivity()).allNewsMenu;
                 allNewsDefault = new ArrayList<>();
                 allNewsDefault = specificNewsFromAct;
                 setupForChangedNews();
                 showNews(allNewsDefault, true, mIndex);
-
             }
         } else {
-
             if ((MainActivity) getActivity() != null) {
-
                 specificNewsFromAct = ((MainActivity) getActivity()).allNewsMenu;
                 allNewsDefault = new ArrayList<>();
                 allNewsDefault = specificNewsFromAct;
                 setupForChangedNewsNScrolling();
                 showNewsNScrolling(allNewsDefault, true, mIndex);
-
             }
-
         }
-
     }
-
-
-
-    ///////////////////////////////////
-    /// MARK:
-    @Override
-    public void sendingImage(Bitmap bitmap,String url) {
-
-        Log.d(TAG,"sendingImage?");
-
-    }
-
-
-    //CODIGO COMENTADO ELIMINADO 1/10/2019
-
-
-     //region FRAGMENT: CICLO DE VIDA
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        Log.e("HOME FRAGMENT", "ESTOY EN ONATTACH");
+    public void sendingImage(Bitmap bitmap, String url) {
+        Log.d(TAG, "sendingImage?");
     }
+
+    //region CHECK INTERNET
+
+    /**
+     * Runnable que ejecuta la asynctask cada n tiempo.
+     */
+    Runnable runnableCheckInternet = new Runnable() {
+        @Override
+        public void run() {
+            new InternetVerify(getActivity().getApplicationContext(), frnointernet, new HomeFragment()).execute();
+            handlerCheckIntener.postDelayed(this, TIME_CHECK_CONNECTION);
+        }
+    };
+
+    /**
+     * Método que ejecuta el handler cada cierto n tiempo.
+     */
+    private void verifyInternetConnection() {
+        handlerCheckIntener = new Handler();
+        handlerCheckIntener.postDelayed(runnableCheckInternet, TIME_CHECK_CONNECTION);
+    }
+
+    public void metodoPrueba () {
+
+    }
+    //endregion
+
+    //region LIFECYCLE FRAGMENT
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
-        //Log.e(TAGTIME, "onCreate:" + String.valueOf(getRunningTime()));
-        Log.e("HOME FRAGMENT", "ESTOY EN ONCREATE");
         ((MainActivity) getActivity()).setActivityListener(HomeFragment.this);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(getContext());
-
     }
 
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
-
-        Log.e("HOME FRAGMENT", "ESTOY EN ON CREATE VIEW");
-        //Log.d(TAG, "onCreateView True" );
-        //Log.e(TAGTIME, "onCreateView,  Start Inflating.." + getRunningTime());
         final View view = inflater.inflate(R.layout.frame_home_main, container, false);
-        //Log.e(TAGTIME, "onCreateView, After Inflating.." + getRunningTime());
-
         setupMenu(view);
-
         if (SWIPESTACK_SCROLLING) {
-
-            /////////////////////////////////////  Prioridad en cargar
+            // PRIORIDAD EN LA CARGA
             setupCreateView(view, inflater, container);
             Log.e(TAGTIME, "onCreateView,  End Setting" + String.valueOf(getRunningTime()));
-
             if (allNewsDefault.size() != 0) {
-
                 showNews(allNewsDefault, false, 0);
                 Log.e(TAGTIME, "onCreate: allNewsFromAct" + allNewsFromAct.size());
-
             } else {
-
                 if ((MainActivity) getActivity() != null) {
-
                     allNewsDefault = ((MainActivity) getActivity()).allNews;
-                    Log.e(TAGTIME, "onCreate: allNewsDefault = AllNews:" +
-                            ((MainActivity) getActivity()).allNews.size());
-                    Log.e(TAGTIME, "onCreate: allNewsDefault = AllNewsMenu :" +
-                            ((MainActivity) getActivity()).allNewsMenu.size());
-
+                    Log.e(TAGTIME, "onCreate: allNewsDefault = AllNews:" + ((MainActivity) getActivity()).allNews.size());
+                    Log.e(TAGTIME, "onCreate: allNewsDefault = AllNewsMenu :" + ((MainActivity) getActivity()).allNewsMenu.size());
                     showNews(allNewsDefault, false, 0);
-
                 }
-
                 Log.e(TAGTIME, "onCreate: allNewsFromAct" + allNewsFromAct.size());
-
             }
-
         } else {
-
-            /////////////////////////////////////
             setupCreateViewNoScroll(view);
             Log.e(TAGTIME, "onCreateView,  End Setting" + String.valueOf(getRunningTime()));
-
             if (allNewsDefault.size() != 0) {
-
                 showNewsNScrolling(allNewsDefault, false, 0);
                 Log.e(TAGTIME, "onCreate: allNewsFromAct" + allNewsFromAct.size());
-
             } else {
-
-                if (getActivity() != null &&  ((MainActivity) getActivity()).allNews.size() != 0) {
-
+                if (getActivity() != null && ((MainActivity) getActivity()).allNews.size() != 0) {
                     allNewsDefault = ((MainActivity) getActivity()).allNews;
                     Log.e(TAGTIME, "onCreate: allNewsDefault = AllNews:" + ((MainActivity) getActivity()).allNews.size());
                     Log.e(TAGTIME, "onCreate: allNewsDefault = AllNewsMenu :" + ((MainActivity) getActivity()).allNewsMenu.size());
                     showNewsNScrolling(allNewsDefault, false, 0);
-
                 }
             }
-
         }
 
-        /* ----------------------------- NUEVOS METODOS ALEX ------------------------------------ */
+        //INICIAMOS EL HANDLER PARA VERIFICAR LA CONECTIVIDAD A INTERNET
+        verifyInternetConnection();
 
         //EVENTO QUE ESCUCHA LAS ACCIONES DEL DRAWER LAYOUT (MENU DEL HOME)
         drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
@@ -524,43 +460,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                         MainActivity.scrollMenuPosition.setVisibility(View.INVISIBLE);
                     }
                 }
-                //SI SE DIO CLIC DEL MENU EN ABOUT US, HASTA QUE CUMPLA LA POSICION DEL DRAWER
-                //EN PANTALLA, SE MUESTRA EL FRAGMENT
-                /*if (banderaAbout == true && (slideOffset < 1)) {
-
-                    Fragment fragmentAboutUs = new AboutFragment();
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                    transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
-                    //transaction.replace(R.id.contendor_home, fragmentAboutUs);
-                    //transaction.commit();
-                    transaction.show(fragmentAboutUs);
-                    Log.w("HOME-FRAGMENT", "BANDERA ABOUT: " + banderaAbout);
-
-                } else if (banderaAbout == false && (slideOffset < 0.8)) { //CUANDO EL VALOR DEL DESPLAZAMIENTO SE CUMPLA, MUESTRAS EL SCROLL Y CAMBIAS DE TINTA EL ICONO DE HOME
-
-                    //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
-                    MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
-
-                    //SI EL SCROLL ES INVISIBLE, LO ESCONDEMOS CUANDO EL DRAWER LAYOUT ESTE CERRADO
-                    if (MainActivity.scrollMenuPosition.getVisibility() == View.INVISIBLE) {
-
-                        MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
-
-                    }
-
-                } else if (banderaAbout == false && (slideOffset > 0.4)) { //CUANDO EL VALOR DEL DESPLAZAMIENTO SE CUMPLA, OCULTAS EL SCROLL Y CAMBIAS DE TINTA EL ICONO DE HOME
-
-                    //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
-                    MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(false);
-
-                    //SI EL SCROLL ES VISIBLE, LO ESCONDEMOS CUANDO EL DRAWER LAYOUT ESTE ABIERTO
-                    if (MainActivity.scrollMenuPosition.getVisibility() == View.VISIBLE) {
-
-                        MainActivity.scrollMenuPosition.setVisibility(View.INVISIBLE);
-
-                    }
-                }
-                */
 
             }
 
@@ -589,16 +488,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 //TRUE: ABIERTO
                 //FALSE: CERRADO
                 estadoDrawer = false;
-
-                /*if (banderaAbout == true) {
-                    if (MainActivity.scrollMenuPosition.getVisibility() == View.VISIBLE) {
-                        Toast.makeText(getContext(), "Selecciono about y el scroll es visible", Toast.LENGTH_SHORT).show();
-                        MainActivity.scrollMenuPosition.setVisibility(View.INVISIBLE);
-                        MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(false);
-                    }
-                } else {
-                    Toast.makeText(getContext(), "Sin about us y el scroll debe ser visible", Toast.LENGTH_SHORT).show();
-                }*/
             }
 
             @Override
@@ -611,38 +500,11 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        Log.e("HOME FRAGMENT", "ESTOY EN ON ACTIVITY CREATED");
-    }
-
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-
-        Log.e("HOME FRAGMENT", "ESTOY EN ON VIEW STATE RESTORED");
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        Log.e("HOME FRAGMENT", "ESTOY EN ON START");
-    }
-
-    @Override
-    public void onResume(){
-        super.onResume();
-
-        Log.e("HOME FRAGMENT", "ESTOY EN ON RESUME");
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
-
-        Log.e("HOME FRAGMENT", "ESTOY EN ON PAUSE");
+        Log.i(TAG, "onPause()");
+        //SE ROMPE EL HILO PASANDO A OnPause() EN EL FRAGMENT
+        handlerCheckIntener.removeCallbacks(runnableCheckInternet);
         //CUANDO PASE A ONPAUSE ESTE FRAGMENT, CERRAMOS EL DRAWER LAYOUT
         if (estadoDrawer == true) {
             drawerLayout.closeDrawer(Gravity.END);
@@ -650,48 +512,21 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-
-        Log.e("HOME FRAGMENT", "ESTOY EN ON STOP");
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-
-        Log.e("HOME FRAGMENT", "ESTOY EN ON DESTROY VIEW");
-    }
-
-    @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
-        Log.e("HOME FRAGMENT", "ESTOY EN ON DESTROY");
+        Log.e(TAG, "onDestroy()");
         Log.e(TAGTIME, "onDestroy:" + String.valueOf(getRunningTime()));
-        if  (masterClient != null) {
+        if (masterClient != null) {
             masterClient.getThreadPool().shutdown();
         }
         //REQUEST NEW ARRAYLIST! FROM ACT
-        ((MainActivity)getActivity()).refreshDeletedNews();
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-
-        Log.e("HOME FRAGMENT", "ESTOY EN ON DETACH");
+        ((MainActivity) getActivity()).refreshDeletedNews();
     }
 
     //endregion
 
-
-
-
-
-    /********************************* SwipeStack NOT SCROLLING ***********************************/
-
-    public void setupCreateViewNoScroll(View view){
-
+    //region SWIPE STACK NOT SCROLLING
+    public void setupCreateViewNoScroll(View view) {
         /////////////////////////////////////
         sp = view.findViewById(R.id.swipStack);
         frnointernet = view.findViewById(R.id.aviso_no_internet);
@@ -705,34 +540,28 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         ////////////
         btnSupDer = view.findViewById(R.id.boton_superior_home);
         basura = view.findViewById(R.id.basuraimg);
-        paloma =  view.findViewById(R.id.palomaimg);
-        mano1 =  view.findViewById(R.id.icono_mano);
+        paloma = view.findViewById(R.id.palomaimg);
+        mano1 = view.findViewById(R.id.icono_mano);
         shareFabMain = view.findViewById(R.id.shareMainFab);
 
         setupUINScrolling(view);
         configUIListenersNScroll(view);
-
     }
-
+    //endregion
 
     /************************************* LISTENERS NScrolling ***********************************/
 
-
-    ///////////////////////////////////
-    /// MARK: config Listeners UI
-    public void configUIListenersNScroll(final View view){
+    public void configUIListenersNScroll(final View view) {
 
         btnSupDer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                Log.d(TAG,"configUIListenersNScroll -- btnSupDer -- onClick.TRUE");
+                Log.d(TAG, "configUIListenersNScroll -- btnSupDer -- onClick.TRUE");
                 drawerLayout.openDrawer(GravityCompat.END);
-
             }
         });
 
-        ///////////////////////////////////   BOTTOM FABS
+        //BUTTON FABS
         shareFabMain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -740,93 +569,71 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             }
         });
 
-
         sp.setSwipeProgressListener(new SwipeStack.SwipeProgressListener() {
             @Override
             public void onSwipeStart(int position) {
-
                 int[] location = new int[2];
                 sp.getTopView().getLocationOnScreen(location);
-
                 oldX = (int) location[0];
                 oldY = (int) location[1];
                 startPointX = oldX;
                 startPointY = oldY;
                 x = startPointX;
                 y = startPointY;
-
-                Log.d(TAG, "sp.setSwipeProgressListener -- onSwipeStart -- startPointX:"+startPointX);
-                Log.d(TAG, "sp.setSwipeProgressListener -- onSwipeStart -- startPointY:"+startPointY);
+                Log.d(TAG, "sp.setSwipeProgressListener -- onSwipeStart -- startPointX:" + startPointX);
+                Log.d(TAG, "sp.setSwipeProgressListener -- onSwipeStart -- startPointY:" + startPointY);
             }
 
             @Override
             public void onSwipeProgress(int position, float progress) {
-                if (Math.abs(progress*100) > 10){
+                if (Math.abs(progress * 100) > 10) {
                     mCardSwiping = true;
                 }
-                Log.d(TAG,"configUIListenersNScroll -- onSwipeProgress -- progress:"+progress);
-                animationSwipeProgress((float) (progress*(0.75)));
+                Log.d(TAG, "configUIListenersNScroll -- onSwipeProgress -- progress:" + progress);
+                animationSwipeProgress((float) (progress * (0.75)));
                 shareFabMain.hide();
-
             }
 
             @Override
             public void onSwipeEnd(int position) {
                 animationFinish(basura, paloma);
-
                 diffPosY = 0;
                 diffPosX = 0;
-
-
                 int[] location = new int[2];
                 sp.getTopView().getLocationOnScreen(location);
-
                 x_cord = (int) location[0];
                 y_cord = (int) location[1];
-
-                Log.d(TAG, "sp.setSwipeProgressListener -- onSwipeStart -- x_cord:"+x_cord);
-                Log.d(TAG, "sp.setSwipeProgressListener -- onSwipeStart -- y_cord:"+y_cord);
-
-                if ((Math.abs(startPointX  - x_cord) < 8) && (Math.abs(startPointY - y_cord) < 8) && !mCardSwiping) {
+                Log.d(TAG, "sp.setSwipeProgressListener -- onSwipeStart -- x_cord:" + x_cord);
+                Log.d(TAG, "sp.setSwipeProgressListener -- onSwipeStart -- y_cord:" + y_cord);
+                if ((Math.abs(startPointX - x_cord) < 8) && (Math.abs(startPointY - y_cord) < 8) && !mCardSwiping) {
                     Log.d(TAG, "eventsActionUp  -- CARD CLICKED! ");
-                //    Log.d(TAG, "eventsActionUp  -- CARD CLICKED! Swipadaptador.mostrarNoticiasView("
-                  //          +String.valueOf(sp.getCurrentPosition())+")");
-
                     SwipadaptadorNScroll.mostrarNoticiasView(sp.getCurrentPosition());
-
-                    //Log.d(TAG, "eventsActionUp  -- sp.getCurrentPosition:"+(sp.getCurrentPosition()));
-                    //Log.d(TAG, "eventsActionUp  -- currentIndex:"+(currentIndex));
                     urlNewsLoaded = false;
                     indexHelperRemoveNews = 0;
-                }else{
+                } else {
                     shareFabMain.show();
                 }
                 mCardSwiping = false;
             }
         });
 
-
         sp.setListener(new SwipeStack.SwipeStackListener() {
-
             @Override
             public void onViewSwipedToLeft(final int position) {
                 Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedToLeft Position:" + String.valueOf(position));
                 Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedToLeft sp.getCurrentPosition: " + String.valueOf(sp.getCurrentPosition()));
-
                 indexHelperRemoveNews = indexHelperRemoveNews + 1;
                 Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedToLeft indexHelperRemoveNews: " + String.valueOf(indexHelperRemoveNews));
-                saveNewsGenericNScroll(SwipadaptadorNScroll,position,false);
+                saveNewsGenericNScroll(SwipadaptadorNScroll, position, false);
             }
 
             @Override
             public void onViewSwipedToRight(final int position) {
                 Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedRight Position:" + String.valueOf(position));
                 Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedRight sp.getCurrentPosition: " + String.valueOf(sp.getCurrentPosition()));
-
                 indexHelperRemoveNews = indexHelperRemoveNews + 1;
                 Log.d(TAG, "configUIListenersNScroll -- sp.onViewSwipedToRight indexHelperRemoveNews: " + String.valueOf(indexHelperRemoveNews));
-
-                saveNewsGenericNScroll(SwipadaptadorNScroll,position,true);
+                saveNewsGenericNScroll(SwipadaptadorNScroll, position, true);
             }
 
             @Override
@@ -834,17 +641,13 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 deleteCache(getContext());
                 MemoryCard.clear();  //The counting of position is reset.
                 sp.resetStack();   //Restart the news.
-                Log.d(TAG,  "configUIListenersNScroll -- sp.OnStackEmpty.TRUE");
+                Log.d(TAG, "configUIListenersNScroll -- sp.OnStackEmpty.TRUE");
             }
         });
 
     }
 
-
-    ///////////////////////////////////
-    /// MARK: initial UI
-    public void setupUINScrolling(final View view){
-
+    public void setupUINScrolling(final View view) {
         ////////////////////////////////////
         Glide.with(this).load(R.drawable.loadingbl).into(imgLoaderGif);
         containerLoaderGif.setVisibility(View.VISIBLE);
@@ -865,18 +668,16 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         shareFabMain.setEnabled(false);
         shareFabMain.hide();
 
-        ///////////////////////////////////  SP
+        //SP
         sp.setEnabled(false);
 
-        ///////////////////////////////////  ScrollViews
-        final AnimatorSet anim4 =  (AnimatorSet) AnimatorInflater.loadAnimator(getContext(), R.anim.share_moving);
+        //SCROLL VIEWS
+        final AnimatorSet anim4 = (AnimatorSet) AnimatorInflater.loadAnimator(getContext(), R.anim.share_moving);
         anim4.setTarget(shareFabMain);
         anim4.start();
-        anim4.addListener(new AnimatorListenerAdapter(){
+        anim4.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                //CODIGO COMENTADO ELIMINADO 1/10/2019
-
             }
         });
         basura.bringToFront();
@@ -885,69 +686,41 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         paloma.setVisibility(View.INVISIBLE);
     }
 
-
-    ///////////////////////////////////
-    public void showNewsNScrolling(final ArrayList<Noticia> defaultListNews,boolean fromMenuSlide,  int catFromMenuSlide) {
-
+    public void showNewsNScrolling(final ArrayList<Noticia> defaultListNews, boolean fromMenuSlide, int catFromMenuSlide) {
         Log.e(TAGTIME, "showNewsNScrolling -- DELAY:" + String.valueOf(getRunningTime()));
-
         if (getActivity() == null) {
-
             Log.d(TAG, "showNewsNScrolling -- getActivity: NULL");
-
         } else {
-
             SwipadaptadorNScroll = new SwipAdapterNScrolling(getActivity(), defaultListNews, getContext());
-
             if (SwipadaptadorNScroll.getCount() == 0) {
-
                 Log.e(TAG, "showNewsNScrolling -- Swipadaptador.getCount: No news");
-
                 if (fromMenuSlide) {   //Check if is from Menu for show the card!
-
-                    if (( sp != null) && (sp.getVisibility() == View.VISIBLE)) {
-
+                    if ((sp != null) && (sp.getVisibility() == View.VISIBLE)) {
                         shareFabMain.setVisibility(View.INVISIBLE);
                         shareFabMain.hide();
                         menuSelectedIndex = catFromMenuSlide; // 0 - 8
-
                     }
                 }
-
                 flagMenuSlideTapped = fromMenuSlide;
             } else {
-
                 if (frnointernet != null) {
-
                     frnointernet.setVisibility(View.INVISIBLE);//Muestra el letrero de Weak Signal
-
                 }
-
                 sp.setAdapter(SwipadaptadorNScroll);
                 if (sp.getTopView() == null) {
-
                     Log.e(TAG, "showNewsNScrolling --  sp.getTopView.NULL, sp.ResetStack");
                     sp.resetStack();
-
                 }
-
                 sp.setVisibility(View.VISIBLE);
                 sp.setEnabled(true);
                 shareFabMain.setVisibility(View.VISIBLE);
                 shareFabMain.show();
                 shareFabMain.setEnabled(true);
-
             }
-
         }
-
     }
 
-
-    ///////////////////////////////////
-    /// MARK: Setup when user make a change in Menu.
-    public void setupForChangedNewsNScrolling(){
-
+    public void setupForChangedNewsNScrolling() {
         sp.removeAllViews();
         sp.removeAllViewsInLayout();
         sp.resetStack();
@@ -955,60 +728,47 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         shareFabMain.setVisibility(View.VISIBLE);
         shareFabMain.setEnabled(true);
         shareFabMain.show();
-
     }
 
-
-    ///////////////////////////////
-    /// MARK: Save news to the Database Favorites or Recover.
-    public void saveNewsGenericNScroll(final SwipAdapterNScrolling targetAdapter, final int positionForSave,final boolean forFavorites) {
-
+    /**
+     * Método que guarda las noticias en la base de datos ya sea para Favorites o Recover
+     *
+     * @param targetAdapter
+     * @param positionForSave
+     * @param forFavorites
+     */
+    public void saveNewsGenericNScroll(final SwipAdapterNScrolling targetAdapter, final int positionForSave, final boolean forFavorites) {
         final String titulo = targetAdapter.getItem(positionForSave).getTitulo();
         final String url = targetAdapter.getItem(positionForSave).getUrl();
         final String imagen = targetAdapter.getItem(positionForSave).getImagen();
         final String autor = targetAdapter.getItem(positionForSave).getAutor();
         final String categoria = targetAdapter.getItem(positionForSave).getCategoria();
-
-        if(forFavorites) {
-
+        if (forFavorites) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-
                     Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                     registrarNoticias(titulo, imagen, url, autor, categoria);
 
                 }
             }).start();
         } else {
-
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-
                     Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                     registrarNoticiasRecuperar(titulo, imagen, url, autor, categoria);
 
                 }
             }).start();
-
         }
-
     }
 
 
-    /*********************************** SWIPESTACK SCROLLING *************************************/
-
-
-    /**************************************** INITIAL SETUP ***************************************/
-
-    ///////////////////////////////////
-    /// MARK: initial params
-    public void setupCreateView(View view,LayoutInflater inflater,ViewGroup container){
-
+    //region SETUP
+    public void setupCreateView(View view, LayoutInflater inflater, ViewGroup container) {
         mImg = view.findViewById(R.id.ImgTest);
 
-        /////////////////////////////////////
         sp = view.findViewById(R.id.swipStack);
         frnointernet = view.findViewById(R.id.aviso_no_internet);
         frnointernet.setVisibility(View.INVISIBLE);
@@ -1023,9 +783,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         viewBckgrnd = inflater.inflate(R.layout.backcardview, container, false);
         containerLoaderGif = view.findViewById(R.id.loader_gif);
         imgLoaderGif = view.findViewById(R.id.img_loader_gif);
-        //LINEA DE CODIGO COMENTADA ELIMINADA 1/10/2019
 
-        ////////////
         bottomFabs = view.findViewById(R.id.content_bottomfabs);
         bottomFabFB = view.findViewById(R.id.bottombutton_fb);
         bottomFabTwitter = view.findViewById(R.id.bottombutton_twitter);
@@ -1039,23 +797,15 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
         setupUI(view);
         configUIListeners(view);
-
     }
 
-
-    ///////////////////////////////////
-    /// MARK: initial UI
-    public void setupUI(final View view){
-
-
-        ////////////////////////////////////
+    public void setupUI(final View view) {
         Glide.with(this).load(R.drawable.loadingbl).into(imgLoaderGif);
         containerLoaderGif.setVisibility(View.VISIBLE);
         imgLoaderGif.setVisibility(View.VISIBLE);
         containerLoaderGif.bringToFront();
         imgLoaderGif.bringToFront();
 
-        /////////////////////////////////////
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);            //Obtiene el valor de height y width
         height = displaymetrics.heightPixels;
@@ -1064,39 +814,33 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         screenCenter = windowwidth / 2;
         swipNoNews.addView(viewBckgrndNoNews);
 
-        //CODIGO COMENTADO ELIMINADO 1/10/2019
-
-        /////////////////////////////////////
         fabOpen = android.view.animation.AnimationUtils.loadAnimation(getContext(), R.anim.sharebutton_open);
         fabClose = android.view.animation.AnimationUtils.loadAnimation(getContext(), R.anim.sharebutton_close);
         rotateFoward = android.view.animation.AnimationUtils.loadAnimation(getContext(), R.anim.rotate_foward);
         rotateBackward = android.view.animation.AnimationUtils.loadAnimation(getContext(), R.anim.rotate_backward);
 
-        /////////////////////////////////////
         cardviewContainer.setVisibility(View.INVISIBLE);
         shareFabMain.setVisibility(View.INVISIBLE);
         shareFabMain.setEnabled(false);
 
-        ///////////////////////////////////  SP
+        //SP
         sp.setEnabled(false);
 
-        ///////////////////////////////////  ScrollViews
+        //SCROLL VIEWS
         scrollView.setVerticalScrollBarEnabled(false);
         scrollViewShow.setVerticalScrollBarEnabled(true);
         scrollViewShow.bringToFront();
 
-        final AnimatorSet anim4 =  (AnimatorSet) AnimatorInflater.loadAnimator(getContext(), R.anim.share_moving);
+        final AnimatorSet anim4 = (AnimatorSet) AnimatorInflater.loadAnimator(getContext(), R.anim.share_moving);
         anim4.setTarget(shareFabMain);
         anim4.start();
-        anim4.addListener(new AnimatorListenerAdapter(){
+        anim4.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-
                         anim4.start();
-
                     }
                 }, 5000);
             }
@@ -1110,23 +854,34 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         cardviewContainer.setEnabled(true);
         sp.setEnabled(false);
         cardviewtest1.setEnabled(true);
-
-        //CODIGO COMENTADO ELIMINADO 1/10/2019
-
     }
 
+    public static void InhabilitarHome() {
+        btnSupDer.setEnabled(false);
+        sp.setEnabled(false);
+        shareFabMain.setEnabled(false);
+        shareFabMain.setVisibility(View.INVISIBLE);
+    }
 
+    public static void HabilitarHome() {
+        btnSupDer.setEnabled(true);
+        sp.setEnabled(true);
+        shareFabMain.setEnabled(true);
+        shareFabMain.setVisibility(View.VISIBLE);
+    }
 
-    //region NAVIGATION DRAWER: SELECCION DE OPCIONES
+    //endregion
 
     /**
      * FUNCION QUE CONFIGURA LAS ACCIONES DEL DRAWER MENU (TAP OPTIONS)
+     *
      * @param view
      */
-    public void setupMenu(View view){
-
-        drawerLayout = (DrawerLayout) view.findViewById(R.id.drawer_layout); //Obtener drawer
-        final ListView drawerList = (ListView) view.findViewById(R.id.nav_list); //Obtener listview
+    public void setupMenu(View view) {
+        //VINCULAR EL DRAWER LAYOUT
+        drawerLayout = (DrawerLayout) view.findViewById(R.id.drawer_layout);
+        //VINCULAR LA LIST VIEW
+        final ListView drawerList = (ListView) view.findViewById(R.id.nav_list);
         ArrayList<DrawerItemNavBar> items = new ArrayList<DrawerItemNavBar>();
         items.add(new DrawerItemNavBar(getResources().getString(R.string.health), R.drawable.ic_health_menu));
         items.add(new DrawerItemNavBar(getResources().getString(R.string.construction), R.drawable.ic_construction_menu));
@@ -1138,56 +893,39 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         items.add(new DrawerItemNavBar(getResources().getString(R.string.energy), R.drawable.ic_energy_menu));
         items.add(new DrawerItemNavBar(getResources().getString(R.string.telecom), R.drawable.ic_telecom_menu));
         items.add(new DrawerItemNavBar(getResources().getString(R.string.about_us), R.drawable.ic_about_menu));
-        drawerList.setAdapter(new DrawerAdapter(getContext(), items));// Relacionar el adaptador y la escucha de la lista del drawer
+        //INCRUSTA UN ADAPTER CON EL LIST VIEW
+        drawerList.setAdapter(new DrawerAdapter(getContext(), items));
         View footer = getLayoutInflater().inflate(R.layout.footer_cidnews, null);
         drawerList.addFooterView(footer);
         drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
                 DrawerItemNavBar selected = (DrawerItemNavBar) parent.getItemAtPosition(position);
                 Log.d(TAG, "onCreate -- onItemClick: position: " + String.valueOf(position));
-
-                //String typeNews = cateNews[position];
                 String typeNews = "";
                 if (position < 9) {
                     typeNews = cateNews[position];
                     if ((MainActivity) getActivity() != null) {
-
                         ((MainActivity) getActivity()).specificRecursive(position);
-
                     }
-
                     startChangedNews();
-
                     if (SWIPESTACK_SCROLLING) {
-
                         if (bottomFabs.getVisibility() == View.VISIBLE) {
-
                             Log.d(TAG, "Setup UI -- scrollView onScrollChange: Scroll < 25, bottomFabs.INVISIBLE");
                             hideBottomIcons();
                             final Handler handler = new Handler();
                             handler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-
                                     bottomFabs.setVisibility(View.INVISIBLE);
-
                                 }
                             }, 300);
-
                         }
-
                     }
-
-                    //Log.d(TAG, "setupMenu -- drawerList.setOnItemClickListener -- cateNews[" + position + "]: " + typeNews);
                     drawerLayout.closeDrawers();
-
                 } else if (position == 9) {
-
                     //ACTIVAMOS BANDERA DE QUE SE SELECCIONO ABOUT US
                     banderaAbout = true;
-
                     //HACEMOS INVISIBLES CUANDO ENTRA ABOUT US SCROLL Y SELECCION DE BOTTOM NAVIGATION VIEW
                     MainActivity.scrollMenuPosition.setVisibility(View.INVISIBLE);
                     MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(false);
@@ -1202,88 +940,56 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
                     //CERRAMOS EL DRAWER LAYOUT CUANDO SE HACE CLIC EN ABOUT US
                     drawerLayout.closeDrawer(Gravity.END);
-
                 }
 
-                // [START event]
                 Bundle bundle = new Bundle();
                 bundle.putString(FirebaseAnalytics.Param.ITEM_CATEGORY, typeNews);
                 mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST, bundle);
-                // [END event]
-
-
 
             }
         });
-
     }
+
     //endregion
 
-
-    public static void InhabilitarHome(){
-        btnSupDer.setEnabled(false);
-        sp.setEnabled(false);
-        shareFabMain.setEnabled(false);
-        shareFabMain.setVisibility(View.INVISIBLE);
-    }
-
-    public static void HabilitarHome(){
-        btnSupDer.setEnabled(true);
-        sp.setEnabled(true);
-        shareFabMain.setEnabled(true);
-        shareFabMain.setVisibility(View.VISIBLE);
-    }
-    /****************************************** LISTENERS *****************************************/
-
-    ///////////////////////////////////
-    /// MARK: config Listeners UI
-    public void configUIListeners(final View view){
+    //region LISTENERS
+    public void configUIListeners(final View view) {
         btnSupDer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                Log.d(TAG,"btnSupDer -- onClick.TRUE");
+                Log.d(TAG, "btnSupDer -- onClick.TRUE");
                 drawerLayout.openDrawer(Gravity.END);
-
             }
         });
 
         swipNoNews.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-
                 Log.d(TAG, "configUIListeners -- swipNoNews --  onTouch: ");
                 isSwiping = true;
                 v.getParent().requestDisallowInterceptTouchEvent(true);
                 switch (event.getAction()) {
-
                     case MotionEvent.ACTION_CANCEL:
                         Log.e("animationSwipe!", "ACTION: CANCEL ");
                         break;
-
                     case MotionEvent.ACTION_DOWN:
                         Log.e("animationSwipe!", "ACTION DOWN!");
                         eventsActionDown(event);
                         break;
-
                     case MotionEvent.ACTION_UP:
                         Log.e("animationSwipe!", "ACTION UP!");
-                        eventsActionUpCardNoNews(event,swipNoNews);
+                        eventsActionUpCardNoNews(event, swipNoNews);
                         break;
-
                     case MotionEvent.ACTION_MOVE:
                         Log.e("animationSwipe!", "ACTION MOVE!");
-                        eventsActionMoveCardNoNews(event,swipNoNews);
+                        eventsActionMoveCardNoNews(event, swipNoNews);
                         break;
-
                 }
-
                 return true;
-
             }
         });
 
-        ///////////////////////////////////   BOTTOM FABS
+        //BUTTON FABS
         shareFabMain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1295,43 +1001,39 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             @Override
             public void onClick(View v) {
                 Log.e(TAG, "onClick: bottomFabFacebook");
-                if(facebookInstalled(getActivity())){
+                if (facebookInstalled(getActivity())) {
                     sendNewsByIntentFB(getActivity());
-                }else{
+                } else {
                     Log.e(TAG, "onClick: bottomFabFacebookr NO INSTALLED?");
                     try {
-                        Intent viewIntent =
-                                new Intent("android.intent.action.VIEW",
-                                        Uri.parse("https://play.google.com/store/apps/details?id=com.facebook.katana"));
+                        Intent viewIntent = new Intent("android.intent.action.VIEW", Uri.parse("https://play.google.com/store/apps/details?id=com.facebook.katana"));
                         startActivity(viewIntent);
-                    }catch(Exception error) {
-                        Toast.makeText(getApplicationContext(),"Unable to connect, Try again",
-                                Toast.LENGTH_LONG).show();
+                    } catch (Exception error) {
+                        Toast.makeText(getApplicationContext(), "Unable to connect, Try again", Toast.LENGTH_LONG).show();
                         error.printStackTrace();
                     }
                 }
             }
         });
+
         bottomFabTwitter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.e(TAG, "onClick: bottomFabTwitter");
-                if(twitterInstalled(getActivity())){
+                if (twitterInstalled(getActivity())) {
                     sendNewsByIntentTwitter(getActivity());
-                }else{
+                } else {
                     try {
-                        Intent viewIntent =
-                                new Intent("android.intent.action.VIEW",
-                                        Uri.parse("https://play.google.com/store/apps/details?id=com.twitter.android"));
+                        Intent viewIntent = new Intent("android.intent.action.VIEW", Uri.parse("https://play.google.com/store/apps/details?id=com.twitter.android"));
                         startActivity(viewIntent);
-                    }catch(Exception error) {
-                        Toast.makeText(getApplicationContext(),"Unable to connect, Try Again",
-                                Toast.LENGTH_LONG).show();
+                    } catch (Exception error) {
+                        Toast.makeText(getApplicationContext(), "Unable to connect, Try Again", Toast.LENGTH_LONG).show();
                         error.printStackTrace();
                     }
                 }
             }
         });
+
         bottomFabWhats.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1343,7 +1045,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         scrollView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                if (web!=null) {
+                if (web != null) {
                     Log.d(TAG, "Setup UI -- scrollView.onLayoutChange, web.getBottom:" + String.valueOf(web.getBottom()));
                     RelativeLayout.LayoutParams layoutParams3 = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, web.getHeight());
                     heightscroll.setLayoutParams(layoutParams3);
@@ -1358,16 +1060,16 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 Log.d(TAG, "Setup UI -- cardviewContainer, onTouch: ");
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_CANCEL:
-                        Log.d(TAG,"cardviewContainer -- ACTION: CANCEL ");
+                        Log.d(TAG, "cardviewContainer -- ACTION: CANCEL ");
                         break;
                     case MotionEvent.ACTION_DOWN:
-                        Log.d(TAG,"cardviewContainer -- ACTION: DOWN ");
+                        Log.d(TAG, "cardviewContainer -- ACTION: DOWN ");
                         break;
                     case MotionEvent.ACTION_UP:
-                        Log.d(TAG,"cardviewContainer -- ACTION: UP ");
+                        Log.d(TAG, "cardviewContainer -- ACTION: UP ");
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        Log.d(TAG,"cardviewContainer -- ACTION: MOVE ");
+                        Log.d(TAG, "cardviewContainer -- ACTION: MOVE ");
                         break;
                 }
                 return true;
@@ -1402,7 +1104,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         });
 
 
-
         scrollView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
             @Override
             public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
@@ -1413,8 +1114,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                     Log.d(TAG, " Setup UI, web.getBottom: " + String.valueOf(web.getBottom()));
                     Log.d(TAG, " Setup UI, web.getHeight:" + String.valueOf(web.getHeight()));
                 }
-
-                if ((scrollY > 35)){//(scrollView.getHeight() * 2) / 3)) {  //(scrollY <= web.getContentHeight()) &&
+                if ((scrollY > 35)) {
                     if (bottomFabs.getVisibility() == View.INVISIBLE) {
                         Log.d(TAG, "Setup UI -- scrollView onScrollChange: Scroll > 25,  bottomFabs.VISIBLE");
                         showBottomIcons();
@@ -1433,36 +1133,26 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                     }
                 }
 
-                cardviewContainer.getBackground().setColorFilter(ContextCompat.getColor(getContext(),R.color.blanco),PorterDuff.Mode.MULTIPLY);
-
+                cardviewContainer.getBackground().setColorFilter(ContextCompat.getColor(getContext(), R.color.blanco), PorterDuff.Mode.MULTIPLY);
 
                 if (scrollY >= 1) {
-
-                    float percent = (float) scrollY*2;
-                   /* if (percent < 0){
-                        percent = 0;
-
-                    }*/
+                    float percent = (float) scrollY * 2;
                     if (percent > 255) {
                         percent = 255;
                     }
                     int colorBackground = (int) percent;//(percent*(255));
                     cardviewContainer.getBackground().setAlpha(colorBackground);
                 }
-
                 if (scrollY == 0) {
-                    cardviewContainer.getBackground().setColorFilter(ContextCompat.getColor(getContext(),R.color.mainBlue),PorterDuff.Mode.MULTIPLY);
+                    cardviewContainer.getBackground().setColorFilter(ContextCompat.getColor(getContext(), R.color.mainBlue), PorterDuff.Mode.MULTIPLY);
                     cardviewContainer.getBackground().setAlpha(255);
                 }
                 if ((scrollY >= 0) && (scrollY < 20)) {
                     shareFabMain.show();
-
                     if (!flagMarginColors) {
                         Log.d(TAG, "Setup UI -- scrollView onScrollChange: cardviewContainer: making margin Blue");
                         flagMarginColors = true;
                     }
-
-
                 } else {
                     shareFabMain.hide();
                     if (flagMarginColors) {
@@ -1489,22 +1179,17 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         cardviewContainer.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-
                 int[] location = new int[2];
-
                 cardviewContainer.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 cardviewContainer.getLocationInWindow(location);
                 setAxisXCardView = location[0];
                 setAxisYCardView = location[1];
-
-
                 DisplayMetrics dm = new DisplayMetrics();
                 if (getActivity() != null) {
                     getActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
                     topOffset = dm.heightPixels - view.getMeasuredHeight();    //topOffset: La diferencia el screen del movil y el view de la aplicacion (bar screen)
                     Log.d(TAG, "Setup UI -- cardviewContainer.TreeObserver -- cardviewContainer.getMeasuredHeight: " + String.valueOf(cardviewContainer.getMeasuredHeight()) + ", topOffset: " + String.valueOf(topOffset));
                 }
-
                 View tempView = cardviewContainer; // the view you'd like to locate
                 int[] loc = new int[2];
                 tempView.getLocationOnScreen(loc);
@@ -1513,31 +1198,31 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 setAxisYCardView = yaux;
                 Log.d(TAG, "Setup UI -- cardviewContainer.TreeObserver -- setAxisXCardView" + String.valueOf(setAxisXCardView) + ", Y:" + String.valueOf(setAxisYCardView) + ", TopOffset:" + String.valueOf(topOffset));
                 layoutParamsNews = new RelativeLayout.LayoutParams(cardviewContainer.getWidth(), cardviewContainer.getHeight() * 8);
-                if(((MainActivity)getActivity()) != null)
-                    ((MainActivity)getActivity()).layoutParamsNewsBackUp = layoutParamsNews;
-                    // cardviewtest1.setLayoutParams(layoutParamsNews);
-
-                if(web!=null) {
+                if (((MainActivity) getActivity()) != null)
+                    ((MainActivity) getActivity()).layoutParamsNewsBackUp = layoutParamsNews;
+                if (web != null) {
                     RelativeLayout.LayoutParams layoutParams3 = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, web.getHeight());
                     heightscroll.setLayoutParams(layoutParams3);
                 }
             }
         });
-
-
-
     }
+
+    //endregion
+
+
+    /***************** CODIGO LIMPIO 24 03 2020********/
 
 
     ///////////////////////////////////
     /// MARK: Start to change Main View.
-    public void startChangedNews(){
-        if(SWIPESTACK_SCROLLING) {
+    public void startChangedNews() {
+        if (SWIPESTACK_SCROLLING) {
             cardviewtest1.setVisibility(View.INVISIBLE);
             cardviewContainer.setVisibility(View.INVISIBLE);
             spaux.setVisibility(View.INVISIBLE);
             indexHelperRemoveNews = 0;  //indexHelperRemoveNews es utilizado para saber si el usuario ha movido una Swipecard, ayuda en el inicio de cargar noticias.
-        }else{
+        } else {
             sp.setVisibility(View.INVISIBLE);
             shareFabMain.setVisibility(View.INVISIBLE);
             shareFabMain.setEnabled(false);
@@ -1548,10 +1233,9 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
 
-
     ///////////////////////////////////
     /// MARK: Setup when user make a change in Menu.
-    public void setupForChangedNews(){
+    public void setupForChangedNews() {
         sp.removeAllViews();
         sp.removeAllViewsInLayout();
         sp.resetStack();
@@ -1563,15 +1247,13 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
 
-
-
     /****************************************** ANIMATION *****************************************/
 
 
     ///////////////////////////////////
     /// MARK: Hide the bottom social media icons
-    public void hideBottomIcons(){
-        Log.d(TAG,"hideBottomIcons");
+    public void hideBottomIcons() {
+        Log.d(TAG, "hideBottomIcons");
         bottomFabFB.setScaleX(1f);
         bottomFabFB.setScaleY(1f);
         bottomFabTwitter.setScaleX(1f);
@@ -1590,8 +1272,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
     ///////////////////////////////////
     /// MARK: Show the bottom social media icons
-    public void showBottomIcons(){
-        Log.d(TAG,"showBottomIcons");
+    public void showBottomIcons() {
+        Log.d(TAG, "showBottomIcons");
         bottomFabFB.setScaleX(0.01f);
         bottomFabFB.setScaleY(0.01f);
         bottomFabTwitter.setScaleX(0.01f);
@@ -1636,7 +1318,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         targetTrash.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
         ObjectAnimator animator1 = ObjectAnimator.ofFloat(targetTrash, "translationX", -250);
-        ObjectAnimator animator2 =  ObjectAnimator.ofFloat(targetCheck, "translationX", 250 );
+        ObjectAnimator animator2 = ObjectAnimator.ofFloat(targetCheck, "translationX", 250);
 
         animator1.setRepeatCount(0);
         animator1.setDuration(300);
@@ -1668,7 +1350,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         });
 
 
-
         // animationRightSwipe(currentProgressSwiping)
 
         //    targetCheck.setVisibility(View.INVISIBLE);
@@ -1693,7 +1374,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         basura.setLayoutParams(params);
 
 
-        if(-currentProgress > 0.125) {
+        if (-currentProgress > 0.125) {
             ObjectAnimator animator1 = ObjectAnimator.ofFloat(basura, "translationX", (-currentProgress * 300));
             animator1.setRepeatCount(0);
             animator1.setDuration(0);
@@ -1703,7 +1384,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             basura.setAlpha(-currentProgress * 4f);
             basura.setVisibility(View.VISIBLE);
             paloma.setVisibility(View.INVISIBLE);
-        }else{
+        } else {
             basura.setAlpha(0f);
         }
     }
@@ -1722,7 +1403,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         params.setMargins(0, marginTopIcons, 0, 0);
         paloma.setLayoutParams(params);
 
-        if(currentProgress > 0.125) {
+        if (currentProgress > 0.125) {
 
             Log.d(TAG, "animationRightSwipe -- allNewsDefault.size: " + String.valueOf(allNewsDefault.size()));
             ObjectAnimator animator1 = ObjectAnimator.ofFloat(paloma, "translationX", (-currentProgress * 300));
@@ -1733,14 +1414,14 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             paloma.setAlpha(currentProgress * 4f);
             paloma.setVisibility(View.VISIBLE);
             basura.setVisibility(View.INVISIBLE);
-        }else
+        } else
             paloma.setAlpha(0f);
 
     }
 
     //////////////////////////////
     /// MARK: Animation move icon when card is swiping to right direction.
-    public void animationMoveIconRight(float currentProgress){
+    public void animationMoveIconRight(float currentProgress) {
         Float D = Math.abs(400 * currentProgress) + 120;
         RelativeLayout.LayoutParams params = new PercentRelativeLayout.LayoutParams(D.intValue(), D.intValue());
         params.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
@@ -1756,11 +1437,11 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     /*************************************** CHECK APPS INSTALLED **********************************/
 
     /// MARK:
-    public  boolean twitterInstalled(Activity activity){
-        try{
-            ApplicationInfo info = activity.getPackageManager().getApplicationInfo("com.twitter.android", 0 );
+    public boolean twitterInstalled(Activity activity) {
+        try {
+            ApplicationInfo info = activity.getPackageManager().getApplicationInfo("com.twitter.android", 0);
             return true;
-        } catch( PackageManager.NameNotFoundException e ){
+        } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
     }
@@ -1768,16 +1449,15 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
     ///////////////////////////////////
     /// MARK:
-    public  boolean facebookInstalled(Activity activity){
-        try{
-            ApplicationInfo info = activity.getPackageManager().getApplicationInfo("com.facebook.katana", 0 );
+    public boolean facebookInstalled(Activity activity) {
+        try {
+            ApplicationInfo info = activity.getPackageManager().getApplicationInfo("com.facebook.katana", 0);
             return true;
-        } catch( PackageManager.NameNotFoundException e ){
+        } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
     }
     ///////////////////////////////////
-
 
 
     /*************************************** BACKGROUND CARD **************************************/
@@ -1811,20 +1491,17 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                                 Log.e(TAG, "backgroundSwipeStack -- Swipadptador.getItem: onResourceReady");
 
 
-
-
-
                                 mPassingData.sendingImage(drawableToBitmap(resource),
                                         Swipadaptador.getItem(position + nextPosition).getImagen());
 
 
                                 //mPassingData.sendingImage(imgBgrnd.getDrawingCache()
-                                  //      ,Swipadaptador.getItem(position + nextPosition).getImagen());
+                                //      ,Swipadaptador.getItem(position + nextPosition).getImagen());
                                 return false;
                             }
                         })
                         .thumbnail(Glide.with(getContext())
-                        .load(R.drawable.vacio))
+                                .load(R.drawable.vacio))
                         .into(imgBgrnd))
 
                         .getRequest();
@@ -1864,17 +1541,17 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     ///////////////////////////////////
 
 
-    public static Bitmap drawableToBitmap (Drawable drawable) {
+    public static Bitmap drawableToBitmap(Drawable drawable) {
         Bitmap bitmap = null;
 
         if (drawable instanceof BitmapDrawable) {
             BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
-            if(bitmapDrawable.getBitmap() != null) {
+            if (bitmapDrawable.getBitmap() != null) {
                 return bitmapDrawable.getBitmap();
             }
         }
 
-        if(drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+        if (drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
             bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
         } else {
             bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
@@ -1887,9 +1564,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
 
-
     /***************************************** REQUESTS *******************************************/
-
 
 
     ///////////////////////////////////
@@ -1905,21 +1580,19 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
 
-
-
     ///////////////////////////////////
-    public void showNews(final ArrayList<Noticia> defaultListNews,boolean fromMenuSlide,  int catFromMenuSlide) {
+    public void showNews(final ArrayList<Noticia> defaultListNews, boolean fromMenuSlide, int catFromMenuSlide) {
         Log.e(TAGTIME, "showNews -- DELAY:" + String.valueOf(getRunningTime()));
         if (getActivity() == null) {
             Log.d(TAG, "showNews -- getActivity: NULL");
         } else {
-            Swipadaptador = new SwipAdapter(getActivity(), defaultListNews, getContext(),this);
+            Swipadaptador = new SwipAdapter(getActivity(), defaultListNews, getContext(), this);
             if (Swipadaptador.getCount() == 0) {
                 Log.e(TAG, "showNews -- Swipadaptador.getCount: No news");
-                if (fromMenuSlide){   //Check if is from Menu for show the card!
-                    if (( sp != null) && (sp.getVisibility() == View.VISIBLE)){
+                if (fromMenuSlide) {   //Check if is from Menu for show the card!
+                    if ((sp != null) && (sp.getVisibility() == View.VISIBLE)) {
                         scrollIsAllowed = false;
-                       // sp.addView(View.inflate(getContext(),R.layout.custom_toast,null));
+                        // sp.addView(View.inflate(getContext(),R.layout.custom_toast,null));
                         spaux.setVisibility(View.INVISIBLE);
                         cardviewContainer.setVisibility(View.INVISIBLE);
                         shareFabMain.setVisibility(View.INVISIBLE);
@@ -1939,15 +1612,12 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 }
                 flagMenuSlideTapped = fromMenuSlide;
 
-            }
-            else {
+            } else {
 
-                if(layoutParamsNews != null)
+                if (layoutParamsNews != null)
                     cardviewtest1.setLayoutParams(layoutParamsNews);
-                else
-                    if (((MainActivity)getActivity()).layoutParamsNewsBackUp != null)
-                        cardviewtest1.setLayoutParams(((MainActivity) getActivity()).layoutParamsNewsBackUp);
-
+                else if (((MainActivity) getActivity()).layoutParamsNewsBackUp != null)
+                    cardviewtest1.setLayoutParams(((MainActivity) getActivity()).layoutParamsNewsBackUp);
 
 
                 swipNoNews.setVisibility(View.INVISIBLE);
@@ -1955,7 +1625,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 urlNewsLoaded = false;       //urlNewsLoaded: es la bandera para poder descargar las noticias en la Webview.
                 Log.e(TAG, "showNews -- Swipadaptador.getCount: News");
                 if (indexHelperRemoveNews == 0) {
-                    if(sp.getTopView() == null){
+                    if (sp.getTopView() == null) {
                         Log.e(TAG, "showNews --  sp.getTopView.NULL, sp.ResetStack");
                         sp.resetStack();
 
@@ -1968,22 +1638,22 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
                     cardviewContainer.setVisibility(View.VISIBLE);
                     Log.e(TAG, "showNews --  sp.setAdapter");
-                    int helperY=scrollView.getScrollY();
+                    int helperY = scrollView.getScrollY();
                     sp.setAdapter(Swipadaptador);
 
-                    if(helperY != 0) {
-                        Log.e(TAG, "showNews --  scrollView.setScrollY:"+String.valueOf(helperY));
+                    if (helperY != 0) {
+                        Log.e(TAG, "showNews --  scrollView.setScrollY:" + String.valueOf(helperY));
                         scrollView.setScrollY(helperY);
                     }
 
 
-                    if (indexBackgroundBackup != 0 )
+                    if (indexBackgroundBackup != 0)
                         backgroundSwipeStack(viewBckgrnd, indexBackgroundBackup, getActivity()); //position index: inicio de cardview
                     else
                         backgroundSwipeStack(viewBckgrnd, 0, getActivity()); //position 0: inicio de cardview
 
                     //allNewsHelper = getNoticiasaux(Swipadaptador.getItem(position).getTitulo(), Swipadaptador.getItem(position).getImagen(), Swipadaptador.getItem(position).getUrl(), Swipadaptador.getItem(position).getDescription(), Swipadaptador.getItem(position).getAutor(), Swipadaptador.getItem(position).getCategoria());
-                   // allNewsHelper = getNoticiasaux(Swipadaptador.getItem(mainPosition).getTitulo(), Swipadaptador.getItem(mainPosition).getImagen(), Swipadaptador.getItem(mainPosition).getUrl(), Swipadaptador.getItem(mainPosition).getDescription(), Swipadaptador.getItem(mainPosition).getAutor(), Swipadaptador.getItem(mainPosition).getCategoria());
+                    // allNewsHelper = getNoticiasaux(Swipadaptador.getItem(mainPosition).getTitulo(), Swipadaptador.getItem(mainPosition).getImagen(), Swipadaptador.getItem(mainPosition).getUrl(), Swipadaptador.getItem(mainPosition).getDescription(), Swipadaptador.getItem(mainPosition).getAutor(), Swipadaptador.getItem(mainPosition).getCategoria());
                     allNewsHelper = getNoticiasaux(Swipadaptador.getItem(sp.getCurrentPosition()).getTitulo(),
                             Swipadaptador.getItem(sp.getCurrentPosition()).getImagen(),
                             Swipadaptador.getItem(sp.getCurrentPosition()).getUrl(),
@@ -1993,7 +1663,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
 
                     if (getActivity() != null) {
-                        Swipadaptadoraux = new SwipAdapterBackCard(getActivity(),allNewsHelper,getApplicationContext());
+                        Swipadaptadoraux = new SwipAdapterBackCard(getActivity(), allNewsHelper, getApplicationContext());
                         Swipadaptadoraux.setImageListener(this);
                     }
                     final String newsaux = defaultListNews.get(sp.getCurrentPosition()).getUrl();
@@ -2007,25 +1677,24 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                             Log.d(TAG, "showsNews -- sp.onViewSwipedToLeft sp.getCurrentPosition: " + String.valueOf(sp.getCurrentPosition()));
                             currentIndex = position;
                             //currentIndex = position + 1;
-                            mainPosition = position+1;
+                            mainPosition = position + 1;
 //                            web.onPause();
                             if (web != null)
                                 web.destroy();
-
-
 
 
                             indexHelperRemoveNews = indexHelperRemoveNews + 1;
                             Log.d(TAG, "showsNews -- sp.onViewSwipedToLeft indexHelperRemoveNews: " + String.valueOf(indexHelperRemoveNews));
                             setupOnViewSwipedToLeft(position);
                         }
+
                         @Override
                         public void onViewSwipedToRight(final int position) {
                             Log.d(TAG, "showNews -- sp.onViewSwipedRight Position:" + String.valueOf(position));
                             Log.d(TAG, "showsNews -- sp.onViewSwipedRight sp.getCurrentPosition: " + String.valueOf(sp.getCurrentPosition()));
                             //currentIndex = position + 1;
                             currentIndex = position;
-                            mainPosition = position +1;
+                            mainPosition = position + 1;
                             //web.onPause();
                             if (web != null)
                                 web.destroy();
@@ -2034,6 +1703,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                             Log.d(TAG, "showsNews -- sp.onViewSwipedToRight indexHelperRemoveNews: " + String.valueOf(indexHelperRemoveNews));
                             setupOnViewSwipedToRight(position);
                         }
+
                         @Override
                         public void onStackEmpty() {
                             deleteCache(getContext());
@@ -2041,7 +1711,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                             sp.resetStack();   //Restart the news.
                             mainPosition = 0;
                             backgroundSwipeStack(viewBckgrnd, 0, getActivity()); //position 0: inicio de cardview
-                            Log.d(TAG,  "showNews -- sp.OnStackEmpty.TRUE");
+                            Log.d(TAG, "showNews -- sp.OnStackEmpty.TRUE");
                         }
                     });
                 }
@@ -2066,7 +1736,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     /************************************** WEBVIEW CONFIG ****************************************/
 
 
-
     ///////////////////////////////
     /// MARK: Enter new card for slide up    Prueba 1
     public void swipeToUp() {
@@ -2088,7 +1757,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         web.clearCache(true);
         web.getContentHeight();
         web.setEnabled(true);
-        if(web!=null) {
+        if (web != null) {
             RelativeLayout.LayoutParams layoutParams3 = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, web.getHeight());
             heightscroll.setLayoutParams(layoutParams3);
         }
@@ -2103,19 +1772,19 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_CANCEL:
-                        Log.d(TAG,"web: -- ACTION: CANCEL ");
+                        Log.d(TAG, "web: -- ACTION: CANCEL ");
                         eventsActionCancel(event);
                         break;
                     case MotionEvent.ACTION_DOWN:
-                        Log.d(TAG,"web: -- ACTION: DOWN ");
+                        Log.d(TAG, "web: -- ACTION: DOWN ");
                         eventsActionDown(event);
                         break;
                     case MotionEvent.ACTION_UP:
-                        Log.d(TAG,"web: -- ACTION: UP ");
+                        Log.d(TAG, "web: -- ACTION: UP ");
                         eventsActionUp(event);
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        Log.d(TAG,"web: -- ACTION: MOVE ");
+                        Log.d(TAG, "web: -- ACTION: MOVE ");
                         eventsActionMove(event, v);
 
 
@@ -2132,7 +1801,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         Log.d(TAG, "swipeToUp -- web.loadUrl, allNewsDefault.get(: "
                 //+ String.valueOf(position)+").getUrl:"
                 //+ String.valueOf(allNewsDefault.get(position).getUrl()));
-                + String.valueOf(mainPosition)+").getUrl:"
+                + String.valueOf(mainPosition) + ").getUrl:"
                 + String.valueOf(allNewsDefault.get(mainPosition).getUrl()));
 
         //web.loadUrl(allNewsDefault.get(position).getUrl());
@@ -2159,8 +1828,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
 
         web.setVerticalScrollBarEnabled(true);
-
-
 
 
         web.setWebChromeClient(new WebChromeClient() {
@@ -2206,7 +1873,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
                 web.setAlpha(0.f);
                 Toast.makeText(getContext(), "Oh no! Url missing", Toast.LENGTH_SHORT).show();
-              //  Toast.makeText(getContext(), "Oh no! Url missing" + description, Toast.LENGTH_SHORT).show();
+                //  Toast.makeText(getContext(), "Oh no! Url missing" + description, Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -2218,8 +1885,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
 
-
-
     ///////////////////////////////
     /// MARK: Show alert "no news to show"
     public void showAlertNoNews() {
@@ -2227,27 +1892,26 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     }
 
 
-
     /***************************************** ACTIONS IN CARD ************************************/
 
     ///////////////////////////////////
     /// MARK:
-    public void setupOnViewSwipedToRight(int position){
+    public void setupOnViewSwipedToRight(int position) {
         setupOnViewSwiped(position);
-        saveNewsGeneric(Swipadaptador,position,true);
+        saveNewsGeneric(Swipadaptador, position, true);
     }
 
     ///////////////////////////////////
     /// MARK:
-    public void setupOnViewSwipedToLeft(int position){
+    public void setupOnViewSwipedToLeft(int position) {
         setupOnViewSwiped(position);
-        saveNewsGeneric(Swipadaptador,position,false);
+        saveNewsGeneric(Swipadaptador, position, false);
     }
 
 
     ///////////////////////////////////
     /// MARK:
-    public void setupOnViewSwiped(int position){
+    public void setupOnViewSwiped(int position) {
         urlNewsLoaded = false;
         //saveMemoryCard(position);  //6/Feb/2019
         scrollView.smoothScrollTo(0, 0);
@@ -2288,8 +1952,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         posY = (int) ev.getRawY();
         posX = (int) ev.getRawX();
         diffPosY = diffPosY + Math.abs(posY - oldY);
-        diffPosX =  diffPosX + Math.abs(posX - oldX);
-        diffFastGesture =  posX - oldX;
+        diffPosX = diffPosX + Math.abs(posX - oldX);
+        diffFastGesture = posX - oldX;
 
 
         oldX = posX;
@@ -2297,14 +1961,14 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         x_cord = (int) ev.getRawX();
         y_cord = (int) ev.getRawY();
 
-        Log.e(TAG, "eventsActionMove -- ACTION MOVE!  diffPosX:"+String.valueOf(diffPosX));
-        Log.e(TAG, "eventsActionMove -- ACTION MOVE!  diffPosY"+String.valueOf(diffPosY));
-        Log.e(TAG, "eventsActionMove -- ACTION MOVE!  posX"+String.valueOf(posX));
-        Log.e(TAG, "eventsActionMove -- ACTION MOVE!  posY"+String.valueOf(posY));
+        Log.e(TAG, "eventsActionMove -- ACTION MOVE!  diffPosX:" + String.valueOf(diffPosX));
+        Log.e(TAG, "eventsActionMove -- ACTION MOVE!  diffPosY" + String.valueOf(diffPosY));
+        Log.e(TAG, "eventsActionMove -- ACTION MOVE!  posX" + String.valueOf(posX));
+        Log.e(TAG, "eventsActionMove -- ACTION MOVE!  posY" + String.valueOf(posY));
 
 
-        if (!isSwiping && !isScrolling && diffPosX!=0 && diffPosY!=0) {
-            if  (diffPosX > 3*diffPosY ||  diffPosY > 3*diffPosX ) {
+        if (!isSwiping && !isScrolling && diffPosX != 0 && diffPosY != 0) {
+            if (diffPosX > 3 * diffPosY || diffPosY > 3 * diffPosX) {
 
                 if (Math.abs(diffPosX) > Math.abs(diffPosY)) {
                     Log.e(TAG, "eventsActionMove -- ACTION MOVE!  SWIPING!");
@@ -2318,23 +1982,23 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
                     Log.e(TAG, "eventsActionMove -- ACTION MOVE!  SCROLLING!");
 
-                        isSwiping = false;
-                        isScrolling = true;
+                    isSwiping = false;
+                    isScrolling = true;
 //                          if (allNewsDefault.size() != 0){
-                          if (allNewsDefault.size() != 0){
-                            scrollIsAllowed = true;
-                          }else{
-                           scrollIsAllowed = false;
-                         }
+                    if (allNewsDefault.size() != 0) {
+                        scrollIsAllowed = true;
+                    } else {
+                        scrollIsAllowed = false;
+                    }
 
-                        //scrollIsAllowed = true;
-                        diffPosY = 0;
-                        diffPosX = 0;
+                    //scrollIsAllowed = true;
+                    diffPosY = 0;
+                    diffPosX = 0;
                 }
             }
 
             //if ((Math.abs(diffPosY) -  Math.abs(diffPosX)) > 0 && Math.abs(diffPosX) > 12){
-            if (Math.abs(diffPosX) > 15){
+            if (Math.abs(diffPosX) > 15) {
 
                 Log.e(TAG, "eventsActionMove -- ACTION MOVE!  DIAGONAL!");
                 isSwiping = true;
@@ -2348,11 +2012,11 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         if (isSwiping) {
             Log.e(TAG, "eventsActionMove -- isSwiping.TRUE: X WIN");
             scrollIsAllowed = false;
-            cardviewContainer.getBackground().setColorFilter(ContextCompat.getColor(getContext(),R.color.mainBlue),PorterDuff.Mode.MULTIPLY);
+            cardviewContainer.getBackground().setColorFilter(ContextCompat.getColor(getContext(), R.color.mainBlue), PorterDuff.Mode.MULTIPLY);
             cardviewContainer.getBackground().setAlpha(255);
             shareFabMain.hide();
             cardviewContainer.setX(x_cord - x);
-            currentProgressSwiping =  (x_cord - x) / 1000;
+            currentProgressSwiping = (x_cord - x) / 1000;
             animationSwipeProgress((float) (x_cord - x) / 1000);
             cardviewContainer.setY(y_cord - y + topOffset * 4);
             if (x_cord >= screenCenter) {
@@ -2377,7 +2041,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                     Likes = 0;
                 }
             }
-            if (( Math.abs(screenCenter - x_cord)) > screenCenter/2) { //Swipe si rebasa 1/4 del screen a cualquier lado
+            if ((Math.abs(screenCenter - x_cord)) > screenCenter / 2) { //Swipe si rebasa 1/4 del screen a cualquier lado
                 if (Math.abs(x_cord - startPointX) > (screenCenter)) {
                     if ((x_cord - startPointX) > 0) {
                         Likes = 2;
@@ -2386,7 +2050,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 }
             }
 
-            if (Math.abs(diffFastGesture) > (110 )) {  //Swipe muy rapido
+            if (Math.abs(diffFastGesture) > (110)) {  //Swipe muy rapido
                 if ((x_cord - startPointX) > 0) {
                     Likes = 2;   //Liked
                 } else
@@ -2394,7 +2058,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             }
 
 
-            if (Math.abs(x_cord - x) > (150 )) {  //Swipe diferencia de X
+            if (Math.abs(x_cord - x) > (150)) {  //Swipe diferencia de X
                 if ((x_cord - x) > 0) {
                     Log.e(TAG, "eventsActionMove -- isSwiping.TRUE: X WIN, Swipe by difference LIKE");
                     Likes = 2;   //Liked
@@ -2405,14 +2069,12 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             }
 
 
-
-
         } else {
             //            if (allNewsDefault.size() != 0){
 
-            if (allNewsDefault.size() != 0){
+            if (allNewsDefault.size() != 0) {
                 scrollIsAllowed = true;
-            }else{
+            } else {
                 scrollIsAllowed = false;
             }
             Log.e(TAG, "eventsActionMove -- isSwiping.FALSE: Y WIN");
@@ -2434,10 +2096,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         x_cord = (int) ev.getRawX();
         y_cord = (int) ev.getRawY();
 
-        if ((Math.abs(startPointX  - x_cord) < 8) && (Math.abs(startPointY - y_cord) < 8) && (!isSwiping)) {
+        if ((Math.abs(startPointX - x_cord) < 8) && (Math.abs(startPointY - y_cord) < 8) && (!isSwiping)) {
             Log.e(TAG, "eventsActionUp  -- CARD CLICKED! ");
             Log.e(TAG, "eventsActionUp  -- CARD CLICKED! Swipadaptador.mostrarNoticiasView("
-                    +String.valueOf(sp.getCurrentPosition())+")");
+                    + String.valueOf(sp.getCurrentPosition()) + ")");
 
             Swipadaptador.mostrarNoticiasView(sp.getCurrentPosition());
 
@@ -2454,14 +2116,14 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 Swipadaptador.mostrarNoticiasView(sp.getCurrentPosition());
             }*/
 
-            Log.e(TAG, "eventsActionUp  -- sp.getCurrentPosition:"+String.valueOf(sp.getCurrentPosition()));
-            Log.e(TAG, "eventsActionUp  -- currentIndex:"+String.valueOf(currentIndex));
+            Log.e(TAG, "eventsActionUp  -- sp.getCurrentPosition:" + String.valueOf(sp.getCurrentPosition()));
+            Log.e(TAG, "eventsActionUp  -- currentIndex:" + String.valueOf(currentIndex));
 
             cardviewContainer.setScrollY(0);
 //          if (allNewsDefault.size() != 0){
-            if (allNewsDefault.size() != 0){
+            if (allNewsDefault.size() != 0) {
                 scrollIsAllowed = true;
-            }else{
+            } else {
                 scrollIsAllowed = false;
             }
             urlNewsLoaded = false;
@@ -2480,7 +2142,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             cardviewContainer.setRotation(0);
 
             if (bottomFabs.getVisibility() == View.INVISIBLE)
-            shareFabMain.show();
+                shareFabMain.show();
 
         } else if (Likes == 1) {
             Log.e(TAG, "eventsActionUp  -- UNLIKE");
@@ -2504,12 +2166,13 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 shareFabMain.show();
 
 
-                animators.addListener(new AnimatorListenerAdapter() {
+            animators.addListener(new AnimatorListenerAdapter() {
                 @Override
-                public void onAnimationStart(Animator animation){
+                public void onAnimationStart(Animator animation) {
                     super.onAnimationStart(animation);
                     scrollView.setScrollY(0);
                 }
+
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
@@ -2531,14 +2194,14 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
     ///////////////////////////////////
     /// MARK:
-    public void eventsActionMoveCardNoNews(MotionEvent ev,CardView targetCard) {
+    public void eventsActionMoveCardNoNews(MotionEvent ev, CardView targetCard) {
         Log.e(TAG, "eventsActionMoveCardNoNews -- ACTION MOVE!");
 
         posY = (int) ev.getRawY();
         posX = (int) ev.getRawX();
         diffPosY = diffPosY + Math.abs(posY - oldY);
-        diffPosX =  diffPosX + Math.abs(posX - oldX);
-        diffFastGesture =  posX - oldX;
+        diffPosX = diffPosX + Math.abs(posX - oldX);
+        diffFastGesture = posX - oldX;
 
 
         oldX = posX;
@@ -2547,12 +2210,11 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         y_cord = (int) ev.getRawY();
 
 
-
         if (isSwiping) {
             Log.e(TAG, "eventsActionMove -- isSwiping.TRUE: X WIN");
 
             targetCard.setX(x_cord - x);
-            currentProgressSwiping =  (x_cord - x) / 1000;
+            currentProgressSwiping = (x_cord - x) / 1000;
             //animationSwipeProgress((float) (x_cord - x) / 1000);
             targetCard.setY(y_cord - y + topOffset * 4);
             if (x_cord >= screenCenter) {
@@ -2577,7 +2239,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                     Likes = 0;
                 }
             }
-            if (( Math.abs(screenCenter - x_cord)) > screenCenter/2) { //Swipe si rebasa 1/4 del screen a cualquier lado
+            if ((Math.abs(screenCenter - x_cord)) > screenCenter / 2) { //Swipe si rebasa 1/4 del screen a cualquier lado
                 if (Math.abs(x_cord - startPointX) > (screenCenter)) {
                     if ((x_cord - startPointX) > 0) {
                         Likes = 2;
@@ -2586,7 +2248,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
                 }
             }
 
-            if (Math.abs(diffFastGesture) > (110 )) {  //Swipe muy rapido
+            if (Math.abs(diffFastGesture) > (110)) {  //Swipe muy rapido
                 if ((x_cord - startPointX) > 0) {
                     Likes = 2;   //Liked
                 } else
@@ -2594,7 +2256,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             }
 
 
-            if (Math.abs(x_cord - x) > (150 )) {  //Swipe diferencia de X
+            if (Math.abs(x_cord - x) > (150)) {  //Swipe diferencia de X
                 if ((x_cord - x) > 0) {
                     Log.e(TAG, "eventsActionMove -- isSwiping.TRUE: X WIN, Swipe by difference LIKE");
                     Likes = 2;   //Liked
@@ -2609,7 +2271,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
     ///////////////////////////////////
     /// MARK: Todo:Checar aqui para hacer un requestSpecific y showMenu despues
-    public void eventsActionUpCardNoNews(MotionEvent ev,final CardView targetCard) {
+    public void eventsActionUpCardNoNews(MotionEvent ev, final CardView targetCard) {
         Log.e(TAG, "eventsActionUpCardNoNews  -- ACTION UP! ");
 
         diffPosY = 0;
@@ -2619,14 +2281,13 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         x_cord = (int) ev.getRawX();
         y_cord = (int) ev.getRawY();
 
-        ObjectAnimator moveX = ObjectAnimator.ofFloat(swipNoNews,"translationX",x_cord);
+        ObjectAnimator moveX = ObjectAnimator.ofFloat(swipNoNews, "translationX", x_cord);
 
         if (Likes == 0) {
             Log.e(TAG, "eventsActionUpCardNoNews  -- Nothing");
             targetCard.setX(setAxisXCardView);
             targetCard.setY(setAxisYCardView);
             targetCard.setRotation(0);
-
 
 
         } else if (Likes == 1) {
@@ -2641,7 +2302,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             else
                 menuSelectedIndex = menuSelectedIndex - 1;
 
-            if((MainActivity) getActivity() != null)
+            if ((MainActivity) getActivity() != null)
                 ((MainActivity) getActivity()).specificRecursive(menuSelectedIndex);
             //showNewsMenuSlide(menuSelectedIndex);
             Log.e(TAG, "eventsActionUpCardNoNews  -- UNLIKE FINISH");
@@ -2659,7 +2320,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             else
                 menuSelectedIndex = menuSelectedIndex + 1;
 
-            if((MainActivity) getActivity() != null)
+            if ((MainActivity) getActivity() != null)
                 ((MainActivity) getActivity()).specificRecursive(menuSelectedIndex);
             //showNewsMenuSlide(menuSelectedIndex);
             Log.e(TAG, "eventsActionUpCardNoNews  -- LIKED FINISH");
@@ -2683,26 +2344,25 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     ///////////////////////////////////
     /// MARK: Save news for BackUp
     public void registrarNoticiasRecuperar(String titulo, String imagen, String url, String autor, String categoria) {
-        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(getActivity(),"db_noticias",null,1);
+        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(getActivity(), "db_noticias", null, 1);
         SQLiteDatabase db = conn.getWritableDatabase();
-        String [] parametros = {url};
-        Cursor cursor = db.rawQuery( "SELECT url FROM "+Utilidades.TABLA_RECUPERAR+" WHERE "+Utilidades.URL+" =?", parametros);
-        if(cursor.getCount()==0)
-        {
-            Log.d(TAG," Registro Noticias Recuperar:");
+        String[] parametros = {url};
+        Cursor cursor = db.rawQuery("SELECT url FROM " + Utilidades.TABLA_RECUPERAR + " WHERE " + Utilidades.URL + " =?", parametros);
+        if (cursor.getCount() == 0) {
+            Log.d(TAG, " Registro Noticias Recuperar:");
 
             Log.d(TAG, " NOTICIA: NO HAY");
             ContentValues valores = new ContentValues();
-            valores.put(Utilidades.TITULO,titulo);
-            valores.put(Utilidades.IMAGEN,imagen);
-            valores.put(Utilidades.URL,url);
-            valores.put(Utilidades.AUTOR,autor);
-            valores.put(Utilidades.CATEGORIA,categoria);
+            valores.put(Utilidades.TITULO, titulo);
+            valores.put(Utilidades.IMAGEN, imagen);
+            valores.put(Utilidades.URL, url);
+            valores.put(Utilidades.AUTOR, autor);
+            valores.put(Utilidades.CATEGORIA, categoria);
             valores.put(Utilidades.TIEMPO, addTime(System.currentTimeMillis()));
-            db.insert(Utilidades.TABLA_RECUPERAR,null,valores);
+            db.insert(Utilidades.TABLA_RECUPERAR, null, valores);
             db.close();
-        }else{
-            Log.d(TAG, "NOTICIA: REPETIDA RECUPERAR"+String.valueOf(titulo));
+        } else {
+            Log.d(TAG, "NOTICIA: REPETIDA RECUPERAR" + String.valueOf(titulo));
             db.close();
         }
         conn.close();
@@ -2737,19 +2397,18 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
 
     ///////////////////////////////
     /// MARK: Save news to the Database Favorites or Recover.
-    public void saveNewsGeneric(final SwipAdapter targetAdapter, final int positionForSave,boolean forFavorites) {
+    public void saveNewsGeneric(final SwipAdapter targetAdapter, final int positionForSave, boolean forFavorites) {
         String titulo = targetAdapter.getItem(positionForSave).getTitulo();
         String url = targetAdapter.getItem(positionForSave).getUrl();
         String imagen = targetAdapter.getItem(positionForSave).getImagen();
         String autor = targetAdapter.getItem(positionForSave).getAutor();
         String categoria = targetAdapter.getItem(positionForSave).getCategoria();
 
-        if(forFavorites)
+        if (forFavorites)
             registrarNoticias(titulo, imagen, url, autor, categoria);
         else
             registrarNoticiasRecuperar(titulo, imagen, url, autor, categoria);
     }
-
 
 
     /*************************************** SEND NEWS BY INTENT **********************************/
@@ -2835,11 +2494,11 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
     /******************************************** HELPERS  *****************************************/
     ///////////////////////////////////
     /// MARK: Add time for recover news
-    public long addTime(long startTime){
-        Log.e(TAG, "DATETIME: "+String.valueOf(DateFormat.getInstance().format(startTime)));
+    public long addTime(long startTime) {
+        Log.e(TAG, "DATETIME: " + String.valueOf(DateFormat.getInstance().format(startTime)));
         //long halfAnHourLater = startTime + 1800000;
-        Log.e(TAG, "WAIT UNTIL: "+String.valueOf(DateFormat.getInstance().format(startTime + 1800000)));
-        return startTime + 3600000*24*2; //30Min  1 Min: 60'000
+        Log.e(TAG, "WAIT UNTIL: " + String.valueOf(DateFormat.getInstance().format(startTime + 1800000)));
+        return startTime + 3600000 * 24 * 2; //30Min  1 Min: 60'000
     }
 
     /// MARK: Add news for save in newsApiSaved   ****************!
@@ -2856,7 +2515,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
             newsApiSaved.add(object);
         }
         //firstInitialCard = true;
-        Log.d(TAG, "addNewsForSave  -- newsApiSaved.size: "+String.valueOf(newsApiSaved.size()));
+        Log.d(TAG, "addNewsForSave  -- newsApiSaved.size: " + String.valueOf(newsApiSaved.size()));
     }
 
     ///////////////////////////////////
@@ -2887,614 +2546,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity,ImagePa
         } else {
             return false;
         }
-    }
-
-
-
-
-
-
-
-
-    /* ****************************************** NO USE ******************************************/
-
-
-    ///////////////////////////////
-    /// MARK: Custom snackbar.
-    public Snackbar createSnackbar(View target, String direction) {
-        Snackbar snackbar = Snackbar.make(target, direction, Snackbar.LENGTH_SHORT);
-        snackbar.setActionTextColor(Color.BLUE);
-        View snackbarLayout = snackbar.getView();
-        snackbarLayout.setBackgroundColor(getResources().getColor(R.color.mainPink));
-        FrameLayout.LayoutParams layparams = (FrameLayout.LayoutParams) snackbarLayout.getLayoutParams();
-        layparams.gravity = Gravity.BOTTOM;
-        MainActivity mainActivity = (MainActivity) getActivity();
-        layparams.setMargins(0, 0, 0, mainActivity.menuNavigation.getMeasuredHeight());
-        snackbarLayout.setLayoutParams(layparams);
-        snackbar.setActionTextColor(Color.BLUE);
-        snackbar.setActionTextColor(0);
-        return snackbar;
-    }
-
-    ///////////////////////////////////
-    /// MARK:
-    private void consultNoNewsShow(String categoria) {
-
-        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(getActivity(),"db_noticias",null,1);
-        SQLiteDatabase db = conn.getReadableDatabase();
-        String [] parametros = {categoria.toString()};
-        Cursor cursor = db.rawQuery("SELECT * FROM "+Utilidades.TABLA_RECUPERAR+" WHERE "+Utilidades.CATEGORIA+" LIKE ?",parametros);
-        Noticia noticia = null;
-        if(cursor.getCount()==0)
-        {
-            Log.e(TAG, "consultNoNewsShow: EMPTY");
-            noNewsForShow = null;
-        }
-        else
-        {
-            Log.e(TAG, "consultNoNewsShow: NEWS!");
-            while (cursor.moveToNext()) {
-                noticia = new Noticia(cursor.getString(0), cursor.getString(1), cursor.getString(2), "", cursor.getString(3), cursor.getString(4), cursor.getLong(5));
-                noNewsForShow.add(noticia);
-            }
-        }
-        cursor.close();
-        db.close();
-        conn.close();
-    }
-
-    ///////////////////////////////////
-    /// MARK:   SQL
-    private int consultarEstado(String categoria) {
-        String[] parametros = {categoria};
-        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(getActivity(), "db_noticias", null, 1);
-        SQLiteDatabase db = conn.getWritableDatabase();
-        int c = 0;
-        try {
-            Cursor cursor = db.rawQuery("SELECT estado FROM " + Utilidades.TABLA_PREFERENCIA + " where " + Utilidades.CATEGORIA + " =?", parametros);
-            cursor.moveToFirst();
-            db.close();
-            conn.close();
-            c = cursor.getInt(0);
-            return cursor.getInt(0);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return c;
-    }
-
-
-    ///////////////////////////////////
-    /// MARK:   Show news from a chosen category from menu Slide
-    private void menuSlide(int position) {
-        if((allNewsHelper != null)&&allNewsDefault!=null) {
-            allNewsDefault.clear();
-            allNewsHelper.clear();
-        }
-        cardviewtest1.setVisibility(View.INVISIBLE);
-        cardviewContainer.setVisibility(View.INVISIBLE);
-        sp.setVisibility(View.INVISIBLE);
-        spaux.setVisibility(View.INVISIBLE);
-        shareFabMain.setVisibility(View.INVISIBLE);
-
-        indexHelperRemoveNews = 0;  //indexHelperRemoveNews es utilizado para saber si el usuario ha movido una Swipecard, ayuda en el inicio de cargar noticias.
-        MemoryLoadIndex = position;
-        //loadDefaultNews(position);
-
-        Log.e(TAG, "menuSlide -- position:"+String.valueOf(position));
-    }
-
-    ///////////////////////////////////
-    /// MARK:
-    private void downloadAllNews(){
-        //getInitialNews();
-    }
-
-
-    ///////////////////////////////////
-    /// MARK:
-    public void saveMemoryCard(Integer position) {
-        Log.d(TAG, "saveMemoryCard -- allnewsDefault.get(position:"
-                +String.valueOf(position)
-                +").getUrl: "
-                + allNewsDefault.get(position).getUrl());
-
-        boolean flagHelper = false;
-        for (int i = 0; i < MemoryCard.size(); i++) {
-            if (MemoryCard.get(i).equalsIgnoreCase(allNewsDefault.get(position).getUrl())) {
-                flagHelper = true;
-                Log.d(TAG, "saveMemoryCard -- NewsREPEATED! MemoryCard("+String.valueOf(i)+").getUrl: " + MemoryCard.get(i));
-                i = MemoryCard.size();
-                //Si es igual MemoryCard con allNewsDefault, ya existe en MemoryCard no hay necesidad de agregarla
-            } else {
-                flagHelper = false;
-            }
-        }
-        if (!flagHelper){
-            Log.d(TAG, "saveMemoryCard -- MemoryCard.add: " + allNewsDefault.get(position).getUrl()+ " (url added)");
-            MemoryCard.add(allNewsDefault.get(position).getUrl());
-            Log.d(TAG, "saveMemoryCard -- MemoryCard.size: " + MemoryCard.size());
-        } else {
-            Log.d(TAG, "saveMemoryCard -- MemoryCard.size: " + MemoryCard.size() + "(url NO added)");
-        }
-    }
-    ///////////////////////////////////
-    /// MARK:
-    public void showNewsWithBackupList(final ArrayList<Noticia> defaultListNews) {
-        Log.e(TAGTIME, "showNewsWithBackupList -- DELAY:" + String.valueOf(getRunningTime()));
-        if (getActivity() == null) {
-            Log.d(TAG, "showNewsWithBackUpList -- getActivity.NULL");
-
-        } else {
-            Swipadaptador = new SwipAdapter(getActivity(), defaultListNews, getContext(),this);
-            if (Swipadaptador.getCount() == 0) {
-                Log.d(TAG, "showNewsWithBackupList -- Swipadaptador.getCount:0");
-            } else {
-                urlNewsLoaded = false;       //urlNewsLoaded: es la bandera para poder descargar las noticias en la Webview.
-                Log.d(TAG, "showNewsWithBackupList -- Swipadaptador.getCount:"+String.valueOf(Swipadaptador.getCount()));
-                mainPosition = 0;
-
-                if(sp.getTopView() == null){
-                    Log.d(TAG, "showNewsWithBackupList -- sp.getTopView:NULL (sp.resetStack())");
-                    sp.resetStack();
-                }
-                sp.setVisibility(View.VISIBLE);
-                spaux.setEnabled(false);
-                spaux.setVisibility(View.VISIBLE);
-                Log.d(TAG, "showNewsWithBackupList -- sp.resetStack");
-                sp.resetStack();
-
-                if(!firstInitialCard) {
-                    Log.d(TAG, "showNewsWithBackupList -- firstInitialCard:"+String.valueOf(firstInitialCard));
-                    Log.d(TAG, "showNewsWithBackupList --firstInitialCard (sp.resetStack())");
-                    sp.resetStack();
-                    firstInitialCard = false;
-                }
-                cardviewContainer.setVisibility(View.VISIBLE);
-                Log.d(TAG, "swipeToUp -- (showNewsWithBackupList)sp.resetStack");
-
-                sp.setAdapter(Swipadaptador);
-                backgroundSwipeStack(viewBckgrnd, indexBackgroundBackup, getActivity()); //position 0: inicio de cardview
-                //allNewsHelper = getNoticiasaux(Swipadaptador.getItem(position).getTitulo(), Swipadaptador.getItem(position).getImagen(), Swipadaptador.getItem(position).getUrl(), Swipadaptador.getItem(position).getDescription(), Swipadaptador.getItem(position).getAutor(), Swipadaptador.getItem(position).getCategoria());
-
-
-                allNewsHelper = getNoticiasaux(Swipadaptador.getItem( sp.getCurrentPosition() + 1).getTitulo()
-                        , Swipadaptador.getItem( sp.getCurrentPosition() + 1).getImagen(),
-                        Swipadaptador.getItem(sp.getCurrentPosition() + 1).getUrl(),
-                        Swipadaptador.getItem(sp.getCurrentPosition() + 1).getDescription(),
-                        Swipadaptador.getItem(sp.getCurrentPosition() + 1).getAutor(),
-                        Swipadaptador.getItem(sp.getCurrentPosition() + 1).getCategoria());
-
-
-                if (getActivity() != null) {
-                    Swipadaptadoraux = new SwipAdapterBackCard(getActivity(), allNewsHelper, getContext());
-                    Swipadaptadoraux.setImageListener(HomeFragment.this);
-
-                }
-                final String newsaux = defaultListNews.get(sp.getCurrentPosition()).getUrl();
-                shareFabMain.setVisibility(View.VISIBLE);
-                shareFabMain.setEnabled(true);
-                scrollView.smoothScrollTo(0, 0);
-                sp.setListener(new SwipeStack.SwipeStackListener() {
-                    @Override
-                    public void onViewSwipedToLeft(final int position) {
-                        Log.d(TAG, "showNewsWithBackupList --  sp.onViewSwipedToLeft: Position:" + String.valueOf(position));
-                        Log.d(TAG, "showNewsWithBackupList -- sp.onViewSwipedToLeft: Sp.currentPosition: " + String.valueOf(sp.getCurrentPosition()));
-                        indexHelperRemoveNews = indexHelperRemoveNews + 1;
-                        mainPosition = position;
-                        Log.d(TAG, "showNewsWithBackupList -- sp.onViewSwipedToLeft: indexHelperRemoveNews: " + String.valueOf(indexHelperRemoveNews));
-                        if (web != null)
-                            web.destroy();
-
-                        setupOnViewSwipedToLeft(position);
-                    }
-                    @Override
-                    public void onViewSwipedToRight(final int position) {
-                        mainPosition = position;
-                        currentIndex = position + 1;
-                        indexHelperRemoveNews = indexHelperRemoveNews + 1;
-                        if (web != null)
-                            web.destroy();
-
-                        setupOnViewSwipedToRight(position);
-                    }
-                    @Override
-                    public void onStackEmpty() {
-                        Log.d(TAG, "showNewsWithBackupList -- sp.onStackEmpty.TRUE");
-                        deleteCache(getContext());
-                        MemoryCard.clear();  //The counting of position is reset.
-                        sp.resetStack();   //Restart the news.
-                        Log.d(TAG, "showNewsWithBackupList -- sp.resetStack");
-                        Log.d(TAG, "showNewsWithBackupList -- backgroundSwipeStack()");
-                        backgroundSwipeStack(viewBckgrnd, 0, getActivity()); //position 0: inicio de cardview
-
-                    }
-                });
-
-            }
-        }
-    }
-
-    /// MARK: Check the state of the database turning ON all preferences (first time) or check each state.
-    public boolean config_inicial() {
-        String[] categorias = {"SALUD", "RETAIL", "CONSTRUCCIÓN", "ENTRETENIMIENTO", "AMBIENTE", "EDUCACIÓN", "ENERGÍA", "BANCA", "TELECOM"};
-        ConexionSQLiteHelper conn = new ConexionSQLiteHelper(getActivity(), "db_noticias", null, 1);
-        SQLiteDatabase db = conn.getWritableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + Utilidades.TABLA_PREFERENCIA + "", null);
-
-        if (cursor.getCount() == 0) {
-            ContentValues valores = new ContentValues();
-            for (int i = 0; i < categorias.length; i++) {
-                valores.put(Utilidades.ESTADO, 1);
-                valores.put(Utilidades.CATEGORIA, categorias[i]);
-                db.insert(Utilidades.TABLA_PREFERENCIA, null, valores);
-            }
-            Log.e(TAG, "config_inicial<------ CARGANDO BASE UNA UNICA VEZ");
-            db.close();
-            return true;
-        } else {
-            Log.e(TAG, "config_inicial<------  lista la configuracion");
-        }
-
-        db.close();
-        return false;
-    }
-
-    ///////////////////////////////
-    /// MARK: Save news to the Database Favorites.
-    public void saveNewsFav(final SwipAdapter targetAdapter, final int positionForSave) {
-        String titulo = targetAdapter.getItem(positionForSave).getTitulo();
-        String url = targetAdapter.getItem(positionForSave).getUrl();
-        String imagen = targetAdapter.getItem(positionForSave).getImagen();
-        String autor = targetAdapter.getItem(positionForSave).getAutor();
-        String categoria = targetAdapter.getItem(positionForSave).getCategoria();
-        registrarNoticias(titulo, imagen, url, autor, categoria);
-    }
-    ///////////////////////////////
-    /// MARK: Save news to the Database Recover.
-    public void saveNewsRecover(final SwipAdapter targetAdapter, final int positionForSave) {
-        String titulo = targetAdapter.getItem(positionForSave).getTitulo();
-        String url = targetAdapter.getItem(positionForSave).getUrl();
-        String imagen = targetAdapter.getItem(positionForSave).getImagen();
-        String autor = targetAdapter.getItem(positionForSave).getAutor();
-        String categoria = targetAdapter.getItem(positionForSave).getCategoria();
-        registrarNoticiasRecuperar(titulo, imagen, url, autor, categoria);
-    }
-
-
-
-    //Requests
-
-    ///////////////////////////////////
-    /// MARK:
-    private void loadDefaultNews(int loadIndex) {
-        Log.e(TAGTIME, "loadDefaultNews -- DELAY:" + String.valueOf(getRunningTime()));
-
-        if (isNetworkStatusAvailable(getContext())) {
-            frnointernet.setVisibility(View.INVISIBLE);
-            allNewsDefault.clear();
-            if ((loadIndex > 9) && (MemoryLoadIndex > 9)) {   //Configuracion inicial
-                //getInitialNews();   //getInitialNews: Muestra las primeras news, en lo que carga el resto de las noticias ( DB Settings).
-                Log.d(TAG, "loadDefaultNews -- (initial configuration)" + String.valueOf(allNewsDefault.size()));
-                Log.d(TAG, "loadDefaultNews -- allNewsDefault.size:" + String.valueOf(allNewsDefault.size()));
-            } else {                                          //El usuario ha seleccionado una opcion del menuSlide
-                allNewsDefault.clear();
-                Log.d(TAG, "loadDefaultNews  --  allNewsDefault.size:" + String.valueOf(allNewsDefault.size()));
-                if (MemoryLoadIndex > 9) {     //Cuando regresa de ver las noticias guarda el tipo de noticia que selecciono el usuario del menuSlide
-                    Log.d(TAG, "loadDefaultNews -- (Selected an option Menu)");
-                    MemoryLoadIndex = loadIndex;
-                //    showNewsMenuSlide(loadIndex);
-                } else {
-                    Log.d(TAG, "loadDefaultNews -- (Selected a saved option from the Menu)");
-                 //   showNewsMenuSlide(MemoryLoadIndex);
-                }
-            }
-        } else {
-            frnointernet.setVisibility(View.VISIBLE);   //Muestra el letrero de Weak Signal
-        }
-    }
-
-    ///////////////////////////////////
-    /// MARK:   MenuSlide
-    public void showNewsMenuSlide(final int index)  {
-        mainPosition = 0;
-        final RequestParams parametros = new RequestParams();
-        //final AsyncHttpClient client = requestHttpClient();
-        masterClient = requestHttpClient();
-        RequestHandle requestTopHeadlines = masterClient.get(urlHeadlines[index], parametros, new AsyncHttpResponseHandler() {
-            //RequestHandle requestTopHeadlines = client.get(urlHeadlines[index], parametros, new AsyncHttpResponseHandler() {
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-               // allNewsDefault = addMoreNews(new String(responseBody), labelsNews[index], allNewsDefault);
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.d("Error TopHeadLines", error.toString());
-            }
-            @Override
-            public void onFinish() {
-
-
-                RequestHandle requestTopHeadlines = masterClient.get(urlDefaultSettings[index], parametros, new AsyncHttpResponseHandler() {
-                    // RequestHandle requestTopHeadlines = client.get(urlDefaultSettings[index], parametros, new AsyncHttpResponseHandler() {
-
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                       // allNewsDefault = addMoreNews(new String(responseBody), labelsNews[index], allNewsDefault);
-                    }
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                        Log.d("Error urlDefaultSettings", error.toString());
-                    }
-                    @Override
-                    public void onFinish() {
-                        firstInitialCard = false;
-
-                        setupForChangedNews();
-                        showNews(allNewsDefault,true,index);
-                    }
-                });
-            }
-        });
-
-    }
-
-
-    ///////////////////////////////////
-    /// MARK:
-    public void getInitialNews() {
-        masterClient = requestHttpClient();
-        final RequestParams parametros = new RequestParams();
-        for (int i = 0; i < stateArray.length; i++) {
-            if (stateArray[i] != 0) {
-                final int index = i;
-
-                /*
-                RequestHandle requestTopHeadlines = masterClient.get(urlHeadlines[index], parametros, new AsyncHttpResponseHandler() {
-                   // RequestHandle requestTopHeadlines = client.get(urlHeadlines[index], parametros, new AsyncHttpResponseHandler() {
-                        @Override
-                    public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                        Log.d("HomeFragment","getInitialNews -- RequestHandler,urlHeadlines, onSuccess: addMoreNews()");
-                        allNewsDefault = addMoreNews(new String(responseBody), labelsNews[index], allNewsDefault);
-                        final RequestParams parametros = new RequestParams();
-                        //final AsyncHttpClient client = requestHttpClient();
-                        masterClient = requestHttpClient();
-                        final RequestHandle requestTopHeadlines = masterClient.get(urlDefaultSettings[index], parametros, new AsyncHttpResponseHandler() {
-                                @Override
-                            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                                    Log.d("HomeFragment","getInitialNews -- RequestHandler,urlDefaultSettings, onSuccess: addMoreNews()");
-                                    allNewsDefault = addMoreNews(new String(responseBody), labelsNews[index], allNewsDefault);
-                            }
-                            @Override
-                            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                                Log.e("HomeFragment","getInitialNews -- RequestHandler,urlDefaultSettings, onFailure, Error urlDefaultSettings:"+ error.toString());
-                            }
-                            @Override
-                            public void onFinish() {
-                                Log.d("HomeFragment","getInitialNews -- RequestHandler,urlDefaultSettings, onFinish, allNewsDefualt.size"
-                                        +String.valueOf(allNewsDefault.size()) + ", index:" + String.valueOf(index));
-                                Log.d("HomeFragment","getInitialNews -- RequestHandler,urlDefaultSettings, onFinish, showNews()");
-                                if (allNewsDefault.size() != 0) {
-                                    showNews(allNewsDefault,false,0);  //Muestra las primeras noticias;
-                                }
-                                //Va por las otras (defaultnews) hasta aqui van las de topheadlines
-                                //recursiveNews(index + 1);  index es la posicion donde agarra las primeras noticias  +1
-                                //mFlag: 1 Para obtener las siguientes noticias (TopHeadlines) y mFlag: 0 Obtiene (DefaultNews)
-                                Log.d("HomeFragment","getInitialNews -- RequestHandler,urlDefaultSettings, onFinish, addNewsForSave()");
-                                addNewsForSave();
-
-                                recursiveSimple(index + 1, 1);
-                                indexHelperGetNews = index + 1;
-                            }
-                        });
-                    }
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                        Log.e("HomeFragment","getInitialNews -- RequestHandler, urlHeadlines, onFailure, Error urlHeadlines:"+ error.toString());
-                    }
-                    @Override
-                    public void onFinish() {
-                    }
-                });
-                i = stateArray.length;
-                */
-                indexHelperGetNews = index;
-               // recursiveSimple(index , 1);
-            } else {
-                Log.d("HomeFragment", "getInitialNews -- stateArray [" + String.valueOf(i) + "] = 0   (Category OFF)");
-            }
-        }
-    }
-
-    ///////////////////////////////////
-    /// MARK:
-    public void recursiveSimple(final int index, final int mFlag) {
-        if (index < 9) {
-            AsyncHttpClient masterClient = requestHttpClient();
-            final RequestParams parametros = new RequestParams();
-
-            if (mFlag == 1) { //recursiveNews
-                if (stateArray[index] != 0) {
-                    Log.d(TAG,"recursiveSimple -- stateArray:"+String.valueOf(index));
-                    RequestHandle requestTopHeadlines = masterClient.get(urlHeadlines[index], parametros, new AsyncHttpResponseHandler() {
-                        //RequestHandle requestTopHeadlines = client.get(urlHeadlines[index], parametros, new AsyncHttpResponseHandler() {
-
-                        @Override
-                        public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                            Log.d(TAG,"recursiveSimple -- RequestHandler,urlHeadlines, onSuccess: addMoreNews()");
-                            if (allNewsDefault.size() == 0) {
-                                flagFirstNews = true;
-                            }
-
-                            //allNewsDefault = addMoreNews(new String(responseBody), labelsNews[index], allNewsDefault);
-
-                        }
-
-                        @Override
-                        public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                            Log.d(TAG, "recursiveSimple -- RequestHandler,urlHeadlines, onFailure.error:"+error.toString());
-                        }
-
-                        @Override
-                        public void onFinish() {
-                            Log.d(TAG,"recursiveSimple -- RequestHandler,urlHeadlines, onFinish: recurseSimple("
-                                    +String.valueOf(index + 1)+")");
-
-                            if (allNewsDefault.size() != 0) {
-                                if (flagFirstNews) {
-                                    Log.d("HomeFragment", "recursiveSimple -- RequestHandler,urlHeadlines, onFinish: allNewsDefault != NULL");
-                                    Log.d("HomeFragment", "recursiveSimple -- RequestHandler,urlHeadlines, onFinish: showNews (first news)");
-                                    showNews(allNewsDefault,false,0);    //Muestra las primeras noticias;
-                                    flagFirstNews = false;
-                                }
-                                Log.d(TAG, "recursiveSimple -- RequestHandler,urlHeadlines, onFinish: allNewsDefault != NULL, flagFirstNews:"
-                                        +String.valueOf(flagFirstNews));
-                            }
-                            recursiveSimple(index + 1, 1);
-                        }
-                    });
-                } else {
-                    recursiveSimple(index + 1, 1);
-                }
-            } else {  //recursiveNewsDefault
-                if (stateArray[index] != 0) {
-                    RequestHandle requestTopHeadlines = masterClient.get(urlDefaultSettings[index], parametros, new AsyncHttpResponseHandler() {
-                        // RequestHandle requestTopHeadlines = client.get(urlDefaultSettings[index], parametros, new AsyncHttpResponseHandler() {
-
-                        @Override
-                        public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                            Log.d(TAG,"recursiveSimple -- RequestHandler,urlDefaultSettings, onSuccess: addMoreNews()");
-                            if (allNewsDefault.size() == 0) {
-                                flagFirstNews = true;
-                            }
-
-                            //allNewsDefault = addMoreNews(new String(responseBody), labelsNews[index], allNewsDefault);
-                        }
-
-                        @Override
-                        public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                            Log.d(TAG, "recursiveSimple -- RequestHandler,urlDefaultSettings, onFailure.error:"+error.toString());
-                        }
-
-                        @Override
-                        public void onFinish() {
-                            Log.d(TAG,"recursiveSimple -- RequestHandler,urlDefaultSettings, onFinish: recurseSimple("
-                                    +String.valueOf(index + 1)+")");
-
-
-                            if (allNewsDefault.size() != 0) {
-                                if (flagFirstNews) {
-                                    Log.d(TAG, "recursiveSimple -- RequestHandler,urlDefaultSettings, onFinish: allNewsDefault != NULL");
-                                    Log.d(TAG, "recursiveSimple -- RequestHandler,urlDefaultSettings, onFinish: showNews (first news)");
-                                    showNews(allNewsDefault,false,0);    //Muestra las primeras noticias;
-                                    flagFirstNews = false;
-                                }
-                                Log.d(TAG, "recursiveSimple -- RequestHandler,urlDefaultSettings, onFinish: allNewsDefault != NULL, flagFirstNews:"
-                                        +String.valueOf(flagFirstNews));
-                            }
-
-                            recursiveSimple(index + 1, 0);
-                        }
-                    });
-                } else {
-                    recursiveSimple(index + 1, 0);
-                }
-            }
-        }
-        if (index == 8) {
-            if (mFlag == 1) {  //recursiveNews
-                recursiveSimple(indexHelperGetNews, 0);   //Las noticias defaults se actualizan con menos regularidad, y las topheadlines su contenido se actualiza con mas frecuencia.
-            } else {  //recursiveNewsDefault
-                if(showNewsInCardView) {
-                    Log.d(TAG, "recursiveSimple -- showNews()  (index == 8), allNewsDefault.size: "+String.valueOf(allNewsDefault.size()));
-                    //showNews(allNewsDefault);
-                    Log.d(TAG, "recursiveSimple -- addNewsForSave()  (index == 8)");
-                    addNewsForSave();
-                }else{
-                    // showNewsInCardView
-                }
-            }
-        }
-    }
-
-
-    ///////////////////////////////////
-    /// MARK:
-    public ArrayList<Noticia> addMoreNews(String response, String categoria, ArrayList<Noticia> list) {
-        Log.e(TAGTIME, "addMoreNews,  After Start.." + String.valueOf(getRunningTime()));
-        try {
-            JSONObject jsonArray = new JSONObject(response);
-            //  Boolean flagNoAdd = false;
-            String titulo;
-            String imagen;
-            String url;
-            String description;
-            String autor;
-            String categoria_local = categoria;
-            JSONArray articulos = jsonArray.getJSONArray("articles");
-
-            for (int i = 0; i < articulos.length(); i++) {
-                titulo = articulos.getJSONObject(i).getString("title");
-                imagen = articulos.getJSONObject(i).getString("urlToImage");
-                url = articulos.getJSONObject(i).getString("url");
-                description = articulos.getJSONObject(i).getString("description");
-                autor = articulos.getJSONObject(i).getJSONObject("source").getString("name");
-                if (autor.equals("TechCrunch") ) {
-                } else {
-                    if (noNewsForShow != null) {
-                        for (int j=0; j < noNewsForShow.size(); j++) {
-                            if (url.equals(noNewsForShow.get(j).getUrl())){
-                                //   flagNoAdd = true;
-                                j = noNewsForShow.size();
-
-                                Log.e(TAG, "addMoreNews -- noNewsForShow != NULL" + String.valueOf(getRunningTime()));
-                                Log.e(TAG, "addMoreNews -- url Match: " + String.valueOf(url));
-
-                            }else {
-
-                                if ((j+1) == noNewsForShow.size()) {
-                                    list.add(new Noticia(titulo, imagen, url, description, autor, categoria_local, 0L));
-                                    Log.e(TAG, "addMoreNews -- url ADD: " + String.valueOf(url));
-                                } else {
-                                    //  flagNoAdd = false;
-                                    Log.e(TAG, "addMoreNews -- url should NO ADD: " + String.valueOf(url));
-                                }
-                            }
-
-                        }
-                    }else{
-                        list.add(new Noticia(titulo, imagen, url, description, autor, categoria_local, 0L));
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "addMoreNews -- Error:" + e);
-        }
-
-        Log.d(TAG, "addMoreNews --  list.size :" + String.valueOf(list.size()));
-
-     /*   if (MemoryCard.size() > 0) {
-            for (int j = 0; j < list.size(); j++) {
-                for (int i = 0; i < MemoryCard.size(); i++) {
-                    //Log.d("HomeFragment", "addMoreNews -- for, list.size: " + String.valueOf(list.size()));
-                    //Log.d("HomeFragment:", "addMoreNews -- for, MemoryCard.size:" + String.valueOf(MemoryCard.size()));
-                    //Log.d("HomeFragment:", "addMoreNews -- for, value(i): " + String.valueOf(i));
-                    if (MemoryCard.get(i).equalsIgnoreCase(list.get(j).getUrl())) {
-                        list.remove(j);
-                        Log.d("HomeFragment:", "addMoreNews -- list.remove(i) value(i): " + String.valueOf(i));
-                        i = MemoryCard.size();
-                    }
-                }
-            }
-            Log.d("HomeFragment", "addMoreNews --  list.size :" + String.valueOf(list.size()));
-            Log.d("HomeFragment", "addMoreNews -- MemoryCard.size :" + String.valueOf(MemoryCard.size()));
-        }*/
-
-        Log.e(TAGTIME, "addMoreNews,  Ending.." + String.valueOf(getRunningTime()));
-
-        return list;
     }
 
 }

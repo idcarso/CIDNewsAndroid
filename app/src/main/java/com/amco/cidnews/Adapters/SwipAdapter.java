@@ -3,9 +3,9 @@ package com.amco.cidnews.Adapters;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
+
 import android.os.Bundle;
-import android.os.Handler;
+
 
 import android.util.Log;
 import android.view.View;
@@ -15,7 +15,7 @@ import android.webkit.WebView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,7 +23,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
 import com.amco.cidnews.R;
-import com.amco.cidnews.Utilities.ImagePassingAdapter;
+
 import com.amco.cidnews.Utilities.Noticia;
 import com.amco.cidnews.Utilities.VistaWeb;
 import com.bumptech.glide.Glide;
@@ -35,16 +35,9 @@ import com.facebook.share.widget.ShareDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 
-/*
-* import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.FragmentActivity;
-*/
-
 import java.util.ArrayList;
 
-public class SwipAdapter extends ArrayAdapter<Noticia>  {
+public class SwipAdapter extends ArrayAdapter<Noticia> {
     private ArrayList<Noticia> noticias;
     private Activity activity;
     private Noticia noticia;
@@ -55,47 +48,46 @@ public class SwipAdapter extends ArrayAdapter<Noticia>  {
     private ImageView img;  //ImageBackground
 
 
-
-
     static WebView webView;
     int heightAux;
     int widthAux;
-     ImageView fondo_azul;
-    Animation fabOpen,fabClose,rotateFoward,rotateBackward;
+    ImageView fondo_azul;
+    Animation fabOpen, fabClose, rotateFoward, rotateBackward;
     boolean isOpen = false;
     Fragment fragment = new VistaWeb();
     Bundle args = new Bundle();
 
     CallbackManager callbackManager;
     ShareDialog shareDialog;
-    FloatingActionButton shareButtonHelper,fbButtonHelper,whatsButtonHelper;
+    FloatingActionButton shareButtonHelper, fbButtonHelper, whatsButtonHelper;
     String currentUrl;
     ///////
 
 
-    public interface RequestImage{
+    public interface RequestImage {
         void onRequestImage(String currentUrl);
+
         void onReloadNextImage();
     }
 
     private RequestImage mRequest;
 
 
-
     public SwipAdapter(@NonNull Activity activity, ArrayList<Noticia> noticias, Context myContext
-            , RequestImage currentRequest ) {
+            , RequestImage currentRequest) {
         super(activity, 0, noticias);
         try {
             this.activity = activity;
             this.noticias = noticias;
             this.NewsContext = myContext;
             this.mRequest = currentRequest;
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     public static class ViewHolder {
-        FloatingActionButton shareButton,facebookButton,whatsappButton;
+        FloatingActionButton shareButton, facebookButton, whatsappButton;
     }
 
     @Nullable
@@ -104,42 +96,40 @@ public class SwipAdapter extends ArrayAdapter<Noticia>  {
         return noticias.get(position);
     }
 
-    public void mostrarNoticiasView(final int position){
-        args.putString("url",noticias.get(position).getUrl());
+    public void mostrarNoticiasView(final int position) {
+        args.putString("url", noticias.get(position).getUrl());
         fragment.setArguments(args);
-        ((FragmentActivity)activity).getSupportFragmentManager().beginTransaction().replace(R.id.contendor,fragment,null).addToBackStack(null).commit();
+        ((FragmentActivity) activity).getSupportFragmentManager().beginTransaction().replace(R.id.contendor, fragment, null).addToBackStack(null).commit();
     }
 
-    public String getTitulo (int position)
-    {
-            return noticia.getTitulo();
+    public String getTitulo(int position) {
+        return noticia.getTitulo();
     }
-    public String getUrl (int position)
-    {
+
+    public String getUrl(int position) {
         return noticia.getUrl();
     }
 
-    public String getImg (int position)
-    {
+    public String getImg(int position) {
         return noticia.getImagen();
     }
-    public void resetButtons (View v)
-    {
+
+    public void resetButtons(View v) {
 
     }
 
-    public String getAutor (int position)
-    {
+    public String getAutor(int position) {
         return noticia.getAutor();
     }
-    public int getPosition(int position){
+
+    public int getPosition(int position) {
         return position;
     }
+
     @SuppressLint("ResourceType")
     @NonNull
     @Override
     public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-
 
 
         final View convertViewBack = convertView;
@@ -151,98 +141,52 @@ public class SwipAdapter extends ArrayAdapter<Noticia>  {
         final ViewHolder holder;
 
         noticia = noticias.get(position);
-        if ( position <= 1 ){
+        if (position <= 1) {
             noticiaUrlFacebook = noticias.get(0);
         }
-        if (( position > 1 )&&(position < noticias.size() - 1)){
-            noticiaUrlFacebook = noticias.get(position-1);
+        if ((position > 1) && (position < noticias.size() - 1)) {
+            noticiaUrlFacebook = noticias.get(position - 1);
         }
 
-        if (( position >=  noticias.size() - 1)){
+        if ((position >= noticias.size() - 1)) {
             noticiaUrlFacebook = noticias.get(position);
         }
 
 
         if (null == convertView) {
 
-                convertView = activity.getLayoutInflater().inflate(R.layout.content_cardview, parent, false);
+            convertView = activity.getLayoutInflater().inflate(R.layout.content_cardview, parent, false);
 
         }
-
 
 
         img = convertView.findViewById(R.id.img_noticia);
 
 
-
-        int W  = img.getWidth();
-        int H  = img.getHeight();
-        Log.d("Imagen Noticia"," Width:"+W);
-        Log.d("Imagen Noticia"," Height:"+H);
+        int W = img.getWidth();
+        int H = img.getHeight();
+        Log.d("Imagen Noticia", " Width:" + W);
+        Log.d("Imagen Noticia", " Height:" + H);
         TextView titulo = convertView.findViewById(R.id.titulo_noticia);
         titulo.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         TextView autor = convertView.findViewById(R.id.autor);
         titulo.setText(noticia.getTitulo());
-        String textForNews = "- "+noticia.getAutor();
+        String textForNews = "- " + noticia.getAutor();
         autor.setText(textForNews);
 
+        Log.d("SwipAdapter", "getView: == null");
+        final int drawableResourceId = activity.getResources().getIdentifier("vacio", "drawable", activity.getPackageName());
+        if (noticia.getImagen() == "null" || !noticia.getImagen().startsWith("https"))
+            Glide.with(activity).load(drawableResourceId).into(img);
+        else {
+            requestImg = (Glide.with(activity)
+                    .load(noticia.getImagen()).priority(Priority.HIGH)
+                    .thumbnail(Glide.with(getContext())
+                            .load(R.drawable.loadingblocks))
+                    .into(img)).getRequest();
+        }
 
-        /*if(mBitmap != null){  //Hace la petición si se tiene la imagen ya descargada
-            Log.d("SwipAdapter", "onRequestImage getView: != null");
-            img.setImageBitmap(mBitmap);
-            mRequest.onReloadNextImage();
-            Toast.makeText(getContext(),"Uso de BACKGROUND",Toast.LENGTH_SHORT).show();
-        }else {*/
-            Log.d("SwipAdapter", "getView: == null");
-            final int drawableResourceId = activity.getResources().getIdentifier("vacio", "drawable", activity.getPackageName());
-            if (noticia.getImagen() == "null" || !noticia.getImagen().startsWith("https"))
-                Glide.with(activity).load(drawableResourceId).into(img);
-            else {
-                requestImg = (Glide.with(activity)
-                        .load(noticia.getImagen()).priority(Priority.HIGH)
-                        .thumbnail(Glide.with(getContext())
-                                .load(R.drawable.loadingblocks))
-                        .into(img)).getRequest();
-
-
-                //requestImg = (Glide.with(activity).load(noticia.getImagen()).thumbnail(Glide.with(getContext()).load(R.drawable.loading)).into(img)).getRequest();
-
-
-                /*
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (requestImg.isComplete()) {
-                            Log.e("SwipAdapter", "requestImg Complete!");
-                        }
-
-                        if (requestImg.isRunning()) {
-                            //requestImg.clear();
-                            Log.d("SwipAdapter", "requestImg Running");
-                            // Glide.with(activity).load(drawableResourceId).into(img);
-                            if(!requestImg.isCleared()) {
-                                requestImg.clear();
-                                Glide.with(activity).load(drawableResourceId).into(img);
-                            }
-
-                        }
-                    }
-                }, 8000);*/
-            }
-        //}
-
-
-        /*
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mRequest.onRequestImage(noticia.getImagen());
-
-            }
-        }, 250);*/
-
-
-        return  convertView;
+        return convertView;
     }
 
 

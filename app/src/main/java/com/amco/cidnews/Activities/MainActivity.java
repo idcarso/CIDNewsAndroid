@@ -20,6 +20,7 @@ import android.view.animation.Transformation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,22 +54,15 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestHandle;
 import com.loopj.android.http.RequestParams;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import cz.msebera.android.httpclient.Header;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 
 import static com.amco.cidnews.Fragments.HomeFragment.SWIPESTACK_SCROLLING;
@@ -233,9 +227,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     int sizeWidth = 0;
     int sizeHeight = 0;
 
-
-    //NAVIGATION DRAWER MENU
+    //region VIEWS
     public static DrawerLayout drawerLayout;
+    //endregion
 
     public MainActivity(){
 
@@ -301,20 +295,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         imgBtnCross = findViewById(R.id.config_back);
         imgBtnCross.setVisibility(View.INVISIBLE);
+
         imgBtnCross.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
 
                 if (databaseCountHelper() == 0) {
-
                     mensaje();
-
                 } else {
-
                     menuNavigation.setSelectedItemId(R.id.home_nav);
                     imgBtnCross.setVisibility(View.INVISIBLE);
-
                     mFlagHome=false;
                     mFlagFavorites=true;
                     mFlagRecover=true;
@@ -562,9 +553,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     public static long getRunningTime(){
-
         return SystemClock.elapsedRealtime() - startTime;
-
     }
 
     //CONFIGURACION INICIAL DE LA APLICACION, CARGAR Y ACTIVA TODAS LAS CONFIGURACIONES
@@ -1006,6 +995,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     }
 
                     if (mFlagHome) {
+
 
                         Log.d(TAG, "onNavigationItemSelected: HomeFragment");
                         mFragmentName = "Home";
