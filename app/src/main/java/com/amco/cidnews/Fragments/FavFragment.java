@@ -260,14 +260,13 @@ public class FavFragment extends Fragment {
         conn.close();
     }
 
-    ///////////////////////////////////
-    /// MARK:
+    /**
+     * Método que cambia el diseño de la barra superior al estado de REMOVE
+     */
     public void showRemoveBar(){
-        Log.e(TAG, "showRemoveBar: " );
+        Log.i(TAG, "Se invocó showRemoveBar()");
         tx.setText(R.string.remove_title_fav);
         fr.setBackgroundColor(getContext().getResources().getColor(R.color.red));
-
-
         btn_menu.setVisibility(View.GONE);
         btn_menu.setEnabled(false);
     }
@@ -464,6 +463,7 @@ public class FavFragment extends Fragment {
         }
 
         nA = new NoticiasAdapter(getActivity(),ListaNoticias,bandera,bandera2);
+
         nA.registerDataSetObserver(new DataSetObserver() {
             @Override
             public void onChanged() {
@@ -482,7 +482,6 @@ public class FavFragment extends Fragment {
                         consultarNoticiasFavoritas("%",0,0);
                     }
                     showRemoveBar();
-
                 }
             }
         });

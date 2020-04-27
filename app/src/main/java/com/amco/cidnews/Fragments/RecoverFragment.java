@@ -54,19 +54,25 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
 
     //Views
     ImageButton btnGoingHome, btnFilter;
+
     Button frnonoticia;
+
     TextView tx;
+
     FrameLayout frameToolbar;
+
     private ListView listRecoverView;
+
     FloatingActionButton bottonRecover;
-    PopupWindow popupWindowDogs,popupWindowDogsHelper;
+
+    PopupWindow popupWindowDogs, popupWindowDogsHelper;
 
     //Adapter
     NoticiasAdapterRecover nA;
 
-
     //List
     private ArrayList<Noticia> ListaNoticias;
+
     LinkedList<String> ListaAux;
 
     String urlNoticia;
@@ -89,36 +95,28 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
     @Nullable
     @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.frame_recover, container, false);
-
         configUI(view);
-
         configUIListeners();
-
         consultarNoticiasFavoritas("%",0);  /// bandera2=1 puede ver la noticia
-
         crearMenu(view);
-
         return view;
     }
     //endregion
 
     //region: SETUPS UI
     public void configUI(View view){
-        listRecoverView =  view.findViewById(R.id.container_recover);
-        frameToolbar =  view.findViewById(R.id.toolbar_recover);
-        btnGoingHome = view.findViewById(R.id.btn_goto_home);
-        tx = view.findViewById(R.id.title_recover);
-        btnFilter = view.findViewById(R.id.btn_filter);
-        frnonoticia = view.findViewById(R.id.warning_title);
-        bottonRecover = view.findViewById(R.id.botonfab_recover);
+        listRecoverView =  view.findViewById(R.id.container_recover); //Lista de noticias
+        frameToolbar =  view.findViewById(R.id.toolbar_recover); //Frame que "sustituye" un toolbar
+        btnGoingHome = view.findViewById(R.id.btn_goto_home); //Boton para regresar a home
+        tx = view.findViewById(R.id.title_recover); // Titulo del frame recover
+        btnFilter = view.findViewById(R.id.btn_filter); //Boton de menu
+        frnonoticia = view.findViewById(R.id.warning_title); //Alerta superior
+        bottonRecover = view.findViewById(R.id.botonfab_recover); //Floating button
         setupUI();
     }
 
     public void setupUI(){
-
-        //((MainActivity)getActivity()).imgBtnCross.setVisibility(View.INVISIBLE);
         if (ConsultarNoticiasRecover("%")) {
             frnonoticia.setVisibility(View.VISIBLE);
         } else {
@@ -206,6 +204,7 @@ public class RecoverFragment extends Fragment implements ListenRecoverFAB {
                         } else {
                             //Log.v("RecoverFragment.java", "SIN NOTICAS");
                             ((MainActivity)getActivity()).imgBtnCross.setVisibility(View.VISIBLE);
+                            ((MainActivity) getActivity()).imgBtnCross.setEnabled(true);
                             frnonoticia.setVisibility(View.INVISIBLE);
                         }
                         bottonRecover.setImageResource(R.drawable.ic_recover_white);

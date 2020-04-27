@@ -27,13 +27,6 @@
             android:textColor="#fff"
             android:fitsSystemWindows="true">
         </TextView>
-        <!--<ImageView
-            android:layout_width="25dp"
-            android:layout_gravity="center"
-            android:layout_height="25dp"
-            android:layout_marginStart="65dp"
-            android:src="@drawable/ic_trash_white"
-            />-->
 
         <ImageButton
             android:id="@+id/btn_goto_home"
@@ -96,8 +89,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_marginBottomPercent="6.55%"
-            android:layout_alignParentStart="true"
-            >
+            android:layout_alignParentStart="true">
 
         </ListView>
     </androidx.percentlayout.widget.PercentRelativeLayout>

@@ -43,31 +43,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-
-
-/*
-* import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
-* */
-
 public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
 
     private ListenRecoverFAB mRecoverFAB;
+
     private ArrayList<Noticia> noticias;
+
     private static final String TAG = "NoticiasAdapterRecover";
-    //
+
     Context mContext;
+
     List<Noticia> linkedList;
-    //
+
     public boolean[] checkBoxStateRecover;
     private HashMap<Noticia, Boolean> checkedForCountry = new HashMap<>();
     private Activity activity;
     private Noticia noticia;
     private int bandera;
     private boolean flagShowFAB = false;
-
-
 
     public NoticiasAdapterRecover(ListenRecoverFAB mFAB,@NonNull Activity activity, ArrayList<Noticia> noticias, int bandera) {
         super(activity, 0, noticias);
@@ -79,6 +72,7 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
         this.bandera = bandera;
         this.checkBoxStateRecover = new boolean[noticias.size()];
     }
+
 
     public static class ViewHolder {
         private ArrayList<Noticia> noticiasrespaldo;
@@ -97,10 +91,7 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
 
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(activity.LAYOUT_INFLATER_SERVICE);
         if (null == convertView) {
-            convertView = inflater.inflate(
-                    R.layout.list_recover,
-                    parent,
-                    false);
+            convertView = inflater.inflate(R.layout.list_recover, parent, false);
             holder = new ViewHolder();
             holder.noticiasrespaldo = new ArrayList<Noticia>();
             holder.box = convertView.findViewById(R.id.checkBoxRecover);
@@ -108,8 +99,9 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
             holder.Lista = (RelativeLayout) convertView.findViewById(R.id.listFatherRecover);
             holder.btn = (ImageButton) convertView.findViewById(R.id.delete_oneRecover);
             convertView.setTag(holder);
-        } else
+        } else {
             holder = (ViewHolder) convertView.getTag();
+        }
 
         checkBoxStateRecover = new boolean[linkedList.size()];
         final ImageView avatar = (ImageView) convertView.findViewById(R.id.iv_avatarRecover);
@@ -143,15 +135,6 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
                     .into(avatar);
         }
 
-       /* holder.btn.setOnClickListener(new View.OnClickListener() {   ////IMPORTANTISIMO! 20Sep      !!!! El icono de basura pequeño borrra aqui
-            @Override
-            public void onClick(View v) {
-                urlNoticia = noticias.get(position).getUrl();
-                eliminarTodos(urlNoticia);
-            }
-        });*/
-
-
         holder.box.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -165,8 +148,6 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
                     ischecked(position, false);
                     holder.btn.setVisibility(View.VISIBLE);
                 }
-
-
             }
         });
 
@@ -176,8 +157,13 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
 
         if (holder.box.isChecked()) {
             holder.btn.setVisibility(View.VISIBLE);
+            holder.btn.setImageResource(R.drawable.ic_recover_avatar);
+            holder.btn.setAlpha((float) 1.0);
         }else{
-            holder.btn.setVisibility(View.GONE);
+            //COLOCAR ICONO CON OPACIDAD
+            holder.btn.setVisibility(View.VISIBLE);
+            holder.btn.setImageResource(R.drawable.ic_recover_unchecked);
+            holder.btn.setAlpha((float) 0.8);
         }
 
         holder.Lista.setOnClickListener(new View.OnClickListener() {
@@ -187,19 +173,18 @@ public class NoticiasAdapterRecover extends ArrayAdapter<Noticia> {
                 if (!holder.box.isChecked()) {
                     holder.btn.setVisibility(View.VISIBLE);
                     holder.btn.setEnabled(true);
-
-
                     holder.box.setChecked(true);
                     ischecked(position, true);
-
+                    holder.btn.setImageResource(R.drawable.ic_recover_avatar);
+                    holder.btn.setAlpha((float) 1.0);
                 } else {
-                    holder.btn.setVisibility(View.GONE);
+                    //COLOCAR ICONO CON OPACIDAD
+                    holder.btn.setVisibility(View.VISIBLE);
                     holder.btn.setEnabled(false);
-
                     holder.box.setChecked(false);
-                    ischecked(position, false
-                    );
+                    ischecked(position, false);
 
+                    holder.btn.setImageResource(R.drawable.ic_recover_unchecked);
                 }
 
 

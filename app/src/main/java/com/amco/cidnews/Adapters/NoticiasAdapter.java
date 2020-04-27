@@ -41,26 +41,30 @@ import java.util.ArrayList;
 
 
 public class NoticiasAdapter extends ArrayAdapter<Noticia> {
-    private ArrayList<Noticia> noticias;
-    private ArrayList<Noticia> noticiasrespaldo2;
 
-    //
+    //region VARIABLES
+    private static String TAG = "NoticiasAdapter.java";
+    private ArrayList<Noticia> noticias;
     Context mContext;
     List<Noticia> linkedList;
-    //
-    static  WebView webViewMain;
     public boolean[] checkBoxState = null;
     private HashMap<Noticia, Boolean> checkedForCountry = new HashMap<>();
     private Activity activity;
     private Noticia noticia;
     private int bandera;
-    private int bandera2;
-
+    private int bandera2; //Controla el estado en el que esta la vista. 0 = Eliminar || 1 = Navegar en las noticias
     ConexionSQLiteHelper conn;
-    Fragment fragment = new FavFragment();
-    static WebView webView;
-    Fragment vistaWeb = new VistaWeb();
     Bundle args = new Bundle();
+    //endregion
+
+    //region VIEWS
+    static  WebView webViewMain;
+    //endregion
+
+    //region FRAGMENTS
+    Fragment fragment = new FavFragment();
+    Fragment vistaWeb = new VistaWeb();
+    //endregion
 
 
     public NoticiasAdapter(@NonNull Activity activity, ArrayList<Noticia> noticias, int bandera, int bandera2) {
@@ -75,6 +79,7 @@ public class NoticiasAdapter extends ArrayAdapter<Noticia> {
 
     }
 
+    //Viewholder
     public static class ViewHolder {
         ArrayList<Noticia> noticiasrespaldo;
         RelativeLayout Lista;
@@ -92,19 +97,22 @@ public class NoticiasAdapter extends ArrayAdapter<Noticia> {
 
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(activity.LAYOUT_INFLATER_SERVICE);
         if (null == convertView) {
-            convertView = inflater.inflate(
-                    R.layout.lista_favoritos,
-                    parent,
-                    false);
+            convertView = inflater.inflate(R.layout.lista_favoritos, parent, false);
             holder = new ViewHolder();
+            //Vinculacion de vistas
             holder.noticiasrespaldo = new ArrayList<Noticia>();
             holder.box = convertView.findViewById(R.id.checkBox);
-            holder.box.setVisibility(View.INVISIBLE);
             holder.Lista = (RelativeLayout) convertView.findViewById(R.id.listaPapa);
             holder.btn = (ImageButton) convertView.findViewById(R.id.borrar_uno);
+
+            //Configuracion de vistas
+            holder.box.setVisibility(View.INVISIBLE);
+
+
             convertView.setTag(holder);
-        } else
+        } else {
             holder = (ViewHolder) convertView.getTag();
+        }
 
 
         checkBoxState = new boolean[linkedList.size()];
@@ -116,88 +124,62 @@ public class NoticiasAdapter extends ArrayAdapter<Noticia> {
         if (checkBoxState != null)
             holder.box.setChecked(checkBoxState[position]);
         if (bandera == 0)
-           // holder.btn.setVisibility(convertView.GONE);
-            holder.btn.setVisibility(convertView.VISIBLE);
+            holder.btn.setVisibility(convertView.VISIBLE); //Bandera es 0 significa que no se eliminara ninguna noticia, es visible el image button
         if (bandera == 1)
             holder.btn.setVisibility(convertView.VISIBLE);
 
         final Noticia noticia = getItem(position);
         int drawableResourceId = activity.getResources().getIdentifier("ic_cidnews_avatar", "drawable", activity.getPackageName());
-        if (noticia.getImagen().equalsIgnoreCase("null")   || !(noticia.getImagen().startsWith("https"))  ) {
 
-            Log.e("NoticiasAdapter0", "Noticia.getImagen:" + String.valueOf(noticia.getImagen()));
+        // Si la url de la imagen de la noticia no tiene null o si no empieza la url diferente de https, descarga la imagen y la muestra en el avatar
+        if (noticia.getImagen().equalsIgnoreCase("null") || !(noticia.getImagen().startsWith("https"))) {
+            Log.e(TAG, "Noticia.getImagen:" + String.valueOf(noticia.getImagen()));
             Glide.with(activity)
                     .load(drawableResourceId)
                     .apply(RequestOptions.bitmapTransform(new CircleCrop()))
                     .into(avatar);
-            //        int drawableResourceId = activity.getResources().getIdentifier("ic_cidnews_avatar", "drawable", activity.getPackageName());
-        }
-        else {
-            Log.e("NoticiasAdapter1", "Noticia.getImagen:" + String.valueOf(noticia.getImagen()));
-
+        } else { // Si no, coloca una imagen por default por experiencia de usuario
+            Log.e(TAG, "Noticia.getImagen:" + String.valueOf(noticia.getImagen()));
             Glide.with(activity)
                     .load(noticia.getImagen())
                     .apply(RequestOptions.bitmapTransform(new CircleCrop()))
                     .into(avatar);
         }
 
-
-
-            holder.btn.setOnClickListener(new View.OnClickListener() {   ////IMPORTANTISIMO! 20Sep      !!!! El icono de basura pequeño borrra aqui
-                @Override
-                public void onClick(View v) {
-                    Log.e("holder btn", "onClick: bandera2 ="+String.valueOf(bandera2));
-
-
-                    if (bandera2 == 0) {  //Permite seleccionar a eliminar
-                        ////////
-                        //Primer btn que haga click debe hacer llamar a consulta
-                        if (!checkBoxState[position]) {
-                            Log.e("NoticiasAdapter", "holder.box onClick: Checked To FALSE");
-
-                            holder.btn.setBackgroundResource(R.drawable.fabcornertrash);
-                            holder.btn.setAlpha(1f);
-
-                            checkBoxState[position] = true;
-                            ischecked(position, true);
-                        } else {
-                            Log.e("NoticiasAdapter", "holder.box onClick: Checked ToTRUE");
-
-
-                            holder.btn.setBackgroundResource(R.drawable.roundcorner_adapter);
-                            holder.btn.setAlpha(0.75f);
-                            checkBoxState[position] = false;
-                            ischecked(position, false);
-                        }
-
-                        if (areAllTrue(checkBoxState)) {
-                            Log.e("areAllTrue", "onClick: YES");
-                        } else {
-                            Log.e("areAllTrue", "onClick: NO?");
-                        }
-
-
-                        Log.e("holderBtn", "onClick: ");
-
-
-                        // urlNoticia = noticias.get(position).getUrl();
-                        //eliminarTodos(urlNoticia);
-                        // ((FragmentActivity)activity).getSupportFragmentManager().beginTransaction().replace(R.id.contendor,fragment,null).addToBackStack(null).commit();
-
-
-                    }else{    //
-
-                        if(FavFragment.positionFlagIcon < 0) {
-                            FavFragment.positionFlagIcon = position;
-                            notifyDataSetChanged();
-                        }
-
-                        //FavFragment.flagForShowFab = true;
-                        //FavFragment.botoneliminar.setVisibility(View.VISIBLE);
-                       // showNewsInWebView(position);
+        // Evento del image button basura para eliminar noticia
+        holder.btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e("holder btn", "onClick: bandera2 =" + String.valueOf(bandera2));
+                if (bandera2 == 0) {  //Permite seleccionar a eliminar
+                    //Primer btn que haga click debe hacer llamar a consulta
+                    if (!checkBoxState[position]) {
+                        Log.e(TAG, "holder.box onClick: Checked To FALSE || " + checkBoxState[position]);
+                        holder.btn.setBackgroundResource(R.drawable.fabcornertrash);
+                        holder.btn.setAlpha(1f);
+                        checkBoxState[position] = true;
+                        ischecked(position, true);
+                    } else {
+                        Log.e("NoticiasAdapter", "holder.box onClick: Checked ToTRUE");
+                        holder.btn.setBackgroundResource(R.drawable.roundcorner_adapter);
+                        holder.btn.setAlpha(0.75f);
+                        checkBoxState[position] = false;
+                        ischecked(position, false);
+                    }
+                    if (areAllTrue(checkBoxState)) {
+                        Log.e("areAllTrue", "onClick: YES");
+                    } else {
+                        Log.e("areAllTrue", "onClick: NO?");
+                    }
+                    Log.e("holderBtn", "onClick: ");
+                } else {
+                    if (FavFragment.positionFlagIcon < 0) {
+                        FavFragment.positionFlagIcon = position;
+                        notifyDataSetChanged();
                     }
                 }
-            });
+            }
+        });
 
 
         holder.box.setOnClickListener(new View.OnClickListener() {
@@ -235,7 +217,7 @@ public class NoticiasAdapter extends ArrayAdapter<Noticia> {
             holder.btn.setAlpha(1f);
 
             //holder.btn.setVisibility(View.GONE);
-        }else{
+        } else {
             holder.btn.setBackgroundResource(R.drawable.roundcorner_adapter);
             holder.btn.setAlpha(0.75f);
 
@@ -279,25 +261,15 @@ public class NoticiasAdapter extends ArrayAdapter<Noticia> {
         holder.box.setTag(country);
         /////////////////////////////
         webViewMain = (WebView) convertView.findViewById(R.id.webviewMain1);
-        //webViewMain.setVerticalScrollBarEnabled(true);
-/*        webViewMain.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                Log.d("InsideCardViewBottom", "onTouch: ");
-                return false;
-            }
-        });*/
-       // webViewMain.setVerticalScrollBarEnabled(true);
-        if(position == FavFragment.positionFlagIcon){
-            Log.e("NoticiasAdapter", "getView: positionFlag:"+String.valueOf(position));
-            //holder.btn.setPressed(true);
+
+        if (position == FavFragment.positionFlagIcon) {
+            Log.e("NoticiasAdapter", "getView: positionFlag:" + String.valueOf(position));
             holder.btn.performClick();
             FavFragment.positionFlagIcon = -1;
         }
-
         return convertView;
-
     }
+
 
     public void showNewsInWebView(int position){
         args.putString("url", noticias.get(position).getUrl());
@@ -305,8 +277,7 @@ public class NoticiasAdapter extends ArrayAdapter<Noticia> {
         ((FragmentActivity) activity).getSupportFragmentManager().beginTransaction().replace(R.id.contendor, vistaWeb, null).addToBackStack(null).commit();
     }
 
-    public static boolean areAllTrue(boolean[] array)
-    {
+    public static boolean areAllTrue(boolean[] array) {
         for(boolean b : array) if(!b) return false;
         return true;
     }
@@ -320,12 +291,12 @@ public class NoticiasAdapter extends ArrayAdapter<Noticia> {
         }
         return List;
     }
-    public void ischecked(int position,boolean flag )
-    {
+
+    public void ischecked(int position,boolean flag ) {
         checkedForCountry.put(this.linkedList.get(position), flag);
     }
-    public void eliminarTodos(String who)
-    {
+
+    public void eliminarTodos(String who) {
         String tipo = who;
         conn = new ConexionSQLiteHelper(activity,"db_noticias",null,1);
         SQLiteDatabase db = conn.getReadableDatabase();
@@ -340,10 +311,8 @@ public class NoticiasAdapter extends ArrayAdapter<Noticia> {
         }
         ((FragmentActivity)activity).getSupportFragmentManager().beginTransaction().replace(R.id.contendor,fragment,null).addToBackStack(null).commit();
         db.close();
-
-
-
     }
+
     @Override
     public int getCount() {
         return noticias.size();
@@ -354,30 +323,4 @@ public class NoticiasAdapter extends ArrayAdapter<Noticia> {
     public Noticia getItem(int position) {
         return noticias.get(position);
     }
-
-    public View getWebView(){
-        return webView.getRootView();
-    }
-    public String getTitulo (int position)
-    {
-        return noticia.getTitulo();
-    }
-    public String getUrl (int position)
-    {
-        return noticia.getUrl();
-    }
-    public String getImg (int position)
-    {
-        return noticia.getImagen();
-    }
-    public String getAutor (int position)
-    {
-        return noticia.getAutor();
-    }
-    public int getPosition(int position){
-        return position;
-    }
-
-
-
 }

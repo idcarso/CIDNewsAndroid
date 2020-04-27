@@ -1,1 +1,2 @@
-include ':app', ':placeholderview'
+//include ':app', ':placeholderview'
+include ':app'
