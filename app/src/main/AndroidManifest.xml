@@ -20,30 +20,22 @@
         android:allowBackup="true"
         android:fontFamily="@font/montserratmedium"
         android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
-
         android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity
-            android:name=".Activities.SplashActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/SplashTheme">
+        <activity android:name=".Activities.SplashScreenActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-
-
-
         <activity
             android:name=".Activities.MainActivity"
-            android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait"
-            />
+            android:windowSoftInputMode="adjustPan" />
 
         <service android:name=".Utilities.MyFirebaseMessagingService">
             <intent-filter>
