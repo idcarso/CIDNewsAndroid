@@ -71,12 +71,18 @@ import static com.amco.cidnews.Fragments.HomeFragment.estadoDrawer;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
+    //region VARIABLES
+    FragmentManager fragmentManager;
+    androidx.fragment.app.FragmentTransaction fragmentTransaction;
+    private static String TAG = "MainActivity.java";
+    //endregion
+
+
     // [START declare_analytics]
     private FirebaseAnalytics mFirebaseAnalytics;
     // [END declare_analytics]
 
     SharedPreferences prefs = null;
-    static private String TAG = "MainActivity";
 
     public static long startTime;
 
@@ -231,9 +237,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static DrawerLayout drawerLayout;
     //endregion
 
-    public MainActivity(){
-
-    }
+    public MainActivity(){}
 
     //region CICLO DE VIDA ACTIVITY
 
@@ -241,10 +245,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.w("MAIN-ACTIVITY", "ESTOY EN ON CREATE");
+        Log.w(TAG, "onCreate()");
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-
 
         hideSoftKeyboard();
 
@@ -267,14 +270,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         urlDate = urlDate.concat(fDate);
 
         for(int i=0;i<9;i++) {
-
             urlTopNewsSettings[i] = urlBase.concat(urlTypeSettings[i].concat(urlSortBy.concat(urlAPIKey[i].concat(urlLanguage.concat(urlDate)))));
             urlTopNewsMenu[i] = urlBase+urlTypeMenuSlide[i]+urlSortBy+urlAPIKey[i]+urlLanguage+urlDate;
-
             Log.d("MAIN ACTIVITY","ON CREATE -> urlTopNewsSettings["+i+"]:"+urlTopNewsSettings[i]);
-
             urlDefaultNewsSettings = urlTopNewsSettings;
-
             urlDefaultNewsMenu = urlTopNewsMenu;
         }
 
@@ -291,16 +290,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         menuNavigation = findViewById(R.id.menu_navegation);
         menuNavigation.setOnNavigationItemSelectedListener(this);
 
-
-
         imgBtnCross = findViewById(R.id.config_back);
         imgBtnCross.setVisibility(View.INVISIBLE);
 
         imgBtnCross.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
-
                 if (databaseCountHelper() == 0) {
                     mensaje();
                 } else {
@@ -316,98 +311,35 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
 
         if (prefs.getBoolean("firstrun", true)) {
-
             ventanaEmergente();
-
             prefs.edit().putBoolean("firstrun", false).apply();
-
         }
-
 
         if(isNetworkStatusAvailable(this)){
-
             Log.d("MAIN ACTIVITY","ON CREATE -> isNetworkStatusAvailable!");
             firstGetRequestAPI(urlTopNewsSettings,0);
-            //firstGetRequestAPIOkHttp(urlTopNewsSettings,0);
-
         }else{
-
             Log.d(TAG,"onCreate -- NoInternetAvailable!");
-            //  slideDown(mMsjInternet);
-
         }
 
-
-
-        //----------
         getSupportFragmentManager().beginTransaction().replace(R.id.contendor, new HomeFragment()).commit();
-        //----------
 
-        
         menuNavigation.setSelectedItemId(R.id.home_nav);
 
         //ENLAZAMOS EL MENU SLIDE
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        Log.w("MAIN-ACTIVITY", "ESTOY EN ON START");
-    }
-
-    @Override
-    protected  void onResume(){
-
-        super.onResume();
-
-        Log.w("MAIN-ACTIVITY", "ESTOY EN ON RESUME");
-        /*
-        Log.d(TAG, "onResume: TRUE");
-        Log.e(TAG, "onResume:" + String.valueOf(getRunningTime()));
-
-        mFlagFavorites=true;
-
-         */
-
-    }
-
-    @Override
-    protected void onPause(){
-
-        super.onPause();
-        Log.w("MAIN-ACTIVITY", "ESTOY EN ON PAUSE");
-
-    }
-
-    @Override
-    protected void onStop(){
-
-        super.onStop();
-        Log.w("MAIN-ACTIVITY", "ESTOY EN ON STOP");
-
+        //Inicializar el fragment manager para manipular la pila de fragment en back pressed
+        fragmentManager = getSupportFragmentManager();
     }
 
     @Override
     protected  void onRestart(){
-
         super.onRestart();
-        Log.w("MAIN-ACTIVITY", "ESTOY EN ON RESTART");
+        Log.w(TAG, "onRestart()");
         if (HomeFragment.cardviewContainer != null) {
-
             HomeFragment.cardviewContainer.setScrollY(0);
-
         }
-
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        Log.w("MAIN-ACTIVITY", "ESTOY EN ON DESTROY");
     }
 
     //endregion
@@ -951,62 +883,41 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     //region LISTENERS
 
-    //SELECCION DE APARTADOS EN BOTTOM NAVIGATION VIEW
-
     @Override
     public boolean onNavigationItemSelected(@NonNull final  MenuItem item) {
-
         mFragmentLoad = null;
-
         boolean itemSelected;
-
         if (databaseCountHelper() == 0) {
-
             mensaje();
             itemSelected = false;
-
         } else {
-
             switch (item.getItemId()) {
-
                 case R.id.home_nav:
-
                     //CUANDO DEMOS CLIC EN HOME, SE VERIFICA LA BANDERA DE ABOUT US, SI ESTA ACTIVA QUITAMOS Y COLOCAMOS EL HOME
                     if (AboutFragment.activoAbout == true) {
-
                         AboutFragment.imageButtonRegresar.performClick();
-
                     }
 
                     if (HomeFragment.estadoDrawer == true) {
-
                         //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
                         MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
 
                         //SI EL SCROLL ES INVISIBLE, LO ESCONDEMOS CUANDO EL DRAWER LAYOUT ESTE CERRADO
                         if (MainActivity.scrollMenuPosition.getVisibility() == View.INVISIBLE) {
-
                             MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
-
                         }
-
                         HomeFragment.drawerLayout.closeDrawers();
-
                     }
 
                     if (mFlagHome) {
-
-
-                        Log.d(TAG, "onNavigationItemSelected: HomeFragment");
+                        Log.d(TAG, "onNavigationItemSelected() --> Selected: HomeFragment");
                         mFragmentName = "Home";
 
                         // [START Menu_selected_event]
-
                         Bundle bundle = new Bundle();
                         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Home");
                         bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
                         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-
                         // [END Menu_selected_event]
 
                         mFlagHome = false;
@@ -1018,22 +929,16 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         imgBtnCross.setVisibility(View.INVISIBLE);
 
                         if (changeStateSetting) {
-
-                            Log.d(TAG, "onNavigationItemSelected: HomeFragment changeStateSetting: TRUE");
+                            Log.d(TAG, "onNavigationItemSelected() --> HomeFragment --> changeStateSetting = " + changeStateSetting);
                             changeStateSetting = false;
-
                             if (SWIPESTACK_SCROLLING) {
-
                                 allNews.clear();
                                 allNews = new ArrayList<>();
                                 firstGetRequestAPI(urlTopNewsSettings, 0);
-
                             } else {
-
                                 allNews.clear();
                                 allNews = new ArrayList<>();
                                 firstGetRequestAPI(urlTopNewsSettings, 0);
-
                             }
                         }
 
@@ -1045,39 +950,28 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     }
 
                     break;
-
                 case R.id.fav_nav:   //Favoritos
-
                     if (AboutFragment.activoAbout == true) {
-
                         MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
-
                     }
 
                     //VERIFICAMOS EL ESTADO DE LAS VISTAS EN CASO DE QUE EL DRAWER VIEW ESTE ABIERTO
                     if (HomeFragment.estadoDrawer == true) {
-
                         //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
                         MainActivity.menuNavigation.getMenu().getItem(1).setCheckable(true);
 
                         //SI EL SCROLL ES INVISIBLE, LO ESCONDEMOS CUANDO EL DRAWER LAYOUT ESTE CERRADO
                         if (MainActivity.scrollMenuPosition.getVisibility() == View.INVISIBLE) {
-
                             MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
-
                         }
-
                     }
                     
                     if (mFlagFavorites) {
-
                         // [START Menu_selected_event]
-
                         Bundle bundle = new Bundle();
                         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Favorites");
                         bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
                         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-
                         // [END Menu_selected_event]
 
                         mFlagHome = true;
@@ -1085,141 +979,93 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         mFlagRecover = true;
                         mFlagSettings = true;
                         mFragmentName = "Favorites";
-
                         mFragmentLoad = new FavFragment();
                         imgBtnCross.setVisibility(View.INVISIBLE);
                         animateCrossButton = !consultarNoticiasFavoritas("%");
-
                         animationScrollMenuBottom(marginScrollMenuBottom, sizeWidth / 4);
                         marginScrollMenuBottom = sizeWidth / 4;
-
                     } else {
-
                         animateCrossButton = false;
-
                     }
-
                     break;
-
-
                 case R.id.recover_nav:
-
                     if (AboutFragment.activoAbout == true) {
-
                         MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
-
                     }
-
                     //VERIFICAMOS EL ESTADO DE LAS VISTAS EN CASO DE QUE EL DRAWER VIEW ESTE ABIERTO
                     if (HomeFragment.estadoDrawer == true) {
-
                         //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
                         MainActivity.menuNavigation.getMenu().getItem(2).setCheckable(true);
 
                         //SI EL SCROLL ES INVISIBLE, LO ESCONDEMOS CUANDO EL DRAWER LAYOUT ESTE CERRADO
                         if (MainActivity.scrollMenuPosition.getVisibility() == View.INVISIBLE) {
-
                             MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
-
                         }
-
                     }
 
                     if (mFlagRecover) {
 
                         // [START Menu_selected_event]
-
                         Bundle bundle = new Bundle();
                         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Recover");
                         bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
                         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-
                         // [END Menu_selected_event]
 
                         mFragmentName = "Recover";
-
                         mFlagHome = true;
                         mFlagFavorites = true;
                         mFlagRecover = false;
                         mFlagSettings = true;
-
                         mFragmentLoad = new RecoverFragment();
-
                         imgBtnCross.setVisibility(View.INVISIBLE);
-
                         if (!ConsultarNoticiasRecover("%")) {
                             animateCrossButton = true;
                         } else {
                             animateCrossButton = false;
                         }
-
                         animationScrollMenuBottom(marginScrollMenuBottom, sizeWidth / 2);
                         marginScrollMenuBottom = sizeWidth / 2;
-
                     }
-
                     break;
-
-
                 case R.id.config_nav:  //Preferencias
-
                     if (AboutFragment.activoAbout == true) {
-
                         MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
-
                     }
-
                     //VERIFICAMOS EL ESTADO DE LAS VISTAS EN CASO DE QUE EL DRAWER VIEW ESTE ABIERTO
                     if (HomeFragment.estadoDrawer == true) {
-
                         //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
                         MainActivity.menuNavigation.getMenu().getItem(3).setCheckable(true);
 
                         //SI EL SCROLL ES INVISIBLE, LO ESCONDEMOS CUANDO EL DRAWER LAYOUT ESTE CERRADO
                         if (MainActivity.scrollMenuPosition.getVisibility() == View.INVISIBLE) {
-
                             MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
-
                         }
-
                     }
 
                     if (mFlagSettings) {
-
                         // [START Menu_selected_event]
-
                         Bundle bundle = new Bundle();
                         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Settings");
                         bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
                         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-
                         // [END Menu_selected_event]
 
                         mFragmentName = "Settings";
-
                         mFlagHome = true;
                         mFlagFavorites = true;
                         mFlagRecover = true;
                         mFlagSettings = false;
-
                         mFragmentLoad = new ConfigFragment();
                         animateCrossButton = true;
-
                         animationScrollMenuBottom(marginScrollMenuBottom, sizeWidth / 2 + sizeWidth / 4);
                         marginScrollMenuBottom = sizeWidth / 2 + sizeWidth / 4;
-
                     }
-
                     break;
-
             }
-
         }
-
         return true;
-
     }
-
 
     public void setActivityListener(ListenFromActivity activityListener) {
         this.activityListener = activityListener;
@@ -1286,8 +1132,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     //endregion
 
-
-
     //region OTROS
 
     public void hideSoftKeyboard() {
@@ -1304,13 +1148,25 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public void onBackPressed() {
-        //VERIFICAMOS QUE NO TENGA EL DRAWER ABIERTO O ESTE EN ABOUT US
-        if (estadoDrawer == true || AboutFragment.activoAbout == true) {
+        Log.i(TAG, "onBackPressed()");
+        androidx.fragment.app.Fragment currentFragment = fragmentManager.findFragmentByTag("AboutFragment");
+        if (currentFragment != null) {
+            if (currentFragment.isVisible()) {
+                fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
+                fragmentTransaction.remove(currentFragment);
+                fragmentTransaction.commit();
+                fragmentManager.popBackStack();
 
+                MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
+                HomeFragment.setEnableWidgetsHome();
+            } else {}
         } else {
-            //SOLO MINIMIZA LA APLICACION CUANDO SE DE EL BOTON DE ATRAS
-            moveTaskToBack(true);
-            //super.onBackPressed();
+            if (estadoDrawer == true) {
+                HomeFragment.drawerLayout.closeDrawer(GravityCompat.END);
+            } else {
+                moveTaskToBack(true);
+            }
         }
     }
 

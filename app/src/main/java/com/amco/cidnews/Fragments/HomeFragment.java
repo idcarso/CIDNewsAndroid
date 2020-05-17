@@ -114,6 +114,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.percentlayout.widget.PercentFrameLayout;
 import androidx.percentlayout.widget.PercentRelativeLayout;
@@ -127,6 +128,15 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 
 
 public class HomeFragment extends Fragment implements ListenFromActivity, ImagePassingAdapter, SwipAdapter.RequestImage {
+
+    //region VARIABLES
+    private FragmentManager fragmentManager;
+    private FragmentTransaction fragmentTransaction;
+    boolean banderaAbout = false;
+    public static boolean estadoDrawer = false;
+    private int TIME_CHECK_CONNECTION = 5000;
+    Handler handlerCheckIntener;
+    //endregion
 
     public static Boolean SWIPESTACK_SCROLLING = false;  //Change R.layout.frame_home -- R.layout.frame_home_withoutscroll
     static private String TAG = "HomeFragment.java";
@@ -177,8 +187,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
     /////////////////////////////////// UI
     PercentFrameLayout lay;
     RelativeLayout containerLoaderGif;
-    LinearLayout llmenu, ddmenu, frnointernet, bottomFabs, mMenuSlide;
-    ImageView mano1, basura, paloma, heightscroll, bottomFabFB, bottomFabTwitter, bottomFabWhats, imgLoaderGif;
+    public static LinearLayout llmenu, ddmenu, frnointernet, bottomFabs, mMenuSlide;
+    static ImageView mano1, basura, paloma, heightscroll, bottomFabFB, bottomFabTwitter, bottomFabWhats, imgLoaderGif;
     public static ImageButton btnSupDer;
     WebView web;
     public static FloatingActionButton shareFabMain;
@@ -270,21 +280,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
     Bitmap mNextBitmapLoaded = null;
     ImageView mImg;
 
-    //region VARIABLES
-
-    boolean banderaAbout = false;
-    public static boolean estadoDrawer = false;
-
-    private int TIME_CHECK_CONNECTION = 5000;
-
-    Handler handlerCheckIntener;
-    //endregion
-
-
-    //region VISTAS RESTANTES DEL HOME FRAGMENT
     TextView txt_cid;
-    //endregion
-
 
     private ImagePassingAdapter mPassingData = new ImagePassingAdapter() {
         @Override
@@ -311,7 +307,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         mNextBitmapLoaded = null;
         mImg.setImageBitmap(null);
     }
-
 
     @Override
     public void setGeneralNews() {
@@ -369,9 +364,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         Log.d(TAG, "sendingImage?");
     }
 
-    //region CHECK INTERNET
-
+    //region
     /**
+     * <p><b>Created by Alejandro Jimenez on 16/05/2020</b></p>
+     * <br>
      * Runnable que ejecuta la asynctask cada n tiempo.
      */
     Runnable runnableCheckInternet = new Runnable() {
@@ -383,16 +379,15 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
     };
 
     /**
-     * Método que ejecuta el handler cada cierto n tiempo.
+     * <p><b>Created by Alejandro Jimenez on 16/05/2020</b></p>
+     * <br>
+     * Método que ejecuta el handler para monitorear la conectividad a internet.
      */
     private void verifyInternetConnection() {
         handlerCheckIntener = new Handler();
         handlerCheckIntener.postDelayed(runnableCheckInternet, TIME_CHECK_CONNECTION);
     }
 
-    public void metodoPrueba () {
-
-    }
     //endregion
 
     //region LIFECYCLE FRAGMENT
@@ -445,11 +440,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
 
         //EVENTO QUE ESCUCHA LAS ACCIONES DEL DRAWER LAYOUT (MENU DEL HOME)
         drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
-
             @Override
             public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
-
-
                 if (banderaAbout == false) {
                     if (slideOffset < 0.8) {
                         MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
@@ -460,12 +452,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
                         MainActivity.scrollMenuPosition.setVisibility(View.INVISIBLE);
                     }
                 }
-
             }
 
             @Override
             public void onDrawerOpened(@NonNull View drawerView) {
-
                 //CADA QUE SE ABRE EL DRAWER LAYOUT SE COLOCA LA BANDERA EN FALSO PARA NO ACTIVAR
                 //EL LANZAMIENTO DEL FRAGMENT HASTA QUE SE SELECCIONA ABOUT US DEL DRAWER LAYOUT
                 banderaAbout = false;
@@ -474,8 +464,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
                 //TRUE: ABIERTO
                 //FALSE: CERRADO
                 estadoDrawer = true;
-
-
             }
 
             @Override
@@ -492,7 +480,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
 
             @Override
             public void onDrawerStateChanged(int newState) {
-
             }
         });
 
@@ -507,7 +494,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         handlerCheckIntener.removeCallbacks(runnableCheckInternet);
         //CUANDO PASE A ONPAUSE ESTE FRAGMENT, CERRAMOS EL DRAWER LAYOUT
         if (estadoDrawer == true) {
-            drawerLayout.closeDrawer(Gravity.END);
+            drawerLayout.closeDrawer(GravityCompat.END);
         }
     }
 
@@ -664,7 +651,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         screenCenter = windowwidth / 2;
 
         /////////////////////////////////////
-        shareFabMain.setVisibility(View.INVISIBLE);
+        shareFabMain.hide();
         shareFabMain.setEnabled(false);
         shareFabMain.hide();
 
@@ -696,7 +683,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
                 Log.e(TAG, "showNewsNScrolling -- Swipadaptador.getCount: No news");
                 if (fromMenuSlide) {   //Check if is from Menu for show the card!
                     if ((sp != null) && (sp.getVisibility() == View.VISIBLE)) {
-                        shareFabMain.setVisibility(View.INVISIBLE);
+                        shareFabMain.hide();
                         shareFabMain.hide();
                         menuSelectedIndex = catFromMenuSlide; // 0 - 8
                     }
@@ -713,7 +700,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
                 }
                 sp.setVisibility(View.VISIBLE);
                 sp.setEnabled(true);
-                shareFabMain.setVisibility(View.VISIBLE);
+                shareFabMain.show();
                 shareFabMain.show();
                 shareFabMain.setEnabled(true);
             }
@@ -725,7 +712,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         sp.removeAllViewsInLayout();
         sp.resetStack();
         sp.setVisibility(View.VISIBLE);
-        shareFabMain.setVisibility(View.VISIBLE);
+        shareFabMain.show();
         shareFabMain.setEnabled(true);
         shareFabMain.show();
     }
@@ -820,7 +807,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         rotateBackward = android.view.animation.AnimationUtils.loadAnimation(getContext(), R.anim.rotate_backward);
 
         cardviewContainer.setVisibility(View.INVISIBLE);
-        shareFabMain.setVisibility(View.INVISIBLE);
+        shareFabMain.hide();
         shareFabMain.setEnabled(false);
 
         //SP
@@ -856,26 +843,41 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         cardviewtest1.setEnabled(true);
     }
 
-    public static void InhabilitarHome() {
+    /**
+     * <p><b>Created by Alejandro Jimenez on 16/05/2020</b></p>
+     * <br>
+     * Método que inhabilita los widgets cuando aparece About Us
+     */
+    public static void setDisableWidgetsHome() {
+        //Action
         btnSupDer.setEnabled(false);
         sp.setEnabled(false);
         shareFabMain.setEnabled(false);
-        shareFabMain.setVisibility(View.INVISIBLE);
+
+        //Visibility
+        shareFabMain.hide();
     }
 
-    public static void HabilitarHome() {
+    /**
+     * <p><b>Created by Alejandro Jimenez on 16/05/2020</b></p>
+     * <br>
+     *     Método que habilita los widgets  cuando se regresa al home desde about us.
+     */
+    public static void setEnableWidgetsHome() {
+        //Action
         btnSupDer.setEnabled(true);
         sp.setEnabled(true);
         shareFabMain.setEnabled(true);
-        shareFabMain.setVisibility(View.VISIBLE);
+
+        //Visibility
+        shareFabMain.show();
     }
 
     //endregion
 
     /**
-     * FUNCION QUE CONFIGURA LAS ACCIONES DEL DRAWER MENU (TAP OPTIONS)
-     *
-     * @param view
+     * Método que configura el drawer layout que es el menu en home.
+     * @param view Objeto de la clase View para enlazar con los widgets de la vista.
      */
     public void setupMenu(View view) {
         //VINCULAR EL DRAWER LAYOUT
@@ -924,22 +926,24 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
                     }
                     drawerLayout.closeDrawers();
                 } else if (position == 9) {
+                    setDisableWidgetsHome();
+
                     //ACTIVAMOS BANDERA DE QUE SE SELECCIONO ABOUT US
                     banderaAbout = true;
                     //HACEMOS INVISIBLES CUANDO ENTRA ABOUT US SCROLL Y SELECCION DE BOTTOM NAVIGATION VIEW
                     MainActivity.scrollMenuPosition.setVisibility(View.INVISIBLE);
                     MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(false);
 
-                    InhabilitarHome();
-
-                    //AGREGAMOS EL FRAGMENT EN LA PARTE SUPERIOR PARA NO PERDER EL ESTADO DEL HOME
-                    Fragment fragmentAboutUs = new AboutFragment();
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                    transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
-                    transaction.add(R.id.contendor_home, fragmentAboutUs).commit();
+                    fragmentManager = getActivity().getSupportFragmentManager();
+                    fragmentTransaction = fragmentManager.beginTransaction();
+                    AboutFragment aboutFragment = new AboutFragment();
+                    fragmentTransaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
+                    fragmentTransaction.replace(R.id.contendor_home, aboutFragment, "AboutFragment");
+                    fragmentTransaction.addToBackStack(null);
+                    fragmentTransaction.commit();
 
                     //CERRAMOS EL DRAWER LAYOUT CUANDO SE HACE CLIC EN ABOUT US
-                    drawerLayout.closeDrawer(Gravity.END);
+                    drawerLayout.closeDrawer(GravityCompat.END);
                 }
 
                 Bundle bundle = new Bundle();
@@ -958,7 +962,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "btnSupDer -- onClick.TRUE");
-                drawerLayout.openDrawer(Gravity.END);
+                drawerLayout.openDrawer(GravityCompat.END);
             }
         });
 
@@ -1210,10 +1214,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
 
     //endregion
 
-
-    /***************** CODIGO LIMPIO 24 03 2020********/
-
-
     ///////////////////////////////////
     /// MARK: Start to change Main View.
     public void startChangedNews() {
@@ -1224,14 +1224,13 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
             indexHelperRemoveNews = 0;  //indexHelperRemoveNews es utilizado para saber si el usuario ha movido una Swipecard, ayuda en el inicio de cargar noticias.
         } else {
             sp.setVisibility(View.INVISIBLE);
-            shareFabMain.setVisibility(View.INVISIBLE);
+            shareFabMain.hide();
             shareFabMain.setEnabled(false);
             shareFabMain.hide();
             frnointernet.setVisibility(View.INVISIBLE);
             imgLoaderGif.setVisibility(View.VISIBLE);
         }
     }
-
 
     ///////////////////////////////////
     /// MARK: Setup when user make a change in Menu.
@@ -1241,14 +1240,12 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         sp.resetStack();
         sp.setVisibility(View.VISIBLE);
         spaux.setVisibility(View.VISIBLE);
-        shareFabMain.setVisibility(View.VISIBLE);
+        shareFabMain.show();
         cardviewtest1.setVisibility(View.VISIBLE);
         cardviewContainer.setVisibility(View.VISIBLE);
     }
 
-
     /****************************************** ANIMATION *****************************************/
-
 
     ///////////////////////////////////
     /// MARK: Hide the bottom social media icons
@@ -1295,7 +1292,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
 
     }
     ///////////////////////////////////
-
 
     ///////////////////////////////
     /// MARK: Animation swipe.
@@ -1595,7 +1591,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
                         // sp.addView(View.inflate(getContext(),R.layout.custom_toast,null));
                         spaux.setVisibility(View.INVISIBLE);
                         cardviewContainer.setVisibility(View.INVISIBLE);
-                        shareFabMain.setVisibility(View.INVISIBLE);
+                        shareFabMain.hide();
 
                         isSwiping = true;
                         swipNoNews.removeAllViews();
@@ -1667,7 +1663,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
                         Swipadaptadoraux.setImageListener(this);
                     }
                     final String newsaux = defaultListNews.get(sp.getCurrentPosition()).getUrl();
-                    shareFabMain.setVisibility(View.VISIBLE);
+                    shareFabMain.show();
                     shareFabMain.setEnabled(true);
                     scrollView.smoothScrollTo(0, 0);
                     sp.setListener(new SwipeStack.SwipeStackListener() {
