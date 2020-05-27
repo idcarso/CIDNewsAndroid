@@ -42,4 +42,16 @@ public class Utilidades {
 
     public  static  final String DATABASE_TEMP = "CREATE TABLE "+TABLA_NOTICIAS_TEMPORAL+" ("+CATEGORIA+" TEXT,"+TITULO+" TEXT,"+AUTOR+" TEXT,"+URL+" TEXT,"+URLIMAGEN+" TEXT,"+GUARDAR+" INT)";
 
+    //region QUERYS
+
+    /**
+     * Query para eliminar todos los registros en la tabla noticias.
+     */
+    public static final String CLEAR_TABLE_NOTICIAS = "DELETE FROM '" + TABLA_NOTICIA + "';";
+
+    /**
+     * Query para eliminar todos los registros en la tabla recuperar.
+     */
+    public static final String CLEAR_TABLE_RECUPERAR = "DELETE FROM '" + TABLA_RECUPERAR + "';";
+    //endregion
 }

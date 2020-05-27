@@ -1,8 +1,6 @@
 package com.amco.cidnews.Utilities;
 
 
-import android.app.DialogFragment;
-
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -11,10 +9,12 @@ import android.view.*;
 import android.widget.Button;
 import android.widget.VideoView;
 
+import androidx.fragment.app.DialogFragment;
+
 import com.amco.cidnews.Activities.MainActivity;
 import com.amco.cidnews.R;
 
-public class MyDialogFragment extends DialogFragment {
+public class MyDialogFragment extends androidx.fragment.app.DialogFragment {
     @Override
 
     public void onCreate(Bundle savedInstanceState) {

@@ -114,6 +114,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.percentlayout.widget.PercentFrameLayout;
@@ -130,76 +131,71 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 public class HomeFragment extends Fragment implements ListenFromActivity, ImagePassingAdapter, SwipAdapter.RequestImage {
 
     //region VARIABLES
+    public static boolean isNetworkAvailable = false;
     private FragmentManager fragmentManager;
     private FragmentTransaction fragmentTransaction;
-    boolean banderaAbout = false;
+    public static boolean banderaAbout = false;
     public static boolean estadoDrawer = false;
-    private int TIME_CHECK_CONNECTION = 5000;
+    private int TIME_CHECK_CONNECTION = 1000;
     Handler handlerCheckIntener;
-    //endregion
-
     public static Boolean SWIPESTACK_SCROLLING = false;  //Change R.layout.frame_home -- R.layout.frame_home_withoutscroll
     static private String TAG = "HomeFragment.java";
     static private String TAGTIME = "TIMEHomeFragment";
+    AsyncHttpClient masterClient;
+    String watchingNews = "NO";
+    RequestHandle requestTopHeadlines;
+    int menuSelectedIndex = 0;
+    int MemoryLoadIndex = 100;
+    int Start = 100;
+    int mainPosition = 0;
+    int position = 0;
+    int indexHelperGetNews = 0;
+    int indexHelperRemoveNews = 0;
+    int indexBackgroundBackup = 0;
+    int[] stateArray = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int x_cord, y_cord, x, y, topOffset;
+    int Likes = 0;
+    int currentIndex = 0;
+    int memoryIndex = 0;
+    int startPointX, startPointY, posY, posX, dps, dpX, dpY, windowwidth, screenCenter, height, width;
+    int oldX = 0;
+    int oldY = 0;
+    float setAxisXCardView, setAxisYCardView, currentProgressSwiping;
+    float diffFastGesture = 0;
+    float diffPosY = 0;
+    float diffPosX = 0;
+    float scale = 0;
+    static boolean scrollIsAllowed = true;
+    boolean flagMarginColors = false;
+    boolean flagFirstNews = false;
+    boolean flagWebView = false;
+    boolean urlNewsLoaded = false;
+    boolean urlNewsLoadedOption = false;
+    boolean flagMenuSlideTapped = false;
+    boolean isSwiping = false;
+    boolean isScrolling = false;
+    boolean cardSwipeRight = false;
+    boolean firstInitialCard = false;
+    boolean showNewsInCardView = true;
+    boolean mCardSwiping = false;
+    Animation fabOpen, fabClose, rotateFoward, rotateBackward;
+    ArrayList<String> MemoryCard = new ArrayList<String>();
+    RelativeLayout.LayoutParams layoutParamsNews;
+    Bitmap mNextBitmapLoaded = null;
 
-    // [START declare_analytics]
+    //Firebase analytics
     private FirebaseAnalytics mFirebaseAnalytics;
-    // [END declare_analytics]
 
-    //////////////////////////////// MAIN VAR
-    static public SwipeStack sp;
-
-    static public SwipAdapterNScrolling SwipadaptadorNScroll;
-
-    static public SwipAdapter Swipadaptador;
-    static public SwipAdapterBackCard Swipadaptadoraux;
-    static public CardView cardviewContainer, cardviewtest1, spaux, swipNoNews;
-
-    //MENU SLIDE
-    //DRAWER LAYOUT
-    public static DrawerLayout drawerLayout;
-
-
-    //DATA API FROM HOMEACTIVITY
+    //Array List
     ArrayList<Noticia> allNewsFromAct = new ArrayList<>();
     ArrayList<Noticia> specificNewsFromAct = new ArrayList<>();
-
-
-    ///////
     ArrayList<Noticia> allNewsHelper;
     ArrayList<Noticia> allNewsDefault = new ArrayList<>();
     ArrayList<Noticia> noNewsForShow = new ArrayList<>();
-
     ArrayList<MyObject> newsApiSaved = new ArrayList<>();
-    ScrollView scrollView;
-    ScrollView scrollViewShow;
-    View viewBckgrnd;
-    View viewBckgrndNoNews;
 
-    /////////////////////////////////// TEST CONNECTION FB
-    private ConnectionQuality mConnectionClass = ConnectionQuality.UNKNOWN;
-    private ConnectionClassManager mConnectionClassManager;
-    private DeviceBandwidthSampler mDeviceBandwidthSampler;
-    private ConnectionClassManager.ConnectionClassStateChangeListener mListener;
-    private Request requestImg;
-
-
-    /////////////////////////////////// UI
-    PercentFrameLayout lay;
-    RelativeLayout containerLoaderGif;
-    public static LinearLayout llmenu, ddmenu, frnointernet, bottomFabs, mMenuSlide;
-    static ImageView mano1, basura, paloma, heightscroll, bottomFabFB, bottomFabTwitter, bottomFabWhats, imgLoaderGif;
-    public static ImageButton btnSupDer;
-    WebView web;
-    public static FloatingActionButton shareFabMain;
-    AsyncHttpClient masterClient;
-    ProgressBar progressBar;
-
-
-    RequestHandle requestTopHeadlines;
-    //////////////////////////////// STRINGS
+    //region API
     String cateNews[] = {"HEALTH", "CONSTRUCTION", "RETAIL", "EDUCATION", "ENTERTAINMENT", "ENVIRONMENT", "FINANCE", "ENERGY", "TELECOM", "ABOUT US"};
-    //
     final String labelsNews[] = {"salud", "construcción", "retail", "educación", "entretenimiento", "ambiente", "banca", "energía", "telecom"};
     String categoriesNews[] = {"SALUD", "CONSTRUCCIÓN", "RETAIL", "EDUCACIÓN", "ENTRETENIMIENTO", "AMBIENTE", "BANCA", "ENERGÍA", "TELECOM"};
     String urlHeadlines[] = {
@@ -213,8 +209,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
             "https://newsapi.org/v2/top-headlines?q=energy&apiKey=8de9910a613a49289729a8725a0b9fcb",                 //Headline Energy API
             "https://newsapi.org/v2/top-headlines?q=telecom&apiKey=4d3e24219543475eb1cdab5b79d29efd"                 //Headline Telecom API
     };
-
-
     String urlDefaultSettings[] = {
             "https://newsapi.org/v2/everything?q=health+technology&sortBy=popularity&apiKey=4d3e24219543475eb1cdab5b79d29efd",                //Default Health API
             "https://newsapi.org/v2/everything?q=construction+technology&sortBy=popularity&apiKey=8de9910a613a49289729a8725a0b9fcb",          //Default Construction API
@@ -226,73 +220,50 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
             "https://newsapi.org/v2/everything?q=energy+power+technology&sortBy=popularity&language=en&apiKey=83bff4ded3954c35862369983b88c41b",//Default Energy API
             "https://newsapi.org/v2/everything?q=communications+technology&sortBy=popularity&apiKey=99237f17c0b540fdac4d8367e206f5b2"         //Default Telecom API
     };
+    //endregion
 
-    String watchingNews = "NO";
+    //endregion
 
-    //////////////////////////////// INT
-    int menuSelectedIndex = 0;
-    int MemoryLoadIndex = 100;
-    int Start = 100;
-    int mainPosition = 0;
-    int position = 0;
-    int indexHelperGetNews = 0;
-    int indexHelperRemoveNews = 0;
-    int indexBackgroundBackup = 0;
-    int[] stateArray = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-    //////
-    int x_cord, y_cord, x, y, topOffset;
-    int Likes = 0;
-    int currentIndex = 0;
-    int memoryIndex = 0;
-    ////////
-    int startPointX, startPointY, posY, posX, dps, dpX, dpY, windowwidth, screenCenter, height, width;
-    int oldX = 0;
-    int oldY = 0;
-    ///////////////////////////////  FLOAT
-    float setAxisXCardView, setAxisYCardView, currentProgressSwiping;
-    float diffFastGesture = 0;
-    float diffPosY = 0;
-    float diffPosX = 0;
-    float scale = 0;
-    /////////////////////////////////// BOOLEAN
-    static boolean scrollIsAllowed = true;
-    boolean flagMarginColors = false;
-    boolean flagFirstNews = false;
-    boolean flagWebView = false;
-    boolean urlNewsLoaded = false;
-    boolean urlNewsLoadedOption = false;
-    boolean flagMenuSlideTapped = false;
-    /////// Animation Option 2
-    boolean isSwiping = false;
-    boolean isScrolling = false;
-    boolean cardSwipeRight = false;
-    boolean firstInitialCard = false;
-    boolean showNewsInCardView = true;
-    ///
-    boolean mCardSwiping = false;
-    /////////////////////////////////// HELPERS
-    Animation fabOpen, fabClose, rotateFoward, rotateBackward;
-    ArrayList<String> MemoryCard = new ArrayList<String>();
-    RelativeLayout.LayoutParams layoutParamsNews;
-
-
-    //TEST
-    Bitmap mNextBitmapLoaded = null;
+    //region WIDGETS
+    static public SwipeStack sp;
+    static public SwipAdapterNScrolling SwipadaptadorNScroll;
+    static public SwipAdapter Swipadaptador;
+    static public SwipAdapterBackCard Swipadaptadoraux;
+    static public CardView cardviewContainer, cardviewtest1, spaux, swipNoNews;
+    public static DrawerLayout drawerLayout;
+    ScrollView scrollView;
+    ScrollView scrollViewShow;
+    View viewBckgrnd;
+    View viewBckgrndNoNews;
+    PercentFrameLayout lay;
+    RelativeLayout containerLoaderGif;
+    public static LinearLayout llmenu, ddmenu, frnointernet, bottomFabs, mMenuSlide;
+    static ImageView mano1, basura, paloma, heightscroll, bottomFabFB, bottomFabTwitter, bottomFabWhats, imgLoaderGif;
+    public static ImageButton btnSupDer;
+    WebView web;
+    public static FloatingActionButton shareFabMain;
+    ProgressBar progressBar;
     ImageView mImg;
-
     TextView txt_cid;
+    //endregion
 
-    private ImagePassingAdapter mPassingData = new ImagePassingAdapter() {
+    /////////////////////////////////// TEST CONNECTION FB
+    private ConnectionQuality mConnectionClass = ConnectionQuality.UNKNOWN;
+    private ConnectionClassManager mConnectionClassManager;
+    private DeviceBandwidthSampler mDeviceBandwidthSampler;
+    private ConnectionClassManager.ConnectionClassStateChangeListener mListener;
+    private Request requestImg;
+    /////////////////////////////////// TEST CONNECTION FB
+
+   private ImagePassingAdapter mPassingData = new ImagePassingAdapter() {
         @Override
-        public void sendingImage(Bitmap bitmap, String url) {
-        }
+        public void sendingImage(Bitmap bitmap, String url) {}
     };
 
     @Override
     public void onRequestImage(String urlRequest) {
         Log.d(TAG, "sendingImage -- urlRequest:" + urlRequest);
         if (mNextBitmapLoaded != null) {
-
             if (sp.getTopView() == null) {
                 Log.d(TAG, "sendingImage -- sp.getTopView == null");
             } else {
@@ -373,8 +344,11 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
     Runnable runnableCheckInternet = new Runnable() {
         @Override
         public void run() {
-            new InternetVerify(getActivity().getApplicationContext(), frnointernet, new HomeFragment()).execute();
+            new InternetVerify(getActivity().getApplicationContext(), frnointernet).execute();
             handlerCheckIntener.postDelayed(this, TIME_CHECK_CONNECTION);
+            Log.i(TAG, "runnableCheckInternet() --> isNetworkAvailable = " + isNetworkAvailable);
+            Log.i(TAG, "runnableCheckInternet() --> allNews.count = " + ((MainActivity)getActivity()).allNews.size());
+            ((MainActivity)getActivity()).setNotifyNetworkAvailable(isNetworkAvailable);
         }
     };
 
@@ -438,8 +412,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         //INICIAMOS EL HANDLER PARA VERIFICAR LA CONECTIVIDAD A INTERNET
         verifyInternetConnection();
 
-        //EVENTO QUE ESCUCHA LAS ACCIONES DEL DRAWER LAYOUT (MENU DEL HOME)
-        drawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
+        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
             public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
                 if (banderaAbout == false) {
@@ -480,6 +453,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
 
             @Override
             public void onDrawerStateChanged(int newState) {
+
             }
         });
 
@@ -506,11 +480,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         if (masterClient != null) {
             masterClient.getThreadPool().shutdown();
         }
-        //REQUEST NEW ARRAYLIST! FROM ACT
-        ((MainActivity) getActivity()).refreshDeletedNews();
     }
 
     //endregion
+
 
     //region SWIPE STACK NOT SCROLLING
     public void setupCreateViewNoScroll(View view) {
@@ -520,10 +493,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         frnointernet.setVisibility(View.INVISIBLE);
         containerLoaderGif = view.findViewById(R.id.loader_gif);
         imgLoaderGif = view.findViewById(R.id.img_loader_gif);
-
         //VISTA RESTANTE
         txt_cid = (TextView) view.findViewById(R.id.txt_cid);
-
         ////////////
         btnSupDer = view.findViewById(R.id.boton_superior_home);
         basura = view.findViewById(R.id.basuraimg);
@@ -537,9 +508,9 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
     //endregion
 
     /************************************* LISTENERS NScrolling ***********************************/
-
     public void configUIListenersNScroll(final View view) {
 
+        //Listener Image Button Menu
         btnSupDer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -548,7 +519,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
             }
         });
 
-        //BUTTON FABS
+        //Listener Floating Button Share
         shareFabMain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -556,6 +527,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
             }
         });
 
+        //Listener Progreso SwipeCard
         sp.setSwipeProgressListener(new SwipeStack.SwipeProgressListener() {
             @Override
             public void onSwipeStart(int position) {
@@ -604,6 +576,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
             }
         });
 
+        //Listener Direccion SwipeCard
         sp.setListener(new SwipeStack.SwipeStackListener() {
             @Override
             public void onViewSwipedToLeft(final int position) {
@@ -673,6 +646,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         paloma.setVisibility(View.INVISIBLE);
     }
 
+
     public void showNewsNScrolling(final ArrayList<Noticia> defaultListNews, boolean fromMenuSlide, int catFromMenuSlide) {
         Log.e(TAGTIME, "showNewsNScrolling -- DELAY:" + String.valueOf(getRunningTime()));
         if (getActivity() == null) {
@@ -706,6 +680,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
             }
         }
     }
+
 
     public void setupForChangedNewsNScrolling() {
         sp.removeAllViews();
@@ -750,7 +725,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
             }).start();
         }
     }
-
 
     //region SETUP
     public void setupCreateView(View view, LayoutInflater inflater, ViewGroup container) {
@@ -843,36 +817,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         cardviewtest1.setEnabled(true);
     }
 
-    /**
-     * <p><b>Created by Alejandro Jimenez on 16/05/2020</b></p>
-     * <br>
-     * Método que inhabilita los widgets cuando aparece About Us
-     */
-    public static void setDisableWidgetsHome() {
-        //Action
-        btnSupDer.setEnabled(false);
-        sp.setEnabled(false);
-        shareFabMain.setEnabled(false);
-
-        //Visibility
-        shareFabMain.hide();
-    }
-
-    /**
-     * <p><b>Created by Alejandro Jimenez on 16/05/2020</b></p>
-     * <br>
-     *     Método que habilita los widgets  cuando se regresa al home desde about us.
-     */
-    public static void setEnableWidgetsHome() {
-        //Action
-        btnSupDer.setEnabled(true);
-        sp.setEnabled(true);
-        shareFabMain.setEnabled(true);
-
-        //Visibility
-        shareFabMain.show();
-    }
-
     //endregion
 
     /**
@@ -907,10 +851,17 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
                 String typeNews = "";
                 if (position < 9) {
                     typeNews = cateNews[position];
-                    if ((MainActivity) getActivity() != null) {
-                        ((MainActivity) getActivity()).specificRecursive(position);
+                    if (isNetworkAvailable) {
+                        if (((MainActivity) getActivity()) != null) {
+                            ((MainActivity)getActivity()).specificRecursive(position);
+                            startChangedNews();
+                        } else {
+                            Log.e(TAG, "setupMenu() --> No esta activo Main Activity");
+                        }
+                    } else {
+                        Log.e(TAG, "setupMenu() --> No hay internet");
                     }
-                    startChangedNews();
+
                     if (SWIPESTACK_SCROLLING) {
                         if (bottomFabs.getVisibility() == View.VISIBLE) {
                             Log.d(TAG, "Setup UI -- scrollView onScrollChange: Scroll < 25, bottomFabs.INVISIBLE");
@@ -926,10 +877,10 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
                     }
                     drawerLayout.closeDrawers();
                 } else if (position == 9) {
-                    setDisableWidgetsHome();
-
                     //ACTIVAMOS BANDERA DE QUE SE SELECCIONO ABOUT US
                     banderaAbout = true;
+                    ((MainActivity)getActivity()).setNotifyIsActiveAboutUs(banderaAbout);
+
                     //HACEMOS INVISIBLES CUANDO ENTRA ABOUT US SCROLL Y SELECCION DE BOTTOM NAVIGATION VIEW
                     MainActivity.scrollMenuPosition.setVisibility(View.INVISIBLE);
                     MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(false);
@@ -938,7 +889,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
                     fragmentTransaction = fragmentManager.beginTransaction();
                     AboutFragment aboutFragment = new AboutFragment();
                     fragmentTransaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
-                    fragmentTransaction.replace(R.id.contendor_home, aboutFragment, "AboutFragment");
+                    fragmentTransaction.replace(R.id.contendor, aboutFragment, "AboutFragment");
                     fragmentTransaction.addToBackStack(null);
                     fragmentTransaction.commit();
 
@@ -1429,7 +1380,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         basura.setVisibility(View.INVISIBLE);
     }
 
-
     /*************************************** CHECK APPS INSTALLED **********************************/
 
     /// MARK:
@@ -1454,7 +1404,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         }
     }
     ///////////////////////////////////
-
 
     /*************************************** BACKGROUND CARD **************************************/
 
@@ -1536,7 +1485,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
     }
     ///////////////////////////////////
 
-
     public static Bitmap drawableToBitmap(Drawable drawable) {
         Bitmap bitmap = null;
 
@@ -1559,9 +1507,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         return bitmap;
     }
 
-
     /***************************************** REQUESTS *******************************************/
-
 
     ///////////////////////////////////
     /// MARK:
@@ -1574,7 +1520,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         }
         return listaux;
     }
-
 
     ///////////////////////////////////
     public void showNews(final ArrayList<Noticia> defaultListNews, boolean fromMenuSlide, int catFromMenuSlide) {
@@ -1715,7 +1660,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         }
     }
 
-
     ///////////////////////////////////
     /// MARK:
     public AsyncHttpClient requestHttpClient() {
@@ -1728,9 +1672,7 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
     }
     ///////////////////////////////////
 
-
     /************************************** WEBVIEW CONFIG ****************************************/
-
 
     ///////////////////////////////
     /// MARK: Enter new card for slide up    Prueba 1
@@ -1880,13 +1822,11 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         Log.d(TAG, "swipeToUp -- web.getcontentHeight: " + String.valueOf(contentHeight));
     }
 
-
     ///////////////////////////////
     /// MARK: Show alert "no news to show"
     public void showAlertNoNews() {
 
     }
-
 
     /***************************************** ACTIONS IN CARD ************************************/
 
@@ -1903,7 +1843,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         setupOnViewSwiped(position);
         saveNewsGeneric(Swipadaptador, position, false);
     }
-
 
     ///////////////////////////////////
     /// MARK:
@@ -2264,7 +2203,6 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
         }
     }
 
-
     ///////////////////////////////////
     /// MARK: Todo:Checar aqui para hacer un requestSpecific y showMenu despues
     public void eventsActionUpCardNoNews(MotionEvent ev, final CardView targetCard) {
@@ -2406,11 +2344,8 @@ public class HomeFragment extends Fragment implements ListenFromActivity, ImageP
             registrarNoticiasRecuperar(titulo, imagen, url, autor, categoria);
     }
 
-
     /*************************************** SEND NEWS BY INTENT **********************************/
 
-    ///////////////////////////////////
-    /// MARK:
     public void sendNewsByIntentFB(Activity mActivity) {
         ShareDialog shareDialog;
         shareDialog = new ShareDialog(mActivity);

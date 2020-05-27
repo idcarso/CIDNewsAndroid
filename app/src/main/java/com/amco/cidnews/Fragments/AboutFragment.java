@@ -1,13 +1,11 @@
 package com.amco.cidnews.Fragments;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,18 +19,21 @@ import com.amco.cidnews.R;
 public class AboutFragment extends Fragment {
 
     //region VARIABLES
+
     private static String TAG = "AboutFragment.java";
-    int contadorAbout = 0;
-    public static boolean activoAbout = false;
     private FragmentManager fragmentManager;
     private FragmentTransaction fragmentTransaction;
+
     //endregion
 
     //region WIDGETS
+
     public static ImageButton imageButtonRegresar;
+
     //endregion
 
     //region LIFECYCLE FRAGMENT
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -45,18 +46,7 @@ public class AboutFragment extends Fragment {
         imageButtonRegresar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e(TAG, "setOnClickListener*()");
-
-                //SI EL SCROLL ES INVISIBLE, LO MOSTRAMOS CUANDO REGRESEMOS A HOME
-                if (MainActivity.scrollMenuPosition.getVisibility() == View.INVISIBLE) {
-                    MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
-                    Log.w("SCROLL NAVIGATION", "CAMBIO A VISIBLE");
-                }
-
-                //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
-                MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
-
-                HomeFragment.setEnableWidgetsHome();
+                Log.e(TAG, "setOnClickListener()");
 
                 fragmentManager = getActivity().getSupportFragmentManager();
                 fragmentTransaction = fragmentManager.beginTransaction();
@@ -64,65 +54,24 @@ public class AboutFragment extends Fragment {
                 fragmentTransaction.remove(AboutFragment.this);
                 fragmentTransaction.commit();
                 fragmentManager.popBackStack();
+
+                MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
+
+                //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
+                MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
+
+                ((MainActivity)getActivity()).setNotifyIsActiveAboutUs(false);
             }
         });
-
         return view;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        //CUANDO EL FRAGMENT ESTA EN RESUMEN, ACTIVAMOS LA BANDERA DE ACTIVO
-        activoAbout = true;
-        Log.w(TAG, "onResume() --> activoAbout = " + activoAbout);
-
-        //SUMAMOS EN EL CONTADOR CADA QUE EL FRAGMENT PASA POR ONRESUME
-        contadorAbout++;
-        Log.w(TAG, "onResume() --> contadorAbout = " + contadorAbout);
-
-        //DESTRUIMOS EL FRAGMENT CUANDO SEA MAS DE DOS VECES SU PASO POR RESUME
-        if (contadorAbout > 1) {
-            HomeFragment.setEnableWidgetsHome();
-
-            fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
-            fragmentTransaction.remove(getActivity().getSupportFragmentManager().findFragmentByTag("AboutFragment"));
-            fragmentTransaction.commit();
-            fragmentManager.popBackStack();
-
-            //SI EL SCROLL ES INVISIBLE, LO MOSTRAMOS CUANDO REGRESEMOS A HOME
-            if (MainActivity.scrollMenuPosition.getVisibility() == View.INVISIBLE) {
-                MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
-            } else {}
-
-            //ACTIVAS LA PROPIEDAD UNCHECK DEL HOME EN EL BOTTOM NAVIGATION HOME PARA CAMBIAR COLOR DEL ICONO
-            MainActivity.menuNavigation.getMenu().getItem(0).setCheckable(true);
-        }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        //CUANDO EL FRAGMENT PASA POR ONPAUSE, DESACTIVAMOS LA BANDERA DEL FRAGMENT
-        activoAbout = false;
-        Log.e(TAG, "onPause() --> activoAbout = " + activoAbout);
-
-        //SI EL SCROLL ES INVISIBLE, LO MOSTRAMOS CUANDO REGRESEMOS A HOME
-        if (MainActivity.scrollMenuPosition.getVisibility() == View.INVISIBLE) {
-            MainActivity.scrollMenuPosition.setVisibility(View.VISIBLE);
-        } else {}
     }
 
     //endregion
 
-
-
     //region METHODS
 
     /**
-     * <p>Created by Alejandro Jimenez on 16/05/2020</p>
+     * <p><h2><b>Created by Alejandro Jimenez on 16/05/2020</b></h2></p>
      * <br>
      * Método que configura los widgets de la vista.
      * @param view Objeto de la clase View, que ayuda a enlazar con los widgets en un fragment. (Verificar que se infle la View)
@@ -132,7 +81,4 @@ public class AboutFragment extends Fragment {
     }
 
     //endregion
-
-
-
 }

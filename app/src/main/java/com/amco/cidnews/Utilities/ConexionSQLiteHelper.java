@@ -23,6 +23,8 @@ public class ConexionSQLiteHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS noticias");
+        db.execSQL("DROP TABLE IF EXISTS preferencias");
+        db.execSQL("DROP TABLE IF EXISTS recuperar");
         db.execSQL("DROP TABLE IF EXISTS temporal");
 
         onCreate(db);

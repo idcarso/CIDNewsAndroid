@@ -6,13 +6,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".Activities.MainActivity">
 
-
     <androidx.percentlayout.widget.PercentRelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true">
-
 
         <FrameLayout
             android:id="@+id/contendor_home"
@@ -52,8 +50,6 @@
                         android:layout_centerVertical="true"
                         android:layout_centerHorizontal="true"
                         />
-
-
                 </RelativeLayout>
 
                 <!--  START CONFIG OPTION 1 -->

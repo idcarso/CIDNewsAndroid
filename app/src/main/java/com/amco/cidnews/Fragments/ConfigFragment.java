@@ -62,6 +62,7 @@ public class ConfigFragment extends Fragment {
         config_inicial();
         config_obtenerValores();
         botones();
+
         return view;
 
     }
@@ -196,6 +197,7 @@ public class ConfigFragment extends Fragment {
             else
             {
                 Log.d("------------>>>>","<------ lista la configuracion");
+                /*
                 isAnyConfiguration = FinalConfigurationStatus();
 
                 if (isAnyConfiguration == false) {
@@ -221,6 +223,8 @@ public class ConfigFragment extends Fragment {
                     MainActivity.menuNavigation.getMenu().getItem(2).setCheckable(true);
                     MainActivity.menuNavigation.getMenu().getItem(3).setCheckable(true);
                 }
+
+                 */
             }
 
         db.close();
@@ -239,16 +243,14 @@ public class ConfigFragment extends Fragment {
             ((MainActivity)getActivity()).stateArrayMain[mIndex] = false;
 
         }
-        ((MainActivity)getActivity()).setupChangeState();
+
+        ((MainActivity)getActivity()).setNotifyChangeSettings();
+        //MainActivity instanceMainActivity = new MainActivity();
+        //instanceMainActivity.setNotifyChangeSettings();
 
 
         actualizar(cat, estado_siguiente);
         recargar();
-
-
-
-
-
     }
 
     /**

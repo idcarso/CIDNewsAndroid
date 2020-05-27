@@ -10,7 +10,9 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
+import com.amco.cidnews.Activities.MainActivity;
 import com.amco.cidnews.Fragments.HomeFragment;
 
 import java.io.IOException;
@@ -21,25 +23,19 @@ import java.net.SocketAddress;
 public class InternetVerify extends AsyncTask<String, Void, Integer> {
 
     //region VIEW
-
     LinearLayout linearLayoutAnuncioNoIntener;
-
     //endregion
 
     //region VARIABLES
-
     private static final String TAG = "InternetVerify.java";
     Context context;
-    HomeFragment homeFragment;
-
     //endregion
 
     //region CONSTRUCTOR
 
-    public InternetVerify(Context context, LinearLayout linearLayoutAnuncioNoIntener, HomeFragment homeFragment) {
+    public InternetVerify(Context context, LinearLayout linearLayoutAnuncioNoIntener) {
         this.linearLayoutAnuncioNoIntener = linearLayoutAnuncioNoIntener;
         this.context = context;
-        this.homeFragment = homeFragment;
     }
 
     //endregion
@@ -103,7 +99,6 @@ public class InternetVerify extends AsyncTask<String, Void, Integer> {
     //endregion
 
     //region OVERRIDES ASYNCTASK
-
     @Override
     protected Integer doInBackground(String... strings) {
         return pingSocketInternet();
@@ -115,8 +110,10 @@ public class InternetVerify extends AsyncTask<String, Void, Integer> {
 
         if (currentStatusConnected(resultPing) == true) {
             linearLayoutAnuncioNoIntener.setVisibility(View.INVISIBLE);
+            HomeFragment.isNetworkAvailable = true;
         } else {
             linearLayoutAnuncioNoIntener.setVisibility(View.VISIBLE);
+            HomeFragment.isNetworkAvailable = false;
         }
     }
 
