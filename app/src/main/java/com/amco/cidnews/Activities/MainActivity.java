@@ -1166,85 +1166,95 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         switch (menuItem.getItemId()) {
             case R.id.home_nav:
                 Log.i(TAG, "onNavigationItemSelected() --> Selected: Home || isActiveHome = " + isActiveHome);
-                if (!isActiveHome) {
-                    //Cambia el estado de las banderas
-                    isActiveHome = true;
-                    isActiveFavorites = false;
-                    isActiveRecover = false;
-                    isActiveSettings = false;
-
-                    //Firebase Analytics
-                    Bundle bundle = new Bundle();
-                    bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Home");
-                    bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
-                    mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-
-                    //Animacion de scroll
-                    setAnimationScrollMenuBottom(marginScrollMenuBottom, 0, 1);
-                    marginScrollMenuBottom = 0;
-                    menuNavigation.getMenu().getItem(0).setCheckable(true);
+                if (getEnableOptionsSetting() == 0) {
+                    showAlertSetting();
                 } else {
-                    if (isActiveAboutUs) {
-                        Log.i(TAG, "onNavigationItemSelected() --> About Us esta activo");
-                        AboutFragment.imageButtonRegresar.performClick();
-                    } else {
-                        Log.i(TAG, "onNavigationItemSelected() --> About Us no esta activo");
+                    if (!isActiveHome) {
+                        //Cambia el estado de las banderas
+                        isActiveHome = true;
+                        isActiveFavorites = false;
+                        isActiveRecover = false;
+                        isActiveSettings = false;
+
+                        //Firebase Analytics
+                        Bundle bundle = new Bundle();
+                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Home");
+                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
+                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+
+                        //Animacion de scroll
+                        setAnimationScrollMenuBottom(marginScrollMenuBottom, 0, 1);
+                        marginScrollMenuBottom = 0;
                         menuNavigation.getMenu().getItem(0).setCheckable(true);
-                        if (estadoDrawer) {
-                            HomeFragment.drawerLayout.closeDrawer(GravityCompat.END);
+                    } else {
+                        if (isActiveAboutUs) {
+                            Log.i(TAG, "onNavigationItemSelected() --> About Us esta activo");
+                            AboutFragment.imageButtonRegresar.performClick();
+                        } else {
+                            Log.i(TAG, "onNavigationItemSelected() --> About Us no esta activo");
+                            menuNavigation.getMenu().getItem(0).setCheckable(true);
+                            if (estadoDrawer) {
+                                HomeFragment.drawerLayout.closeDrawer(GravityCompat.END);
+                            }
                         }
                     }
                 }
                 break;
             case R.id.fav_nav:
                 Log.i(TAG, "onNavigationItemSelected() --> Selected: Favorites");
-                if (!isActiveFavorites) {
+                if (getEnableOptionsSetting() == 0) {
+                    showAlertSetting();
+                } else {
+                    if (!isActiveFavorites) {
+                        //Cambia el estado de las banderas
+                        isActiveHome = false;
+                        isActiveFavorites = true;
+                        isActiveRecover = false;
+                        isActiveSettings = false;
 
-                    //Cambia el estado de las banderas
-                    isActiveHome = false;
-                    isActiveFavorites = true;
-                    isActiveRecover = false;
-                    isActiveSettings = false;
+                        //Firebase Analytics
+                        Bundle bundle = new Bundle();
+                        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Favorites");
+                        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
+                        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
 
-                    //Firebase Analytics
-                    Bundle bundle = new Bundle();
-                    bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "Favorites");
-                    bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Main Menu");
-                    mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-
-                    //Animacion de scroll
-                    setAnimationScrollMenuBottom(marginScrollMenuBottom, sizeWidth / 4, 2);
-                    marginScrollMenuBottom = sizeWidth / 4;
+                        //Animacion de scroll
+                        setAnimationScrollMenuBottom(marginScrollMenuBottom, sizeWidth / 4, 2);
+                        marginScrollMenuBottom = sizeWidth / 4;
+                    }
                 }
-
                 break;
             case R.id.recover_nav:
                 Log.i(TAG, "onNavigationItemSelected() --> Selected: Recover");
-                if (!isActiveRecover) {
-                    //Cambia el estado de las banderas
-                    isActiveHome = false;
-                    isActiveFavorites = false;
-                    isActiveRecover = true;
-                    isActiveSettings = false;
+                if (getEnableOptionsSetting() == 0) {
+                    showAlertSetting();
+                } else {
+                    if (!isActiveRecover) {
+                        //Cambia el estado de las banderas
+                        isActiveHome = false;
+                        isActiveFavorites = false;
+                        isActiveRecover = true;
+                        isActiveSettings = false;
 
-                    //Animacion de scroll
-                    setAnimationScrollMenuBottom(marginScrollMenuBottom, (sizeWidth / 4) * 2, 3);
-                    marginScrollMenuBottom = (sizeWidth / 4) * 2;
+                        //Animacion de scroll
+                        setAnimationScrollMenuBottom(marginScrollMenuBottom, (sizeWidth / 4) * 2, 3);
+                        marginScrollMenuBottom = (sizeWidth / 4) * 2;
+                    }
                 }
                 break;
             case R.id.config_nav:
                 Log.i(TAG, "onNavigationItemSelected() --> Selected: Settings");
-                if (!isActiveSettings) {
-                    //Cambia el estado de las banderas
-                    isActiveHome = false;
-                    isActiveFavorites = false;
-                    isActiveRecover = false;
-                    isActiveSettings = true;
+                    if (!isActiveSettings) {
+                        //Cambia el estado de las banderas
+                        isActiveHome = false;
+                        isActiveFavorites = false;
+                        isActiveRecover = false;
+                        isActiveSettings = true;
 
-                    //Animacion de scroll
-                    setAnimationScrollMenuBottom(marginScrollMenuBottom, (sizeWidth / 4) * 3, 4);
-                    marginScrollMenuBottom = (sizeWidth / 4) * 3;
-                }
+                        //Animacion de scroll
+                        setAnimationScrollMenuBottom(marginScrollMenuBottom, (sizeWidth / 4) * 3, 4);
+                        marginScrollMenuBottom = (sizeWidth / 4) * 3;
+                    }
                 break;
         }
         return true;

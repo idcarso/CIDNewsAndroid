@@ -1,23 +1,19 @@
-
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-
     android:id="@+id/tableLayout1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
     android:paddingRight="5dp"
     android:paddingLeft="5dp"
-    android:layout_weight="1"
-    >
+    android:layout_weight="1">
 
     <TableRow
-
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.1"
+
         android:paddingEnd="45dp"
         android:paddingStart="45dp"
-
         android:paddingTop="10dp"
         android:paddingBottom="10dp">
 
@@ -37,14 +33,14 @@
         android:layout_weight="0.05"
         android:layout_width="0px"
         android:layout_height="0px"
-        android:gravity="center"
-        >
+        android:gravity="center">
 
         <ImageView
             android:id="@+id/img_salud"
             android:layout_width="0px"
             android:layout_height="83dp"
-            android:layout_weight="0.33" />
+            android:layout_weight="0.33"
+            android:src="@drawable/salud_off"/>
 
         <ImageView
             android:id="@+id/img_retail"
@@ -53,21 +49,20 @@
             android:layout_height="83dp"
             android:layout_weight="0.33"
             android:textAlignment="center"
-           />
+            android:src="@drawable/retail_off"/>
 
         <ImageView
             android:id="@+id/img_cons"
             android:layout_width="0px"
             android:layout_height="83dp"
             android:layout_weight="0.33"
-            />
+            android:src="@drawable/construccion_off"/>
     </TableRow>
 
     <TableRow
         android:id="@+id/tableRow11"
         android:layout_width="0dp"
-        android:gravity="center"
-        >
+        android:gravity="center">
 
         <TextView
             android:id="@+id/config_salud"
@@ -77,7 +72,7 @@
             android:layout_weight="0.33"
             android:fontFamily="@font/montserratextrabold"
             android:text="@string/health"
-            android:textAlignment="center"
+            android:gravity="center"
             android:textColor="#12a9ec"
             android:textSize="12sp" />
 
@@ -88,7 +83,7 @@
             android:layout_gravity="top"
             android:layout_weight="0.33"
             android:text="@string/retail"
-            android:textAlignment="center"
+            android:gravity="center"
             android:textColor="#12a9ec"
             android:textSize="12sp"
             android:fontFamily="@font/montserratextrabold"/>
@@ -101,7 +96,7 @@
             android:layout_weight="0.33"
             android:fontFamily="@font/montserratextrabold"
             android:text="@string/construction"
-            android:textAlignment="center"
+            android:gravity="center"
             android:textColor="#12a9ec"
             android:textSize="12sp" />
     </TableRow>
@@ -111,33 +106,30 @@
         android:layout_width="0px"
         android:layout_height="0px"
         android:layout_weight="0.05"
-
-        android:gravity="center"
-       >
+        android:gravity="center">
 
         <ImageView
             android:id="@+id/img_entretenimiento"
             android:layout_width="0px"
             android:layout_height="83dp"
             android:layout_weight="0.33"
-            />
+            android:src="@drawable/entretenimiento_off" />
 
         <ImageView
             android:id="@+id/img_ambiente"
             android:layout_width="0px"
             android:layout_height="83dp"
             android:layout_weight="0.33"
-
-           />
+            android:src="@drawable/ambiente_off"/>
 
         <ImageView
             android:id="@+id/img_educacion"
             android:layout_width="0px"
             android:layout_height="81dp"
             android:layout_weight="0.33"
-           />
+            android:src="@drawable/educacion_off"/>
     </TableRow>
-    <!--Tercera fila-->
+
     <TableRow
         android:id="@+id/tableRow21"
         android:layout_width="0px"
@@ -163,7 +155,7 @@
             android:layout_weight="0.33"
             android:fontFamily="@font/montserratextrabold"
             android:text="@string/environment"
-            android:textAlignment="center"
+            android:gravity="center"
             android:textColor="#12a9ec"
             android:textSize="12sp" />
 
@@ -184,15 +176,14 @@
         android:layout_width="0px"
         android:layout_height="0px"
         android:layout_weight="0.05"
-        android:gravity="center"
-        >
+        android:gravity="center">
 
         <ImageView
             android:id="@+id/img_energia"
             android:layout_width="0px"
             android:layout_height="83dp"
             android:layout_weight="0.33"
-          />
+            android:src="@drawable/energia_off"/>
 
 
         <ImageView
@@ -200,14 +191,14 @@
             android:layout_width="0px"
             android:layout_height="83dp"
             android:layout_weight="0.33"
-            />
+            android:src="@drawable/bancaria_off"/>
 
         <ImageView
             android:id="@+id/img_telecom"
             android:layout_width="0px"
             android:layout_height="83dp"
             android:layout_weight="0.33"
-           />
+            android:src="@drawable/telecom_off"/>
     </TableRow>
 
     <TableRow
